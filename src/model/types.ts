@@ -1,43 +1,49 @@
-export enum GameType {
-  NLH = 'NLH',
-  PLO = 'PLO'
-}
-
-type UserId = string
+export type GameType = 'NLH' | 'PLO'
 
 export interface Stakes { 
   readonly smallBlind: number
   readonly bigBlind: number
 }
 
-export const Stakes = (smallBlind: number, bigBlind: number) => ({ smallBlind, bigBlind })
+export type InvitationStatus = Time | 'approved' | 'declined'
 
-export enum InvitationStatus {
-  Approved = 'approved', 
-  Declined = 'declined', 
-  NoResponse = 'no-response',
-  WaitingList = 'waiting-list'
+
+export interface InvitationResponse {
+  readonly hostId: string
+  readonly gameId: string
+  readonly playerId: string
+  readonly status: InvitationStatus
+  readonly arriveTime: Time
 }
 
 export interface Invitation {
-  readonly player: UserId
-  readonly status: InvitationStatus
-  readonly notes: string
+  readonly hostId: string
+  readonly gameId: string
+  readonly playerId: string
 }
 
-export const Invitation = (player: UserId, status: InvitationStatus, notes: string = ''): Invitation =>
-  ({ player, status, notes })
+export interface Date {
+  readonly year: number
+  readonly month: number
+  readonly day: number
+}
+
+export interface Time {
+  readonly hour: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
+  readonly minute: 0 | 15 | 30 | 45
+}
 
 export interface Game {
-  readonly id: string
+  readonly hostId: string
+  readonly gameId: string
   readonly type: GameType
   readonly stakes: Stakes
   readonly maxPlayers: number
+  readonly date: Date
+  readonly time: Time
+  readonly address: Address
+  readonly notes: string
 }
-
-export const Game = (id: string, type: GameType, stakes: Stakes, maxPlayers: number): Game => ({
-  id, type, stakes, maxPlayers
-})
 
 export interface Address {
   readonly houseNumber: string
@@ -47,16 +53,8 @@ export interface Address {
 }
 
 export interface User {
-  readonly uid: UserId
+  readonly userId: string
+  readonly email: string
   readonly name: string
   readonly address?: Address
 }
-
-export const User = (email: string, name: string, address?: Address): User => ({uid: email, name, address})
-
-export interface HomeGameInvitation {
-  readonly userId: UserId
-  readonly email: string
-}
-
-export const HomeGameInvitation = (userId: string, email: string): HomeGameInvitation => ({userId, email})

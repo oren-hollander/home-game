@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 const mail = require('@sendgrid/mail');
 
-const SENDGRID_API_KEY = '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'
+const SENDGRID_API_KEY = ''
 
 mail.setApiKey(SENDGRID_API_KEY);
 
