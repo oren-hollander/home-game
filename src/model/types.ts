@@ -1,9 +1,9 @@
-import {Id} from './firebaseUtils'
-
 export enum GameType {
   NLH = 'NLH',
   PLO = 'PLO'
 }
+
+type UserId = string
 
 export interface Stakes { 
   readonly smallBlind: number
@@ -12,7 +12,7 @@ export interface Stakes {
 
 export const Stakes = (smallBlind: number, bigBlind: number) => ({ smallBlind, bigBlind })
 
-export enum InvitationStaus {
+export enum InvitationStatus {
   Approved = 'approved', 
   Declined = 'declined', 
   NoResponse = 'no-response',
@@ -20,29 +20,24 @@ export enum InvitationStaus {
 }
 
 export interface Invitation {
-  readonly status: InvitationStaus
+  readonly player: UserId
+  readonly status: InvitationStatus
   readonly notes: string
 }
 
-export const Invitation = (playerId: string, status: InvitationStaus, notes: string = ''): Invitation & Id =>
-  ({ id: playerId, status, notes })
+export const Invitation = (player: UserId, status: InvitationStatus, notes: string = ''): Invitation =>
+  ({ player, status, notes })
 
 export interface Game {
-  readonly hostId: string
+  readonly id: string
   readonly type: GameType
   readonly stakes: Stakes
   readonly maxPlayers: number
 }
 
-export const Game = (hostId: string, type: GameType, stakes: Stakes, maxPlayers: number) => ({
-  hostId, type, stakes, maxPlayers
+export const Game = (id: string, type: GameType, stakes: Stakes, maxPlayers: number): Game => ({
+  id, type, stakes, maxPlayers
 })
-
-export interface Player extends Id {
-  readonly name: string
-}
-
-export const Player = (id: string, name: string) => ({id, name})
 
 export interface Address {
   readonly houseNumber: string
@@ -51,6 +46,17 @@ export interface Address {
   readonly notes?: string
 }
 
-export interface Host extends Player {
-  readonly address: Address
+export interface User {
+  readonly uid: UserId
+  readonly name: string
+  readonly address?: Address
 }
+
+export const User = (email: string, name: string, address?: Address): User => ({uid: email, name, address})
+
+export interface HomeGameInvitation {
+  readonly userId: UserId
+  readonly email: string
+}
+
+export const HomeGameInvitation = (userId: string, email: string): HomeGameInvitation => ({userId, email})

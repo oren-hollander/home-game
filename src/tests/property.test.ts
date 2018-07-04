@@ -5,7 +5,7 @@ type PropertyFilter<T> = (p: Predicate<T>, g: PropertyGenerator<T>) => PropertyG
 
 function filter<T>(p: Predicate<T>, g: PropertyGenerator<T>): PropertyGenerator<T> {
   return () => {
-    let tries = 100
+    let tries = 10
     while(true){
       const property = g()
       if(p(property))
@@ -41,7 +41,7 @@ function addressGenerator(houseNumber: PropertyGenerator<number>, street: Proper
     street: street(),
     city: city()
   })
-} 
+}
 
 function constantGenerator(x: any): PropertyGenerator<any> {
   return () => x
@@ -55,7 +55,7 @@ function claim<T>(description: string, predicate: Predicate<T>, generator: Prope
 
 function classifier<T>(t: T): Classifier<T> {
   return t => ''
-} 
+}
 
 interface Claim<T> {
   description: string
@@ -98,7 +98,7 @@ describe.skip('property ', () => {
       n: 1,
       b: false
     }
-  } 
+  }
 
   const claim1 = claim('claim 1', nPredicate, gen)
   check(claim1, 100)

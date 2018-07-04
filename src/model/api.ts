@@ -1,57 +1,105 @@
-import { Game, InvitationStaus, Invitation } from './types'
-import * as firebase from 'firebase'
-import { Collection, Id } from './firebaseUtils'
+import {Game, GameInvitationStatus, GameInvitation, HomeGameInvitation, User} from './types'
+import * as firebase from 'firebase/app'
+import { Collection } from './firebaseUtils'
 
 enum Collections { 
- GAMES = 'games',
- INVITATIONS = 'invitations'
+  GAMES = 'games',
+  INVITATIONS = 'invitations',
+  USERS = 'users'
 }
 
-export interface Api {
+const {GAMES, INVITATIONS, USERS} = Collections
+
+const {NoResponse} = GameInvitationStatus
+
+export interface Database {
+  // createUser(user: User): Promise<void>
+  // findUser(name: string): Promise<User | undefined>
+
   createGame(game: Game): Promise<string> 
-  getGame(gameId: string): Promise<Game & Id | void>
+  getGame(gameId: string): Promise<Game | undefined>
   invite(playerId: string, gameId: string): Promise<void>
-  updateInvitationStatus(playerId: string, gameId: string, status: InvitationStaus): Promise<void>,
-  getInvitation(playerId: string, gameId: string): Promise<Invitation | void>,
-  getGameInvitation(gameId: string): Promise<Invitation[]> 
+  updateInvitationStatus(playerId: string, gameId: string, status: GameInvitationStatus): Promise<void>
+  getInvitation(playerId: string, gameId: string): Promise<GameInvitation | undefined>
+  getGameInvitation(gameId: string): Promise<GameInvitation[]>
+  inviteToHomeGame(userId: string, email: string): Promise<void>
+}
+export const Auth = (auth: firebase.auth.Auth, firestore: firebase.firestore.Firestore) => {
+  // const signUp = async (email: string, password: string): Promise<firebase.User> => {
+  //   state.auth.createUserWithEmailAndPassword(email, password)
+  //
+  // }
+
+  const Users = Collection<User>(firestore.collection(USERS), 'uid')
+
+  const signIn = async (email: string, password: string): Promise<User | undefined> => {
+    let resolveSignIn: (user: firebase.User) => void
+
+    const promise = new Promise<firebase.User>(resolve => {
+      resolveSignIn = resolve
+    })
+
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      if(user){
+        unsubscribe()
+
+        resolveSignIn(user)
+      }
+    })
+
+    auth.signInWithEmailAndPassword(email, password)
+
+    const fireBaseUser = await promise
+    return Users.get(fireBaseUser.uid)
+  }
+
+  return {
+    signIn
+  }
 }
 
-export const Api = (firestore: firebase.firestore.Firestore): Api => {
+export const Database = (firestore: firebase.firestore.Firestore): Database => {
+  const Games = Collection<Game>(firestore.collection(GAMES))
 
-  const gamesCollectionRef = firestore.collection(Collections.GAMES)
-  const games = Collection<Game>(gamesCollectionRef)
+  const createGame = async (game: Game) => Games.add(game)
 
-  const createGame = async (game: Game) => games.add(game)
+  const getGame = async (gameId: string) => Games.get(gameId)
 
-  const getGame = async (gameId: string) => games.get(gameId)
+  // const createUser = async (user: User): Promise<void> => {
+  //
+  // }
 
   const invite = async (playerId: string, gameId: string): Promise<void> => {
     return firestore.runTransaction(async tx => {
-      const invitations = games.subCollection(gameId, Collections.INVITATIONS).transactive(tx)
+      const invitations = Games.subCollection(gameId, INVITATIONS).transactive(tx)
 
       const invitation = await invitations.get(playerId)
       if(!invitation){
-        return invitations.set(Invitation(playerId, InvitationStaus.NoResponse, ''))
+        return invitations.set(GameInvitation(playerId, NoResponse, ''))
       }
     })
   }
 
-  const updateInvitationStatus = async (playerId: string, gameId: string, status: InvitationStaus): Promise<void> => {
-    const invitations = Collection<Invitation>(gamesCollectionRef.doc(gameId).collection(Collections.INVITATIONS))
-    return invitations.update(playerId, { status })
+  const updateInvitationStatus = async (playerId: string, gameId: string, status: GameInvitationStatus): Promise<void> => {
+    const Invitations = Games.subCollection<GameInvitation>(gameId, INVITATIONS)
+    return Invitations.update(playerId, { status })
   }
 
-  const getInvitation = async (playerId: string, gameId: string): Promise<Invitation | void> => {
-    const invitations = Collection<Invitation>(gamesCollectionRef.doc(gameId).collection(Collections.INVITATIONS))
-    return invitations.get(playerId)
+  const getInvitation = async (playerId: string, gameId: string): Promise<GameInvitation | undefined> => {
+    const Invitations = Games.subCollection<GameInvitation>(gameId, INVITATIONS)
+    return Invitations.get(playerId)
   }
 
-  const getGameInvitation = async (gameId: string): Promise<Invitation[]> => {
-    const invitations = Collection<Invitation>(gamesCollectionRef.doc(gameId).collection(Collections.INVITATIONS))
-    return invitations.query()
+  const getGameInvitation = async (gameId: string): Promise<GameInvitation[]> => {
+    const Invitations = Games.subCollection<GameInvitation>(gameId, INVITATIONS)
+    return Invitations.query()
   }
 
-  // const inviteToHomeGame = async (userId: string, email)
+  const inviteToHomeGame = async (userId: string, email: string): Promise<void> => {
+    const invitations = Collection<HomeGameInvitation>(firestore.collection(INVITATIONS))
+    return invitations.set(HomeGameInvitation(userId, email))
+  }
+
 
   return {
     createGame,
@@ -59,6 +107,7 @@ export const Api = (firestore: firebase.firestore.Firestore): Api => {
     invite,
     updateInvitationStatus,
     getInvitation,
-    getGameInvitation
+    getGameInvitation,
+    inviteToHomeGame
   }
 }

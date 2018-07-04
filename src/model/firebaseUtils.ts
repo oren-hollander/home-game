@@ -1,5 +1,5 @@
-import * as firebase from 'firebase'
-import { set, omit, map } from 'lodash/fp'
+import * as firebase from 'firebase/app'
+import { get, set, omit, map } from 'lodash/fp'
 
 type CollectionReference = firebase.firestore.CollectionReference
 type Transaction = firebase.firestore.Transaction
@@ -8,37 +8,33 @@ type WriteBatch = firebase.firestore.WriteBatch
 type DocumentData = firebase.firestore.DocumentData
 type QueryDocumentSnapshot = firebase.firestore.QueryDocumentSnapshot
 
-export interface Id {
-  readonly id: string
-}
-
-export interface BatchedCollection<T> { 
-  set(doc: T & Id): void
+export interface BatchedCollection<T extends object> {
+  set(doc: T): void
   update(id: string, update: UpdateData): void
   delete(id: string): void
   commit(): Promise<void>
 }
 
-export interface TransactiveCollection<T>  {
-  get(id: string): Promise<T & Id | void>
-  set(doc: T & Id): Promise<void>
+export interface TransactiveCollection<T extends object>  {
+  get(id: string): Promise<T | undefined>
+  set(doc: T): Promise<void>
   update(id: string, update: UpdateData): Promise<void>
   delete(id: string): Promise<void>
 }
 
-export interface Collection<T> extends TransactiveCollection<T> {
+export interface Collection<T extends object> extends TransactiveCollection<T> {
   add(doc: T): Promise<string>
   transactive(transaction: Transaction): TransactiveCollection<T>
   batched(batch: WriteBatch): BatchedCollection<T>
-  subCollection<S>(docId: string, collectionId: string): Collection<S>,
-  query(): Promise<(T & Id)[]>
+  subCollection<S extends object>(docId: string, collectionId: string): Collection<S>
+  query(): Promise<(T)[]>,
+  listen(onDocuments: (docs: T[]) => void): () => void
+  listenToDoc(docId: string, onDocument: (doc: T) => void): () => void
 }
 
-const omitId = omit(['id'])
-
-function BatchedCollection<T>(batch: WriteBatch, collectionRef: CollectionReference): BatchedCollection<T> {
-  function setDocument(doc: T & Id): void {
-    batch.set(collectionRef.doc(doc.id), omitId(doc))
+function BatchedCollection<T extends object>(batch: WriteBatch, collectionRef: CollectionReference, idKey: string): BatchedCollection<T> {
+  function setDocument(doc: T): void {
+    batch.set(collectionRef.doc(doc[idKey]), omit(idKey, doc))
   }
 
   function deleteDocument(id: string): void {
@@ -61,18 +57,19 @@ function BatchedCollection<T>(batch: WriteBatch, collectionRef: CollectionRefere
   }
 }
 
-const dataToDoc = <T>(id: string, data: DocumentData): T & Id => <T & Id>set('id', id, data)
+const dataToDoc = <T>(id: string, idKey: string, data: DocumentData): T  => <T>set(idKey, id, data)
 
-function TransactiveCollection<T>(transaction: Transaction, collectionRef: CollectionReference): TransactiveCollection<T> {
-  async function getDocument(id: string): Promise<T & Id | void> {
+function TransactiveCollection<T extends object>(transaction: Transaction, collectionRef: CollectionReference, idKey: string): TransactiveCollection<T> {
+  async function getDocument(id: string): Promise<T | undefined> {
     const snapshot = await transaction.get(collectionRef.doc(id))
     if (snapshot.exists) {
-      return dataToDoc<T>(id, <DocumentData>snapshot.data())
+      return dataToDoc(id, idKey, snapshot.data()!)
     }
+    return undefined
   }
 
-  async function setDocument(doc: T & Id): Promise<void> {
-    await transaction.set(collectionRef.doc(doc.id), omitId(doc))
+  async function setDocument(doc: T): Promise<void> {
+    await transaction.set(collectionRef.doc(doc[idKey]), omit(idKey, doc))
     return
   }
 
@@ -94,21 +91,27 @@ function TransactiveCollection<T>(transaction: Transaction, collectionRef: Colle
   }
 }
 
-export function Collection<T>(collectionRef: CollectionReference): Collection<T> {
-  
-  async function addDocument(doc: T): Promise<string> {
-    return collectionRef.add(doc).then(docRef => docRef.id)
-  }
+export function Collection<T extends object>(collectionRef: CollectionReference, idKey: string = 'id'): Collection<T> {
 
-  async function getDocument(id: string): Promise<T & Id | void> {
-    const snapshot = await collectionRef.doc(id).get()
-    if(snapshot.exists){
-      return <T & Id>set('id', id, <object>snapshot.data())
+  async function addDocument(doc: T): Promise<string> {
+    if(doc[idKey]) {
+      await setDocument(doc)
+      return doc[idKey]
+    } else {
+      return collectionRef.add(doc).then(get(idKey))
     }
   }
 
-  async function setDocument(doc: T & Id): Promise<void> {
-    return collectionRef.doc(doc.id).set(omitId(doc))
+  async function getDocument(id: string): Promise<T | undefined> {
+    const snapshot = await collectionRef.doc(id).get()
+    if(snapshot.exists){
+      return dataToDoc(id, idKey, snapshot.data()!)
+    }
+    return undefined
+  }
+
+  async function setDocument(doc: T): Promise<void> {
+    return collectionRef.doc(doc[idKey]).set(omit(idKey, doc))
   }
 
   async function deleteDocument(id: string): Promise<void> {
@@ -119,21 +122,35 @@ export function Collection<T>(collectionRef: CollectionReference): Collection<T>
     return collectionRef.doc(id).update(update)
   }
 
+  async function query(): Promise<T[]> {
+    const querySnapshot = await collectionRef.get()
+    return map((qds: QueryDocumentSnapshot) => dataToDoc<T>(qds.id, idKey, qds.data()), querySnapshot.docs)
+  }
+
+  function listen(onDocuments: (docs: T[]) => void): () => void {
+    return collectionRef.onSnapshot(snapshot => {
+      onDocuments(<T[]>map(doc => doc.data(), snapshot.docs))
+    })
+  }
+
+  function listenToDoc(docId: string, onDocument: (doc: T) => void): () => void {
+    return collectionRef.doc(docId).onSnapshot(snapshot => {
+      if (snapshot.exists) {
+        onDocument(<T>snapshot.data())
+      }
+    })
+  }
+
   function transactive(transaction: Transaction): TransactiveCollection<T> {
-    return TransactiveCollection<T>(transaction, collectionRef)
+    return TransactiveCollection(transaction, collectionRef, idKey)
   }
 
   function batched(batch: WriteBatch): BatchedCollection<T> {
-    return BatchedCollection<T>(batch, collectionRef)
+    return BatchedCollection(batch, collectionRef, idKey)
   }
 
-  function subCollection<S>(docId: string, collectionId: string): Collection<S> {
-    return Collection<S>(collectionRef.doc(docId).collection(collectionId))
-  }
-
-  async function query(): Promise<(T & Id)[]> {
-    const querySnapshot = await collectionRef.get()
-    return map((qds: QueryDocumentSnapshot) => dataToDoc<T>(qds.id, qds.data()), querySnapshot.docs)
+  function subCollection<S extends object>(docId: string, collectionId: string): Collection<S> {
+    return Collection<S>(collectionRef.doc(docId).collection(collectionId), idKey)
   }
 
   return {
@@ -146,5 +163,7 @@ export function Collection<T>(collectionRef: CollectionReference): Collection<T>
     batched,
     subCollection,
     query,
+    listen,
+    listenToDoc
   }
 } 

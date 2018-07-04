@@ -1,10 +1,11 @@
-import * as firebase from 'firebase'
+import * as firebase from 'firebase/app'
 
 import { Collection } from './firebaseUtils'
 
 test.skip('Collection', async () => {
   interface Game {
-    x: 42
+    id?: string
+    x: number
   }
 
   const config = {
@@ -24,7 +25,7 @@ test.skip('Collection', async () => {
   }
 
   firestore.settings(settings);
-  const col: Collection<Game> = Collection(firestore.collection('testGames'))
+  const col: Collection<Game> = Collection(firestore.collection('games'))
   const id = await col.add({x: 42})
   const game = await col.get(id)
   console.log(game)
