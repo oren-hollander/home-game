@@ -7,7 +7,6 @@ export interface Stakes {
 
 export type InvitationStatus = Time | 'approved' | 'declined'
 
-
 export interface InvitationResponse {
   readonly hostId: string
   readonly gameId: string
@@ -42,7 +41,7 @@ export interface Game {
   readonly date: Date
   readonly time: Time
   readonly address: Address
-  readonly notes: string
+  readonly notes?: string
 }
 
 export interface Address {

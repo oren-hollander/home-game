@@ -1,7 +1,10 @@
-import {call, put, Effect, takeEvery, all} from 'redux-saga/effects'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import { push, replace } from 'connected-react-router'
+import {Dispatch} from 'redux'
+import {Services} from '../../app/services'
+import {Effects} from '../../effect/effect'
+import {GetState} from '../index'
 
 export const VERIFY_EMAIL = 'verify-email'
 export const EMAIL_VERIFIED = 'email-verified'
@@ -30,37 +33,31 @@ export type SignIn = ReturnType<typeof signIn>
 
 export type AuthAction = VerifyEmail | EmailVerified | EmailNotVerified | UserSignedIn | UserSignedOut | SignIn
 
-export function* verifyEmailSaga(verifyEmail: VerifyEmail): Iterator<Effect> {
+export const verifyEmailEffect = async (verifyEmail: VerifyEmail, dispatch: Dispatch, getState: GetState, {auth}: Services) => {
   try {
-    const auth = firebase.auth()
-    const applyActionCode = auth.applyActionCode.bind(auth)
-
-    yield call(applyActionCode, verifyEmail.oobCode)
-    yield put(emailVerified())
+    await auth.applyActionCode(verifyEmail.oobCode)
+    dispatch(emailVerified())
   }
   catch (e) {
-    yield put(emailNotVerified(e.message))
+    dispatch(emailNotVerified(e.message))
   }
 }
 
-function* userSignedInSaga(): Iterator<Effect> {
-  yield put(push('/games'))
+export const userSignedInEffect = async (userSignedIn: UserSignedIn, dispatch: Dispatch) => {
+  dispatch(push('/games'))
 }
 
-function* userSignedOutSaga(): Iterator<Effect> {
-  yield put(replace('/'))
+export const userSignedOutEffect = async (userSignedOut: UserSignedOut, dispatch: Dispatch) => {
+  dispatch(replace('/'))
 }
 
-function* signInSaga(signIn: SignIn): Iterator<Effect> {
-  yield(call(() => firebase.auth().signInWithEmailAndPassword(signIn.email, signIn.password)))
+const signInEffect = (signIn: SignIn, dispatch: Dispatch, getState: GetState, {auth}: Services) => {
+  auth.signInWithEmailAndPassword(signIn.email, signIn.password)
 }
 
-export function* authSaga(): Iterator<Effect> {
-  yield all([
-    takeEvery(VERIFY_EMAIL, verifyEmailSaga),
-    takeEvery(USER_SIGNED_IN, userSignedInSaga),
-    takeEvery(USER_SIGNED_OUT, userSignedOutSaga),
-    takeEvery(SIGN_IN, signInSaga)
-  ])
+export const authEffects: Effects = {
+  [SIGN_IN]: signInEffect,
+  [USER_SIGNED_IN]: userSignedInEffect,
+  [USER_SIGNED_OUT]: userSignedOutEffect,
+  [VERIFY_EMAIL]: verifyEmailEffect
 }
-

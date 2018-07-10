@@ -8,36 +8,17 @@ import 'firebase/auth'
 import 'firebase/firestore'
 import { ConnectedRouter } from 'connected-react-router'
 import { createStore, applyMiddleware} from 'redux'
-import sagaMiddlewareFactory, {Effect} from 'redux-saga'
-import {all, call} from 'redux-saga/effects'
 import { Provider} from 'react-redux'
-import { authSaga } from './state/auth/authActions'
-import { gamesSaga } from './state/games/gamesActions'
 import { reducer } from './state/'
 import 'typeface-roboto'
 import {userSignedIn, userSignedOut} from './state/auth/authActions'
 import { createBrowserHistory } from 'history'
 import { connectRouter, routerMiddleware } from 'connected-react-router'
+import {effectMiddleware, Effects, mergeEffects} from './effect/effect'
+import {friendsEffects} from './state/friends/friendsActions'
+import {authEffects} from './state/auth/authActions'
 
 const history = createBrowserHistory()
-
-const sagaMiddleware = sagaMiddlewareFactory()
-
-const store = createStore(
-  connectRouter(history)(reducer),
-  applyMiddleware(
-    routerMiddleware(history),
-    sagaMiddleware
-  )
-)
-
-function* rootSaga(): Iterator<Effect> {
-  yield all([
-    call(authSaga),
-    call(gamesSaga)
-  ])
-}
-sagaMiddleware.run(rootSaga)
 
 const config = {
   apiKey: "AIzaSyCL0jL94GPb7HvZxUgZdnpqqyx5liMeY3A",
@@ -55,6 +36,21 @@ const settings = {
 }
 
 firestore.settings(settings)
+
+const services = {
+  db: firestore,
+  auth: firebase.auth()
+}
+
+const effects: Effects = mergeEffects(friendsEffects, authEffects)
+
+const store = createStore(
+  connectRouter(history)(reducer),
+  applyMiddleware(
+    routerMiddleware(history),
+    effectMiddleware(effects, services)
+  )
+)
 
 if(!firebase.auth().currentUser){
   store.dispatch(userSignedOut())
