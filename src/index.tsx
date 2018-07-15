@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import {App} from './App'
+import {App} from './app/App'
 import './index.css'
 import registerServiceWorker from './registerServiceWorker'
 import * as firebase from 'firebase/app'
@@ -17,6 +17,8 @@ import { connectRouter, routerMiddleware } from 'connected-react-router'
 import {effectMiddleware, Effects, mergeEffects} from './effect/effect'
 import {friendsEffects} from './state/friends/friendsActions'
 import {authEffects} from './state/auth/authActions'
+import {gamesEffects} from './state/games/gamesActions'
+import {isUserSignedIn} from './state/auth/authReducer'
 
 const history = createBrowserHistory()
 
@@ -42,7 +44,7 @@ const services = {
   auth: firebase.auth()
 }
 
-const effects: Effects = mergeEffects(friendsEffects, authEffects)
+const effects: Effects = mergeEffects(friendsEffects, authEffects, gamesEffects)
 
 const store = createStore(
   connectRouter(history)(reducer),
@@ -58,11 +60,9 @@ if(!firebase.auth().currentUser){
 
 firebase.auth().onAuthStateChanged(user => {
   if(user){
-    console.log('user signed in')
     store.dispatch(userSignedIn(user))
   }
   else {
-    console.log('user signed out')
     store.dispatch(userSignedOut())
   }
 })
@@ -101,10 +101,12 @@ firebase.auth().onAuthStateChanged(user => {
 
 // ui.start('#login', uiConfig);
 
+const signedIn = isUserSignedIn(store.getState())
+
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
-      <App />
+      <App signedIn={signedIn}/>
     </ConnectedRouter>
   </Provider>,
   document.getElementById('root') as HTMLElement

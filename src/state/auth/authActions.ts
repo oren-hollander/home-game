@@ -1,17 +1,17 @@
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-import { push, replace } from 'connected-react-router'
 import {Dispatch} from 'redux'
 import {Services} from '../../app/services'
 import {Effects} from '../../effect/effect'
 import {GetState} from '../index'
 
-export const VERIFY_EMAIL = 'verify-email'
-export const EMAIL_VERIFIED = 'email-verified'
-export const EMAIL_NOT_VERIFIED = 'email-not-verified'
-export const USER_SIGNED_IN = 'user-signed-in'
-export const USER_SIGNED_OUT = 'user-signed-out'
-export const SIGN_IN = 'sign-in'
+export const VERIFY_EMAIL = 'auth/verify-email'
+export const EMAIL_VERIFIED = 'auth/email-verified'
+export const EMAIL_NOT_VERIFIED = 'auth/email-not-verified'
+export const USER_SIGNED_IN = 'auth/user-signed-in'
+export const USER_SIGNED_OUT = 'auth/user-signed-out'
+export const SIGN_IN = 'auth/sign-in'
+export const SIGN_OUT = 'auth/sign-out'
 
 const emailVerified = () => ({type: EMAIL_VERIFIED as typeof EMAIL_VERIFIED})
 export type EmailVerified  = ReturnType<typeof emailVerified>
@@ -31,7 +31,10 @@ export type VerifyEmail = ReturnType<typeof verifyEmail>
 export const signIn = (email: string, password: string) => ({type: SIGN_IN as typeof SIGN_IN, email, password})
 export type SignIn = ReturnType<typeof signIn>
 
-export type AuthAction = VerifyEmail | EmailVerified | EmailNotVerified | UserSignedIn | UserSignedOut | SignIn
+export const signOut = () => ({type: SIGN_OUT as typeof SIGN_OUT})
+export type SignOut = ReturnType<typeof signOut>
+
+export type AuthAction = VerifyEmail | EmailVerified | EmailNotVerified | UserSignedIn | UserSignedOut | SignIn | SignOut
 
 export const verifyEmailEffect = async (verifyEmail: VerifyEmail, dispatch: Dispatch, getState: GetState, {auth}: Services) => {
   try {
@@ -43,21 +46,16 @@ export const verifyEmailEffect = async (verifyEmail: VerifyEmail, dispatch: Disp
   }
 }
 
-export const userSignedInEffect = async (userSignedIn: UserSignedIn, dispatch: Dispatch) => {
-  dispatch(push('/games'))
-}
-
-export const userSignedOutEffect = async (userSignedOut: UserSignedOut, dispatch: Dispatch) => {
-  dispatch(replace('/'))
-}
-
 const signInEffect = (signIn: SignIn, dispatch: Dispatch, getState: GetState, {auth}: Services) => {
   auth.signInWithEmailAndPassword(signIn.email, signIn.password)
 }
 
+const signOutEffect = (signIn: SignOut, dispatch: Dispatch, getState: GetState, {auth}: Services) => {
+  auth.signOut()
+}
+
 export const authEffects: Effects = {
   [SIGN_IN]: signInEffect,
-  [USER_SIGNED_IN]: userSignedInEffect,
-  [USER_SIGNED_OUT]: userSignedOutEffect,
+  [SIGN_OUT]: signOutEffect,
   [VERIFY_EMAIL]: verifyEmailEffect
 }

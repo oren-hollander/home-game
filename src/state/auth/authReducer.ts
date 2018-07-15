@@ -1,6 +1,7 @@
 import {Reducer} from 'redux'
 import {EMAIL_VERIFIED, EMAIL_NOT_VERIFIED, USER_SIGNED_IN, USER_SIGNED_OUT, AuthAction} from './authActions'
 import {Selector} from 'reselect'
+import {State} from "../index";
 
 export interface AuthState {
   userId: string | null
@@ -29,6 +30,6 @@ export const reducer: Reducer<AuthState> = (state: AuthState = defaultAuthState,
   }
 }
 
-
-export const isUserSignedIn: Selector<AuthState, boolean> = (state: AuthState): boolean => state.signedIn
-export const isEmailVerified: Selector<AuthState, boolean> = (state: AuthState): boolean => state.emailVerified
+export const isUserSignedIn: Selector<State, boolean> = (state: State): boolean => state.auth.signedIn
+export const isEmailVerified: Selector<State, boolean> = (state: State): boolean => state.auth.emailVerified
+export const getUserId: Selector<State, string | null> = (state: State) => state.auth.userId

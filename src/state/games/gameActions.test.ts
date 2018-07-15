@@ -1,7 +1,7 @@
 import * as firebase from 'firebase/app'
 import 'firebase/firestore'
 import {createGameEffect, createGame} from './gamesActions'
-import {Game} from "../../model/types";
+import {Game} from '../../model/types'
 
 describe('game effects', () => {
   let db: firebase.firestore.Firestore
@@ -43,6 +43,6 @@ describe('game effects', () => {
     const dispatch = jest.fn()
     const getState = jest.fn()
 
-    return createGameEffect(createGame(game), dispatch, getState, {db})
+    return createGameEffect(createGame(game), dispatch, getState, {db, auth: undefined!})
   })
 })

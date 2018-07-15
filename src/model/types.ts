@@ -33,8 +33,8 @@ export interface Time {
 }
 
 export interface Game {
-  readonly hostId: string
   readonly gameId: string
+  readonly hostId: string
   readonly type: GameType
   readonly stakes: Stakes
   readonly maxPlayers: number
