@@ -6,19 +6,18 @@ import registerServiceWorker from './registerServiceWorker'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
-import { ConnectedRouter } from 'connected-react-router'
 import { createStore, applyMiddleware} from 'redux'
 import { Provider} from 'react-redux'
 import { reducer } from './state/'
 import 'typeface-roboto'
 import {userSignedIn, userSignedOut} from './state/auth/authActions'
 import { createBrowserHistory } from 'history'
-import { connectRouter, routerMiddleware } from 'connected-react-router'
+import { connectRouter, routerMiddleware, ConnectedRouter } from 'connected-react-router'
 import {effectMiddleware, Effects, mergeEffects} from './effect/effect'
 import {friendsEffects} from './state/friends/friendsActions'
 import {authEffects} from './state/auth/authActions'
 import {gamesEffects} from './state/games/gamesActions'
-import {isUserSignedIn} from './state/auth/authReducer'
+import {Route} from 'react-router-dom'
 
 const history = createBrowserHistory()
 
@@ -101,12 +100,11 @@ firebase.auth().onAuthStateChanged(user => {
 
 // ui.start('#login', uiConfig);
 
-const signedIn = isUserSignedIn(store.getState())
 
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
-      <App signedIn={signedIn}/>
+      <Route component={App}/>
     </ConnectedRouter>
   </Provider>,
   document.getElementById('root') as HTMLElement
