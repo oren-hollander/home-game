@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import {App} from './app/App'
+import {Route} from 'react-router-dom'
 import './index.css'
 import registerServiceWorker from './registerServiceWorker'
 import * as firebase from 'firebase/app'
@@ -17,7 +18,7 @@ import {effectMiddleware, Effects, mergeEffects} from './effect/effect'
 import {friendsEffects} from './state/friends/friendsActions'
 import {authEffects} from './state/auth/authActions'
 import {gamesEffects} from './state/games/gamesActions'
-import {Route} from 'react-router-dom'
+import {usersEffects} from './state/users/usersActions'
 
 const history = createBrowserHistory()
 
@@ -43,7 +44,7 @@ const services = {
   auth: firebase.auth()
 }
 
-const effects: Effects = mergeEffects(friendsEffects, authEffects, gamesEffects)
+const effects: Effects = mergeEffects(friendsEffects, authEffects, gamesEffects, usersEffects)
 
 const store = createStore(
   connectRouter(history)(reducer),

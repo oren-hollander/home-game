@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {Component} from 'react'
+import {Link} from 'react-router-dom'
 import Typography from '@material-ui/core/Typography'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
@@ -12,7 +13,7 @@ import {State} from '../index'
 import {getGames} from './gamesReducer'
 import {connect} from 'react-redux'
 import {lifecycle, compose} from 'recompose'
-import {Link} from "react-router-dom";
+import Button from '@material-ui/core/Button/'
 
 interface GamesProps {
   games: Game[]
@@ -32,7 +33,7 @@ export class GamesComponent extends Component<GamesProps> {
             ), this.props.games)
           }
         </List>
-        <Link to="/games/new">New Game</Link>
+        <Link to="/games/new"><Button color="primary" variant="raised">New Game</Button></Link>
       </div>
     )
   }
