@@ -10,8 +10,9 @@ import {AddFriend} from '../state/friends/AddFriend'
 import {InviteFriend} from '../state/friends/InviteFriend'
 import {connect} from 'react-redux'
 import {State} from '../state'
-import {isUserSignedIn} from '../state/auth/authReducer'
+import {isUserSignedIn, isEmailVerified} from '../state/auth/authReducer'
 import {EditAddress} from '../state/users/EditAddress'
+import {VerifyEmail} from '../state/auth/VerifyEmail'
 
 const NoMatch = () => <Typography variant="title" color="inherit">404</Typography>
 
@@ -23,14 +24,17 @@ const Toolbar = () =>
   </div>
 
 interface AppProps {
-  signedIn: boolean
+  signedIn: boolean,
+  verified: boolean
 }
 
-export const AppComponent: SFC<AppProps> = ({signedIn}) =>
+export const AppComponent: SFC<AppProps> = ({signedIn, verified}) =>
   <div>
     {
       signedIn
         ?
+        verified
+          ?
           <Fragment>
             <Toolbar/>
             <Switch>
@@ -45,13 +49,16 @@ export const AppComponent: SFC<AppProps> = ({signedIn}) =>
               <Route component={NoMatch}/>
             </Switch>
           </Fragment>
+          :
+          <VerifyEmail/>
         :
-          <SignIn/>
+        <SignIn/>
     }
   </div>
 
 const mapStateToProps = (state: State): AppProps => ({
-  signedIn: isUserSignedIn(state)
+  signedIn: isUserSignedIn(state),
+  verified: isEmailVerified(state)
 })
 
 export const App = connect(mapStateToProps)(AppComponent)

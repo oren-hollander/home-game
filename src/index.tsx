@@ -1,17 +1,17 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import {App} from './app/App'
-import {Route} from 'react-router-dom'
+import {Redirect, Route, Switch} from 'react-router-dom'
 import './index.css'
 import registerServiceWorker from './registerServiceWorker'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
 import { createStore, applyMiddleware} from 'redux'
-import { Provider} from 'react-redux'
-import { reducer } from './state/'
+import {connect, MapDispatchToProps, MapStateToProps, Provider} from 'react-redux'
+import {reducer, State} from './state/'
 import 'typeface-roboto'
-import {userSignedIn, userSignedOut} from './state/auth/authActions'
+import {userSignedIn, userSignedOut, verifyEmail} from './state/auth/authActions'
 import { createBrowserHistory } from 'history'
 import { connectRouter, routerMiddleware, ConnectedRouter } from 'connected-react-router'
 import {effectMiddleware, Effects, mergeEffects} from './effect/effect'
@@ -19,6 +19,11 @@ import {friendsEffects} from './state/friends/friendsActions'
 import {authEffects} from './state/auth/authActions'
 import {gamesEffects} from './state/games/gamesActions'
 import {usersEffects} from './state/users/usersActions'
+import {Component} from 'react'
+import {RouteComponentProps} from 'react-router'
+import Typography from '@material-ui/core/Typography'
+import {isEmailVerified} from './state/auth/authReducer'
+import {parse} from 'query-string'
 
 const history = createBrowserHistory()
 
@@ -67,45 +72,52 @@ firebase.auth().onAuthStateChanged(user => {
   }
 })
 
-// const ui = new firebaseui.state.auth.AuthUI(firebase.state.auth());
+interface AuthStateProps {
+  verified: boolean
+}
 
-// const uiConfig = {
-//   callbacks: {
-//     signInSuccessWithAuthResult: function(authResult: any, redirectUrl: any) {
-//       // User successfully signed in.
-//       // Return type determines whether we continue the redirect automatically
-//       // or whether we leave that to developer to handle.
-//       return true;
-//     },
-//     uiShown: function() {
-//       // The widget is rendered.
-//       // Hide the loader.
-//       // document.getElementById('loader')!.style.display = 'none';
-//     }
-//   },
-//   // Will use popup for IDP Providers sign-in flow instead of the default, redirect.
-//   signInFlow: 'popup',
-//   signInSuccessUrl: '<url-to-redirect-to-on-success>',
-//   signInOptions: [
-//     // Leave the lines as is for the providers you want to offer your users.
-//     firebase.state.auth.GoogleAuthProvider.PROVIDER_ID,
-//     firebase.state.auth.FacebookAuthProvider.PROVIDER_ID,
-//     firebase.state.auth.TwitterAuthProvider.PROVIDER_ID,
-//     firebase.state.auth.GithubAuthProvider.PROVIDER_ID,
-//     firebase.state.auth.EmailAuthProvider.PROVIDER_ID,
-//     firebase.state.auth.PhoneAuthProvider.PROVIDER_ID
-//   ],
-//   // Terms of service url.
-//   tosUrl: '<your-tos-url>'
-// };
+interface AuthDispatchProps {
+  verifyEmail: (oobCode: string) => void
+}
 
-// ui.start('#login', uiConfig);
+type AuthProps = RouteComponentProps<{}> & AuthStateProps & AuthDispatchProps
 
+class AuthComponent extends Component<AuthProps>{
+
+  componentDidMount(){
+    const query = parse(this.props.location.search)
+    if(query.mode === 'verifyEmail')
+      this.props.verifyEmail(query.oobCode)
+  }
+
+  render() {
+    if(this.props.verified)
+      return <Redirect to='/'/>
+
+    return <Typography>Verifying...</Typography>
+  }
+}
+
+const mapStateToProps: MapStateToProps<AuthStateProps, {}, State> = state => ({
+  verified: isEmailVerified(state)
+})
+
+const mapDispatchToProps: MapDispatchToProps<AuthDispatchProps, {}> = dispatch => ({
+  verifyEmail(oobCode: string) {
+    dispatch(verifyEmail(oobCode))
+  }
+})
+
+const Auth = connect(mapStateToProps, mapDispatchToProps)(AuthComponent)
 
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
-      <Route component={App}/>
+      <Switch>
+        https://homegm.app/auth?mode=verifyEmail&oobCode=DbO34r5N-fLcQ28ZJ0M3QGPzHsw_B2pwNeKMFk_3zs0AAAFkvpEEqw&apiKey=AIzaSyCL0jL94GPb7HvZxUgZdnpqqyx5liMeY3A&lang=en
+        <Route path="/auth" component={Auth}/>
+        <Route component={App}/>
+      </Switch>
     </ConnectedRouter>
   </Provider>,
   document.getElementById('root') as HTMLElement

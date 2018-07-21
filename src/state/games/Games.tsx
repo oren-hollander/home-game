@@ -14,6 +14,7 @@ import {getGames} from './gamesReducer'
 import {connect} from 'react-redux'
 import {lifecycle, compose} from 'recompose'
 import Button from '@material-ui/core/Button/'
+import AddIcon from '@material-ui/icons/Add'
 
 interface GamesProps {
   games: Game[]
@@ -33,7 +34,7 @@ export class GamesComponent extends Component<GamesProps> {
             ), this.props.games)
           }
         </List>
-        <Link to="/games/new"><Button color="primary" variant="raised">New Game</Button></Link>
+        <Link to="/games/new"><Button color="primary" variant="fab"><AddIcon/></Button></Link>
       </div>
     )
   }

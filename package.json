@@ -11,10 +11,12 @@
   "dependencies": {
     "@material-ui/core": "^1.2.1",
     "@material-ui/icons": "^1.1.0",
+    "@types/query-string": "^6.1.0",
     "connected-react-router": "^4.3.0",
     "firebase": "^5.0.4",
     "firebaseui": "^3.0.0",
     "lodash": "^4.17.10",
+    "query-string": "^6.1.0",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
     "react-redux": "^5.0.7",
@@ -28,7 +30,6 @@
     "typeface-roboto": "^0.0.54"
   },
   "devDependencies": {
-    "@types/recompose": "^0.26.1",
     "@types/jest": "^23.0.0",
     "@types/lodash": "^4.14.109",
     "@types/node": "^10.3.2",
@@ -37,6 +38,7 @@
     "@types/react-redux": "^6.0.2",
     "@types/react-router-dom": "^4.2.7",
     "@types/react-router-redux": "^5.0.15",
+    "@types/recompose": "^0.26.1",
     "mock-cloud-firestore": "^0.4.0",
     "typescript": "^2.9.1"
   }

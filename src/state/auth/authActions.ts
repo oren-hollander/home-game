@@ -5,6 +5,7 @@ import {Services} from '../../app/services'
 import {Effects} from '../../effect/effect'
 import {GetState} from '../index'
 
+export const SEND_EMAIL_VERIFICATION = 'auth/send-email-verification'
 export const VERIFY_EMAIL = 'auth/verify-email'
 export const EMAIL_VERIFIED = 'auth/email-verified'
 export const EMAIL_NOT_VERIFIED = 'auth/email-not-verified'
@@ -13,8 +14,11 @@ export const USER_SIGNED_OUT = 'auth/user-signed-out'
 export const SIGN_IN = 'auth/sign-in'
 export const SIGN_OUT = 'auth/sign-out'
 
+export const sendEmailVerification = () => ({type: SEND_EMAIL_VERIFICATION as typeof SEND_EMAIL_VERIFICATION})
+export type SendEmailVerification = ReturnType<typeof sendEmailVerification>
+
 const emailVerified = () => ({type: EMAIL_VERIFIED as typeof EMAIL_VERIFIED})
-export type EmailVerified  = ReturnType<typeof emailVerified>
+export type EmailVerified = ReturnType<typeof emailVerified>
 
 const emailNotVerified = (message: string) => ({type: EMAIL_NOT_VERIFIED as typeof EMAIL_NOT_VERIFIED, message})
 export type EmailNotVerified  = ReturnType<typeof emailNotVerified>
@@ -34,7 +38,11 @@ export type SignIn = ReturnType<typeof signIn>
 export const signOut = () => ({type: SIGN_OUT as typeof SIGN_OUT})
 export type SignOut = ReturnType<typeof signOut>
 
-export type AuthAction = VerifyEmail | EmailVerified | EmailNotVerified | UserSignedIn | UserSignedOut | SignIn | SignOut
+export type AuthAction = SendEmailVerification | VerifyEmail | EmailVerified | EmailNotVerified | UserSignedIn | UserSignedOut | SignIn | SignOut
+
+export const sendEmailVerificationEffect = async (verifyEmail: VerifyEmail, dispatch: Dispatch, getState: GetState, {auth}: Services) => {
+  auth.currentUser!.sendEmailVerification()
+}
 
 export const verifyEmailEffect = async (verifyEmail: VerifyEmail, dispatch: Dispatch, getState: GetState, {auth}: Services) => {
   try {
@@ -57,5 +65,6 @@ const signOutEffect = (signIn: SignOut, dispatch: Dispatch, getState: GetState, 
 export const authEffects: Effects = {
   [SIGN_IN]: signInEffect,
   [SIGN_OUT]: signOutEffect,
-  [VERIFY_EMAIL]: verifyEmailEffect
+  [VERIFY_EMAIL]: verifyEmailEffect,
+  [SEND_EMAIL_VERIFICATION]: sendEmailVerificationEffect
 }
