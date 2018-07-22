@@ -1,9 +1,9 @@
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-import {Dispatch} from 'redux'
+import {Dispatch, MiddlewareAPI} from 'redux'
 import {Services} from '../../app/services'
-import {Effects} from '../../effect/effect'
-import {GetState} from '../index'
+import {createEffectHandler} from '../../effect/effect'
+import {State} from '../index'
 
 export const SEND_EMAIL_VERIFICATION = 'auth/send-email-verification'
 export const VERIFY_EMAIL = 'auth/verify-email'
@@ -40,31 +40,31 @@ export type SignOut = ReturnType<typeof signOut>
 
 export type AuthAction = SendEmailVerification | VerifyEmail | EmailVerified | EmailNotVerified | UserSignedIn | UserSignedOut | SignIn | SignOut
 
-export const sendEmailVerificationEffect = async (verifyEmail: VerifyEmail, dispatch: Dispatch, getState: GetState, {auth}: Services) => {
+export const sendEmailVerificationEffect = async (verifyEmail: VerifyEmail, store: MiddlewareAPI<Dispatch, State>, {auth}: Services) => {
   auth.currentUser!.sendEmailVerification()
 }
 
-export const verifyEmailEffect = async (verifyEmail: VerifyEmail, dispatch: Dispatch, getState: GetState, {auth}: Services) => {
+export const verifyEmailEffect = async (verifyEmail: VerifyEmail, store: MiddlewareAPI<Dispatch, State>, {auth}: Services) => {
   try {
     await auth.applyActionCode(verifyEmail.oobCode)
-    dispatch(emailVerified())
+    store.dispatch(emailVerified())
   }
   catch (e) {
-    dispatch(emailNotVerified(e.message))
+    store.dispatch(emailNotVerified(e.message))
   }
 }
 
-const signInEffect = (signIn: SignIn, dispatch: Dispatch, getState: GetState, {auth}: Services) => {
+const signInEffect = (signIn: SignIn, store: MiddlewareAPI<Dispatch, State>, {auth}: Services) => {
   auth.signInWithEmailAndPassword(signIn.email, signIn.password)
 }
 
-const signOutEffect = (signIn: SignOut, dispatch: Dispatch, getState: GetState, {auth}: Services) => {
+const signOutEffect = (signIn: SignOut, store: MiddlewareAPI<Dispatch, State>, {auth}: Services) => {
   auth.signOut()
 }
 
-export const authEffects: Effects = {
+export const authEffects = createEffectHandler({
   [SIGN_IN]: signInEffect,
   [SIGN_OUT]: signOutEffect,
   [VERIFY_EMAIL]: verifyEmailEffect,
   [SEND_EMAIL_VERIFICATION]: sendEmailVerificationEffect
-}
+})

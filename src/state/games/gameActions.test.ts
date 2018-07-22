@@ -40,9 +40,12 @@ describe('game effects', () => {
         city: 'NY'
       }
     }
-    const dispatch = jest.fn()
-    const getState = jest.fn()
 
-    return createGameEffect(createGame(game), dispatch, getState, {db, auth: undefined!})
+    const store = {
+      dispatch: jest.fn(),
+      getState: jest.fn()
+    }
+
+    return createGameEffect(createGame(game), store, {db, auth: undefined!})
   })
 })

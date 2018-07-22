@@ -14,7 +14,7 @@ import 'typeface-roboto'
 import {userSignedIn, userSignedOut, verifyEmail} from './state/auth/authActions'
 import { createBrowserHistory } from 'history'
 import { connectRouter, routerMiddleware, ConnectedRouter } from 'connected-react-router'
-import {effectMiddleware, Effects, mergeEffects} from './effect/effect'
+import {createEffectsMiddleware, combineEffectHandlers, EffectHandler} from './effect/effect'
 import {friendsEffects} from './state/friends/friendsActions'
 import {authEffects} from './state/auth/authActions'
 import {gamesEffects} from './state/games/gamesActions'
@@ -49,13 +49,13 @@ const services = {
   auth: firebase.auth()
 }
 
-const effects: Effects = mergeEffects(friendsEffects, authEffects, gamesEffects, usersEffects)
+const effects: EffectHandler = combineEffectHandlers(friendsEffects, authEffects, gamesEffects, usersEffects)
 
 const store = createStore(
   connectRouter(history)(reducer),
   applyMiddleware(
     routerMiddleware(history),
-    effectMiddleware(effects, services)
+    createEffectsMiddleware(effects, services)
   )
 )
 
@@ -114,7 +114,6 @@ ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
       <Switch>
-        https://homegm.app/auth?mode=verifyEmail&oobCode=DbO34r5N-fLcQ28ZJ0M3QGPzHsw_B2pwNeKMFk_3zs0AAAFkvpEEqw&apiKey=AIzaSyCL0jL94GPb7HvZxUgZdnpqqyx5liMeY3A&lang=en
         <Route path="/auth" component={Auth}/>
         <Route component={App}/>
       </Switch>

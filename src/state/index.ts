@@ -16,8 +16,6 @@ export interface State {
   address: Address | null
 }
 
-export type GetState = () => State
-
 export type Action = AuthAction | GamesAction | FriendsAction
 
 export const reducer: (state: State, action: Action) => State = combineReducers({

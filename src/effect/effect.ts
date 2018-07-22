@@ -1,18 +1,42 @@
-import {Action, AnyAction, Dispatch, Store,} from "redux";
-import {Services} from '../app/services'
-import {reduce, assign} from 'lodash/fp'
+import {map} from 'lodash/fp'
+import {isArray, flatMap, isUndefined} from 'lodash/fp'
+import {Action, Dispatch, MiddlewareAPI} from 'redux'
 
-export type Effect = (action: AnyAction, dispatch: Dispatch, getState: () => any, services: object) => void
-
-export type Effects = {
-  [key: string]: (Effect | undefined)
+interface Services {
+  [key: string]: any
 }
 
-export const effectMiddleware = (effects: Effects, services: Services) => (store: Store) => (next: Dispatch) => (action: Action) : void => {
-  next(action)
-  let effect = effects[action.type]
-  if(effect)
-    effect(action, store.dispatch, store.getState, services)
+type Effect = (action: Action<string>, store: MiddlewareAPI, services: Services) => void
+export type EffectHandler = (type: string) => Effect[]
+
+export interface EffectMap {
+  [key: string]: Effect | Effect[] | undefined
 }
 
-export const mergeEffects = (...effects: Effects[]): Effects => reduce((effects, effect) => assign(effects, effect), {}, effects)
+const all = Promise.all.bind(Promise)
+const invokeEffect = (action: Action<string>, store: MiddlewareAPI, services: Services) => (effect: Effect) => effect(action, store, services)
+
+export const createEffectsMiddleware = (effectHandler: EffectHandler, services: Services) => (store: MiddlewareAPI) => (next: Dispatch) => (action: Action<string>) =>
+  new Promise(resolve => {
+    next(action)
+    resolve(action.type)
+  })
+    .then(effectHandler)
+    .then(map(invokeEffect(action, store, services)))
+    .then(all)
+
+
+
+const toArray: (value: Effect | Effect[] | undefined) => Effect[] = value => {
+  if (isArray(value)) {
+    return value
+  } else if (isUndefined(value)) {
+    return []
+  }
+
+  return [value]
+}
+
+export const createEffectHandler: (effectMap: EffectMap) => EffectHandler = effectMap => (actionType => toArray(effectMap[actionType]))
+
+export const combineEffectHandlers = (...effectHandler: EffectHandler[]) => (actionType: string) => flatMap(effect => effect(actionType), effectHandler)

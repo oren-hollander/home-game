@@ -1,12 +1,10 @@
-// import 'firebase/firestore'
-// import {Effect} from 'redux-saga'
-// import * as firebase from 'firebase/app'
 import {Game, Invitation, InvitationResponse} from '../../model/types'
-import {Dispatch} from 'redux'
-import {GetState} from '../index'
+import {Dispatch, MiddlewareAPI} from 'redux'
+import {State} from '../index'
 import {Services} from '../../app/services'
 import {getUserId} from '../auth/authReducer'
 import {map} from 'lodash/fp'
+import {createEffectHandler} from '../../effect/effect'
 
 export const INVITE = 'games/invite'
 export const INVITATION_SENT = 'games/invitation-sent'
@@ -33,7 +31,7 @@ export type LoadGames = ReturnType<typeof loadGames>
 const setGames = (games: Game[]) => ({type: SET_GAMES as typeof SET_GAMES, games})
 export type SetGames = ReturnType<typeof setGames>
 
-export const createGameEffect = async (createGame: CreateGame, dispatch: Dispatch, getState: GetState, {db}: Services) => {
+export const createGameEffect = async (createGame: CreateGame, store: MiddlewareAPI<Dispatch, State>, {db}: Services) => {
   console.log('create game effect', createGame.payload)
   try {
     const ref = await db.collection('users').doc(createGame.payload.hostId).collection('games').add(createGame.payload)
@@ -44,7 +42,7 @@ export const createGameEffect = async (createGame: CreateGame, dispatch: Dispatc
   }
 }
 
-export const inviteEffect = (invite: Invite, dispatch: Dispatch, getState: GetState, {db}: Services) => {
+export const inviteEffect = (invite: Invite, store: MiddlewareAPI<Dispatch, State>, {db}: Services) => {
   db.runTransaction(async tx => {
     const {gameId, hostId, playerId} = invite.payload
     const hostInvitation = db.collection('users').doc(hostId).collection('games').doc(gameId).collection('invitations').doc(playerId)
@@ -55,13 +53,13 @@ export const inviteEffect = (invite: Invite, dispatch: Dispatch, getState: GetSt
   })
 }
 
-export const respondToInvitationEffect = async (respondToInvitation: RespondToInvitation, dispatch: Dispatch, getState: GetState, {db}: Services) => {
+export const respondToInvitationEffect = async (respondToInvitation: RespondToInvitation, store: MiddlewareAPI<Dispatch, State>, {db}: Services) => {
   const {hostId, gameId, playerId} = respondToInvitation.payload
   await db.collection('users').doc(hostId).collection('games').doc(gameId).collection('invitations').doc(playerId).set(respondToInvitation.payload)
 }
 
-export const loadGamesEffect = async (loadGames: LoadGames, dispatch: Dispatch, getState: GetState, {db}: Services) => {
-  const userId = getUserId(getState())
+export const loadGamesEffect = async (loadGames: LoadGames, store: MiddlewareAPI<Dispatch, State>, {db}: Services) => {
+  const userId = getUserId(store.getState())
   const querySnapshot = await db.collection('users').doc(userId!).collection('games').get()
   const games: Game[] = map(doc => {
     const game = doc.data()
@@ -77,14 +75,14 @@ export const loadGamesEffect = async (loadGames: LoadGames, dispatch: Dispatch, 
       notes: game.notes
     }
   }, querySnapshot.docs)
-  dispatch(setGames(games))
+  store.dispatch(setGames(games))
 }
 
-export const gamesEffects = {
+export const gamesEffects = createEffectHandler({
   [CREATE_GAME]: createGameEffect,
   [INVITE]: inviteEffect,
   [RESPOND_TO_INVITATION]: respondToInvitationEffect,
   [LOAD_GAMES]: loadGamesEffect
-}
+})
 
 export type GamesAction = Invite | RespondToInvitation | InvitationSent | CreateGame | LoadGames | SetGames
