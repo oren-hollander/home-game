@@ -54,6 +54,6 @@ export interface Address {
 export interface User {
   readonly userId: string
   readonly email: string
-  readonly name?: string
+  readonly name: string
   readonly address?: Address
 }

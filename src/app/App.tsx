@@ -8,16 +8,17 @@ import {NewGame} from '../state/games/NewGame'
 import {SignIn} from '../state/auth/SignIn'
 import {AddFriend} from '../state/friends/AddFriend'
 import {InviteFriend} from '../state/friends/InviteFriend'
-import {connect} from 'react-redux'
+import {connect, MapStateToProps} from 'react-redux'
 import {State} from '../state'
-import {isUserSignedIn, isEmailVerified} from '../state/auth/authReducer'
+import {isUserSignedIn, isEmailVerified, getUserName} from '../state/auth/authReducer'
 import {EditAddress} from '../state/users/EditAddress'
 import {VerifyEmail} from '../state/auth/VerifyEmail'
 
 const NoMatch = () => <Typography variant="title" color="inherit">404</Typography>
 
-const Toolbar = () =>
+const Toolbar: SFC<{name: string}> = ({name}) =>
   <div>
+    <Typography>{name}</Typography>
     <SignOut/>
     <Link to='/games'><button type="button">Games</button></Link>
     <Link to='/inviteFriend'><button>Invite</button></Link>
@@ -25,10 +26,11 @@ const Toolbar = () =>
 
 interface AppProps {
   signedIn: boolean,
-  verified: boolean
+  verified: boolean,
+  name?: string
 }
 
-export const AppComponent: SFC<AppProps> = ({signedIn, verified}) =>
+export const AppComponent: SFC<AppProps> = ({signedIn, verified, name}) =>
   <div>
     {
       signedIn
@@ -36,7 +38,7 @@ export const AppComponent: SFC<AppProps> = ({signedIn, verified}) =>
         verified
           ?
           <Fragment>
-            <Toolbar/>
+            <Toolbar name={name!}/>
             <Switch>
               <Route exact={true} path='/'>
                 {() => <Redirect to='/games'/>}
@@ -56,9 +58,10 @@ export const AppComponent: SFC<AppProps> = ({signedIn, verified}) =>
     }
   </div>
 
-const mapStateToProps = (state: State): AppProps => ({
+const mapStateToProps: MapStateToProps<AppProps, {}, {}> = (state: State): AppProps => ({
   signedIn: isUserSignedIn(state),
-  verified: isEmailVerified(state)
+  verified: isEmailVerified(state),
+  name: isUserSignedIn(state) ? getUserName(state) : ''
 })
 
 export const App = connect(mapStateToProps)(AppComponent)

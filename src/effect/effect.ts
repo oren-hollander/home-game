@@ -1,12 +1,12 @@
 import {map} from 'lodash/fp'
 import {isArray, flatMap, isUndefined} from 'lodash/fp'
-import {Action, Dispatch, MiddlewareAPI} from 'redux'
+import {Action, AnyAction, Dispatch, MiddlewareAPI} from 'redux'
 
 interface Services {
   [key: string]: any
 }
 
-type Effect = (action: Action<string>, store: MiddlewareAPI, services: Services) => void
+export type Effect<T extends Action<string> = AnyAction> = (action: T, store: MiddlewareAPI, services: Services) => void
 export type EffectHandler = (type: string) => Effect[]
 
 export interface EffectMap {

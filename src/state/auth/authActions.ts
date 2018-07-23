@@ -4,6 +4,8 @@ import {Dispatch, MiddlewareAPI} from 'redux'
 import {Services} from '../../app/services'
 import {createEffectHandler} from '../../effect/effect'
 import {State} from '../index'
+import {User} from '../../model/types'
+import {setUser} from '../users/usersActions'
 
 export const SEND_EMAIL_VERIFICATION = 'auth/send-email-verification'
 export const VERIFY_EMAIL = 'auth/verify-email'
@@ -62,9 +64,17 @@ const signOutEffect = (signIn: SignOut, store: MiddlewareAPI<Dispatch, State>, {
   auth.signOut()
 }
 
+
+const userSignedInEffect = async (userSignedIn: UserSignedIn, store: MiddlewareAPI<Dispatch, State>, {db}: Services) => {
+  const userSnapshot = await db.collection('users').doc(userSignedIn.user.uid).get()
+  const user: User = userSnapshot.data()! as User
+  store.dispatch(setUser(user))
+}
+
 export const authEffects = createEffectHandler({
   [SIGN_IN]: signInEffect,
   [SIGN_OUT]: signOutEffect,
   [VERIFY_EMAIL]: verifyEmailEffect,
-  [SEND_EMAIL_VERIFICATION]: sendEmailVerificationEffect
+  [SEND_EMAIL_VERIFICATION]: sendEmailVerificationEffect,
+  [USER_SIGNED_IN]: userSignedInEffect
 })
