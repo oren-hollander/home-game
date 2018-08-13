@@ -4,21 +4,19 @@ import {Link} from 'react-router-dom'
 import Typography from '@material-ui/core/Typography'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
-import ListItemText from '@material-ui/core/ListItemText'
 import {map} from 'lodash/fp'
 import {Game} from '../../model/types'
-import {Dispatch} from 'redux'
 import {listenToGames, unlistenToGames} from './gamesActions'
-import {State} from '../index'
 import {getGames} from './gamesReducer'
-import {connect} from 'react-redux'
-import {lifecycle, compose} from 'recompose'
 import Button from '@material-ui/core/Button/'
 import AddIcon from '@material-ui/icons/Add'
+import { listen } from '../../data/listen'
+import { Date } from './Date'
 
 interface GamesProps {
-  games: Game[]
+  data: Game[]
 }
+
 
 export class GamesComponent extends Component<GamesProps> {
   render() {
@@ -28,10 +26,12 @@ export class GamesComponent extends Component<GamesProps> {
         <List component="nav">
           {
             map(game => (
-              <ListItem>
-                <ListItemText primary={game.date}/>
+              <ListItem key={game.gameId}>
+                <Date day={game.date.day} month={game.date.month} year={game.date.year}/>
+                {game.gameId}
+                {/* <ListItemText primary={'game.date'}/> */}
               </ListItem>
-            ), this.props.games)
+            ), this.props.data)
           }
         </List>
         <Link to="/games/new"><Button color="primary" variant="fab"><AddIcon/></Button></Link>
@@ -40,33 +40,4 @@ export class GamesComponent extends Component<GamesProps> {
   }
 }
 
-
-const mapStateToProps = (state: State) => ({
-  games: getGames(state)
-})
-
-interface LoadGames {
-  listenToGames: () => void
-  unlistenToGames: () => void
-}
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  listenToGames: () => {
-    dispatch(listenToGames())
-  },
-  unlistenToGames: () => {
-    dispatch(unlistenToGames())
-  }
-})
-
-export const Games = compose(
-  connect(mapStateToProps, mapDispatchToProps),
-  lifecycle<LoadGames, {}>({
-    componentDidMount() {
-      this.props.listenToGames()
-    },
-    componentWillUnmount() {
-      this.props.unlistenToGames()
-    }
-  })
-)(GamesComponent)
+export const Games = listen(listenToGames(), unlistenToGames(), getGames)(GamesComponent)

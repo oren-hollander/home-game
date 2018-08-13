@@ -16,7 +16,7 @@ export const CallbackStore: () => CallbackStore = () => {
   let callbacks: Callbacks = {}
 
   const add = (name: string, callback: Callback) => {
-    callbacks = assign({name: callback}, callbacks)
+    callbacks = assign({[name]: callback}, callbacks)
   }
 
   const get = (name: string) => callbacks[name]
