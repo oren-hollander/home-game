@@ -58,7 +58,7 @@ export const AppComponent: SFC<AppProps> = ({signedIn, verified, name}) =>
     }
   </div>
 
-const mapStateToProps: MapStateToProps<AppProps, {}, {}> = (state: State): AppProps => ({
+const mapStateToProps: MapStateToProps<AppProps, {}, State> = (state: State): AppProps => ({
   signedIn: isUserSignedIn(state),
   verified: isEmailVerified(state),
   name: isUserSignedIn(state) ? getUserName(state) : ''

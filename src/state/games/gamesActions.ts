@@ -10,7 +10,8 @@ export const INVITE = 'games/invite'
 export const INVITATION_SENT = 'games/invitation-sent'
 export const RESPOND_TO_INVITATION = 'games/respond-to-invitation'
 export const CREATE_GAME = 'games/create-game'
-export const LOAD_GAMES = 'games/load'
+export const LISTEN_TO_GAMES = 'games/listen'
+export const UNLISTEN_TO_GAMES = 'games/unlisten'
 export const SET_GAMES = 'games/set'
 
 export const createGame = (game: Game) => ({type: CREATE_GAME as typeof CREATE_GAME, payload: game})
@@ -25,20 +26,20 @@ export type RespondToInvitation = ReturnType<typeof respondToInvitation>
 const invitationSent = () => ({type: INVITATION_SENT as typeof INVITATION_SENT})
 export type InvitationSent = ReturnType<typeof invitationSent>
 
-export const loadGames = () => ({type: LOAD_GAMES as typeof LOAD_GAMES})
-export type LoadGames = ReturnType<typeof loadGames>
+export const listenToGames = () => ({ type: LISTEN_TO_GAMES as typeof LISTEN_TO_GAMES })
+export type ListenToGames = ReturnType<typeof listenToGames>
+
+export const unlistenToGames = () => ({ type: UNLISTEN_TO_GAMES as typeof UNLISTEN_TO_GAMES })
+export type UnlistenToGames = ReturnType<typeof unlistenToGames>
 
 const setGames = (games: Game[]) => ({type: SET_GAMES as typeof SET_GAMES, games})
 export type SetGames = ReturnType<typeof setGames>
 
 export const createGameEffect = async (createGame: CreateGame, store: MiddlewareAPI<Dispatch, State>, {db}: Services) => {
-  console.log('create game effect', createGame.payload)
   try {
-    const ref = await db.collection('users').doc(createGame.payload.hostId).collection('games').add(createGame.payload)
-    console.log('ref id', ref.id)
+    await db.collection('users').doc(createGame.payload.hostId).collection('games').add(createGame.payload)
   }
   catch (e) {
-    console.log('error', e)
   }
 }
 
@@ -58,31 +59,25 @@ export const respondToInvitationEffect = async (respondToInvitation: RespondToIn
   await db.collection('users').doc(hostId).collection('games').doc(gameId).collection('invitations').doc(playerId).set(respondToInvitation.payload)
 }
 
-export const loadGamesEffect = async (loadGames: LoadGames, store: MiddlewareAPI<Dispatch, State>, {db}: Services) => {
-  const userId = getUserId(store.getState())
-  const querySnapshot = await db.collection('users').doc(userId!).collection('games').get()
-  const games: Game[] = map(doc => {
-    const game = doc.data()
-    return {
-      gameId: game.gameId,
-      hostId: game.hostId,
-      type: game.type,
-      stakes: game.stakes,
-      maxPlayers: game.maxPlayers,
-      date: game.date,
-      time: game.time,
-      address: game.address,
-      notes: game.notes
-    }
-  }, querySnapshot.docs)
-  store.dispatch(setGames(games))
+export const unlistenToGamesEffect = async (unlistenToGames: UnlistenToGames, store: MiddlewareAPI<Dispatch, State>, { callbacks }: Services) => {
+  callbacks.callAndRemove('unsubscribe-games')
+}
+
+export const listenToGamesEffect = async (listenToGames: ListenToGames, store: MiddlewareAPI<Dispatch, State>, {db, callbacks}: Services) => {
+  const userId = getUserId(store.getState())!
+  const unsubscribe = db.collection('users').doc(userId).collection('games').onSnapshot(snapshot => {
+    store.dispatch(setGames(map(doc => doc.data() as Game, snapshot.docs) ))
+  })
+
+  callbacks.add('unsubscribe-games', unsubscribe)
 }
 
 export const gamesEffects = createEffectHandler({
   [CREATE_GAME]: createGameEffect,
   [INVITE]: inviteEffect,
   [RESPOND_TO_INVITATION]: respondToInvitationEffect,
-  [LOAD_GAMES]: loadGamesEffect
+  [LISTEN_TO_GAMES]: listenToGamesEffect,
+  [UNLISTEN_TO_GAMES]: unlistenToGamesEffect
 })
 
-export type GamesAction = Invite | RespondToInvitation | InvitationSent | CreateGame | LoadGames | SetGames
+export type GamesAction = Invite | RespondToInvitation | InvitationSent | CreateGame | ListenToGames |UnlistenToGames | SetGames

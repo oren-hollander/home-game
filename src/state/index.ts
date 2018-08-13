@@ -1,4 +1,4 @@
-import { combineReducers} from 'redux'
+import {combineReducers, Reducer} from 'redux'
 import { reducer as authReducer } from './auth/authReducer'
 import {AuthAction} from './auth/authActions'
 import {AuthState} from './auth/authReducer'
@@ -18,7 +18,7 @@ export interface State {
 
 export type Action = AuthAction | GamesAction | FriendsAction
 
-export const reducer: (state: State, action: Action) => State = combineReducers({
+export const reducer: Reducer<State, Action> = combineReducers({
   auth: authReducer,
   friends: friendsReducer,
   games: gamesReducer,

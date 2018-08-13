@@ -8,7 +8,7 @@ import ListItemText from '@material-ui/core/ListItemText'
 import {map} from 'lodash/fp'
 import {Game} from '../../model/types'
 import {Dispatch} from 'redux'
-import {loadGames} from './gamesActions'
+import {listenToGames, unlistenToGames} from './gamesActions'
 import {State} from '../index'
 import {getGames} from './gamesReducer'
 import {connect} from 'react-redux'
@@ -46,12 +46,16 @@ const mapStateToProps = (state: State) => ({
 })
 
 interface LoadGames {
-  loadGames: () => void
+  listenToGames: () => void
+  unlistenToGames: () => void
 }
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  loadGames: () => {
-    dispatch(loadGames())
+  listenToGames: () => {
+    dispatch(listenToGames())
+  },
+  unlistenToGames: () => {
+    dispatch(unlistenToGames())
   }
 })
 
@@ -59,7 +63,10 @@ export const Games = compose(
   connect(mapStateToProps, mapDispatchToProps),
   lifecycle<LoadGames, {}>({
     componentDidMount() {
-      this.props.loadGames()
+      this.props.listenToGames()
+    },
+    componentWillUnmount() {
+      this.props.unlistenToGames()
     }
   })
 )(GamesComponent)

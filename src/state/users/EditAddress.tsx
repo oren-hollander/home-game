@@ -47,11 +47,11 @@ class EditAddressComponent extends Component<EditAddressProps, Address> {
   }
 }
 
-const mapStateToProps: MapStateToProps<EditAddressStateProps, never, State> = state => ({
+const mapStateToProps: MapStateToProps<EditAddressStateProps, {}, State> = state => ({
   address: getAddress(state)
 })
 
-const mapDispatchToProps: MapDispatchToProps<EditAddressDispatchProps, never> = dispatch => ({
+const mapDispatchToProps: MapDispatchToProps<EditAddressDispatchProps, {}> = dispatch => ({
   setAddress: (address: Address) => dispatch(updateAddress(address))
 })
 

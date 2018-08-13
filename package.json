@@ -40,6 +40,6 @@
     "@types/react-router-redux": "^5.0.15",
     "@types/recompose": "^0.26.1",
     "mock-cloud-firestore": "^0.4.0",
-    "typescript": "^2.9.1"
+    "typescript": "^3.0.1"
   }
 }

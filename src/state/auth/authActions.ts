@@ -1,8 +1,8 @@
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-import {Dispatch, MiddlewareAPI} from 'redux'
+import {Action, Dispatch, MiddlewareAPI} from 'redux'
 import {Services} from '../../app/services'
-import {createEffectHandler} from '../../effect/effect'
+import {createEffectHandler, Effect, EffectMap} from '../../effect/effect'
 import {State} from '../index'
 import {User} from '../../model/types'
 import {setUser} from '../users/usersActions'
@@ -42,11 +42,11 @@ export type SignOut = ReturnType<typeof signOut>
 
 export type AuthAction = SendEmailVerification | VerifyEmail | EmailVerified | EmailNotVerified | UserSignedIn | UserSignedOut | SignIn | SignOut
 
-export const sendEmailVerificationEffect = async (verifyEmail: VerifyEmail, store: MiddlewareAPI<Dispatch, State>, {auth}: Services) => {
+export const sendEmailVerificationEffect: Effect<VerifyEmail> = async (verifyEmail: VerifyEmail, store: MiddlewareAPI<Dispatch, State>, {auth}: Services) => {
   auth.currentUser!.sendEmailVerification()
 }
 
-export const verifyEmailEffect = async (verifyEmail: VerifyEmail, store: MiddlewareAPI<Dispatch, State>, {auth}: Services) => {
+export const verifyEmailEffect: Effect<VerifyEmail> = async (verifyEmail: VerifyEmail, store: MiddlewareAPI<Dispatch, State>, {auth}: Services) => {
   try {
     await auth.applyActionCode(verifyEmail.oobCode)
     store.dispatch(emailVerified())
@@ -56,25 +56,26 @@ export const verifyEmailEffect = async (verifyEmail: VerifyEmail, store: Middlew
   }
 }
 
-const signInEffect = (signIn: SignIn, store: MiddlewareAPI<Dispatch, State>, {auth}: Services) => {
-  auth.signInWithEmailAndPassword(signIn.email, signIn.password)
+const signInEffect: Effect<SignIn> = (signIn, store, services) => {
+  services.auth.signInWithEmailAndPassword(signIn.email, signIn.password)
 }
 
-const signOutEffect = (signIn: SignOut, store: MiddlewareAPI<Dispatch, State>, {auth}: Services) => {
+const signOutEffect: Effect<SignOut> = (signOut, store, {auth}) => {
   auth.signOut()
 }
 
-
-const userSignedInEffect = async (userSignedIn: UserSignedIn, store: MiddlewareAPI<Dispatch, State>, {db}: Services) => {
+const userSignedInEffect: Effect<UserSignedIn> = async (userSignedIn, store, {db}) => {
   const userSnapshot = await db.collection('users').doc(userSignedIn.user.uid).get()
   const user: User = userSnapshot.data()! as User
   store.dispatch(setUser(user))
 }
 
-export const authEffects = createEffectHandler({
+const x: EffectMap<Action<string>> = {
   [SIGN_IN]: signInEffect,
   [SIGN_OUT]: signOutEffect,
   [VERIFY_EMAIL]: verifyEmailEffect,
   [SEND_EMAIL_VERIFICATION]: sendEmailVerificationEffect,
   [USER_SIGNED_IN]: userSignedInEffect
-})
+}
+
+export const authEffects = createEffectHandler(x)

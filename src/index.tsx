@@ -24,6 +24,7 @@ import {RouteComponentProps} from 'react-router'
 import Typography from '@material-ui/core/Typography'
 import {isEmailVerified} from './state/auth/authReducer'
 import {parse} from 'query-string'
+import {CallbackStore} from './state/callbackStore/callbackStore'
 
 const history = createBrowserHistory()
 
@@ -46,7 +47,8 @@ firestore.settings(settings)
 
 const services = {
   db: firestore,
-  auth: firebase.auth()
+  auth: firebase.auth(),
+  callbacks: CallbackStore()
 }
 
 const effects: EffectHandler = combineEffectHandlers(friendsEffects, authEffects, gamesEffects, usersEffects)
