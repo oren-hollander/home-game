@@ -11,7 +11,7 @@ import {InviteFriend} from '../state/friends/InviteFriend'
 import {connect, MapStateToProps} from 'react-redux'
 import {State} from '../state'
 import {isUserSignedIn, isEmailVerified, getUserName} from '../state/auth/authReducer'
-import {EditAddress} from '../state/users/EditAddress'
+import {AddAddress} from '../state/addresses/AddAddress'
 import {VerifyEmail} from '../state/auth/VerifyEmail'
 
 const NoMatch = () => <Typography variant="title" color="inherit">404</Typography>
@@ -47,7 +47,7 @@ export const AppComponent: SFC<AppProps> = ({signedIn, verified, name}) =>
               <Route path='/games' component={Games}/>
               <Route path='/addFriend/:playerId' component={AddFriend}/>
               <Route path='/inviteFriend' component={InviteFriend}/>
-              <Route path='/address' component={EditAddress}/>
+              <Route path='/address' component={AddAddress}/>
               <Route component={NoMatch}/>
             </Switch>
           </Fragment>

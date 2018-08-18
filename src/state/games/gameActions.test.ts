@@ -36,6 +36,7 @@ describe('game effects', () => {
       date: {year: 2018, month: 7, day: 4},
       time: {hour: 20, minute: 45},
       address: {
+        addressId: 'home',
         houseNumber: '42b',
         street: 'main',
         city: 'NY'

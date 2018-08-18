@@ -9,7 +9,7 @@ import MenuItem from '@material-ui/core/MenuItem/MenuItem'
 import {GameType} from '../../model/types'
 import TextField from '@material-ui/core/TextField/TextField'
 import Button from '@material-ui/core/es/Button'
-import {hasAddress} from '../users/usersReducer'
+import {getAddressCount} from '../addresses/addressesReducer'
 import {State} from '../index'
 import {Link} from 'react-router-dom'
 
@@ -23,41 +23,10 @@ interface NewGameState {
 }
 
 interface NewGameProps {
-  hasAddress: boolean
+  addressCount: number
 }
 
 type StateKey = keyof NewGameState
-
-// type AddressComponentProps = {
-//   value: Address,
-//   onChange: (address: Address) => void
-// }
-
-// class AddressEditor extends Component<AddressComponentProps, Address> {
-//   state: Address = {
-//     houseNumber: '',
-//     street: '',
-//     city: '',
-//     notes: ''
-//   }
-//
-//   change = (key: keyof Address) => (event: ChangeEvent<HTMLInputElement>) => {
-//     this.setState({[key]: event.target.value} as {}, () => {
-//       this.props.onChange(this.state)
-//     })
-//   }
-//
-//   render() {
-//     return (
-//       <Fragment>
-//         <TextField margin='normal' label='House Number' onChange={this.change('houseNumber')}/>
-//         <TextField margin='normal' label='Street' />
-//         <TextField margin='normal' label='City' />
-//         <TextField margin='normal' label='Notes' onChange={this.change('notes')}/>
-//       </Fragment>
-//     )
-//   }
-// }
 
 export class NewGameComponent extends Component<NewGameProps, NewGameState> {
   state: NewGameState = {
@@ -77,16 +46,12 @@ export class NewGameComponent extends Component<NewGameProps, NewGameState> {
     this.setState({[key]: Number.parseInt(event.target.value)} as {})
   }
 
-  // setAddress = (address: Address) => {
-  //   this.setState({address})
-  // }
-
   render() {
-    if(!this.props.hasAddress) {
+    if (this.props.addressCount === 0) {
       return <div>
-        You must hav an address
+        You must have an address
         <Button variant="contained" color="primary">
-          <Link to="/address">Edit Address</Link>
+          <Link to="/address">Add Address</Link>
         </Button>
       </div>
     }
@@ -115,7 +80,7 @@ export class NewGameComponent extends Component<NewGameProps, NewGameState> {
 }
 
 const mapStateToProps: MapStateToProps<NewGameProps, {}, State> = state => ({
-  hasAddress: hasAddress(state)
+  addressCount: getAddressCount(state)
 })
 
 export const NewGame = connect(mapStateToProps)(NewGameComponent)

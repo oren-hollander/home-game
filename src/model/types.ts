@@ -5,14 +5,14 @@ export interface Stakes {
   readonly bigBlind: number
 }
 
-export type InvitationStatus = Time | 'approved' | 'declined'
+export type InvitationStatus = 'approved' | 'declined'
 
 export interface InvitationResponse {
   readonly hostId: string
   readonly gameId: string
   readonly playerId: string
   readonly status: InvitationStatus
-  readonly arriveTime: Time
+  readonly notes: string
 }
 
 export interface Invitation {
@@ -45,6 +45,7 @@ export interface Game {
 }
 
 export interface Address {
+  readonly addressId: string
   readonly houseNumber: string
   readonly street: string
   readonly city: string
@@ -55,5 +56,4 @@ export interface User {
   readonly userId: string
   readonly email: string
   readonly name: string
-  readonly address?: Address
 }
