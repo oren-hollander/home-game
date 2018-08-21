@@ -1,3 +1,7 @@
+import * as firebase from 'firebase/app'
+
+type Timestamp = firebase.firestore.Timestamp
+
 export type GameType = 'NLH' | 'PLO'
 
 export interface Stakes { 
@@ -12,7 +16,8 @@ export interface InvitationResponse {
   readonly gameId: string
   readonly playerId: string
   readonly status: InvitationStatus
-  readonly notes: string
+  readonly timestamp: Timestamp
+  readonly notes?: string
 }
 
 export interface Invitation {
@@ -38,14 +43,13 @@ export interface Game {
   readonly type: GameType
   readonly stakes: Stakes
   readonly maxPlayers: number
-  readonly date: Date
-  readonly time: Time
+  readonly timestamp: Timestamp
   readonly address: Address
   readonly notes?: string
 }
 
 export interface Address {
-  readonly addressId: string
+  readonly label: string
   readonly houseNumber: string
   readonly street: string
   readonly city: string
@@ -54,6 +58,5 @@ export interface Address {
 
 export interface User {
   readonly userId: string
-  readonly email: string
   readonly name: string
 }

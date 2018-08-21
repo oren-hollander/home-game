@@ -1,98 +1,71 @@
 import { Game, InvitationStatus, User, Address, Invitation, InvitationResponse } from '../model/types'
 import { GamesDB, GamesEvent, GameEvent } from './types'
-import { set, map, uniqueId, concat, without, update, forEach } from 'lodash/fp'
+import { map, uniqueId, concat } from 'lodash/fp'
+import * as firebase from 'firebase/app'
+import { MemDB } from './memDB'
+
+const Timestamp = firebase.firestore.Timestamp
 
 export const GamesTestDB: () => GamesDB = () => {
 
-  interface GameData {
-    game: Game,
-    outgoingInvitations: string[]
-    responses: InvitationResponse[]
-    notifications: GameEvent[]
-  }
-
-  interface GamesData {
-    [gameId: string]: GameData
-  }
-
-  interface UserData {
-    user: User,
-    addresses: Address[],
-    games: GamesData,
-    friends: string[]
-    incomingInvitations: Invitation[]
-    notifications: GamesEvent[]
-  }
-
-  interface UsersCollection {
-    readonly [key: string]: UserData
-  }
-
-  let users: UsersCollection = {}
+  const db = MemDB()
 
   const createUser = async (name: string, email: string) => {
     const userId = uniqueId('user-')
-    const user: UserData = {
-      user: {
-        userId,
-        name,
-        email
-      },
-      addresses: [],
-      games: {},
-      friends: [],
-      incomingInvitations: [],
-      notifications: []
+
+    const user: User = {
+      userId,
+      name,
+      email
     }
 
-    users = set(userId, user, users)
+    db.collection('users').doc('user').set(user)
     return userId
   }
   
-  const getUser = async (userId: string) => users[userId].user
+  const getUser = async (userId: string) => {
+    const user = (await db.collection('users').doc(userId).get())! as User
+    return user
+  }
 
   const createAddress = async (userId: string, address: Address) => {
-    users = update([userId, 'addresses'], concat([address]), users)
+    db.collection('users').doc(userId).collection('addresses').doc(address.addressId).set(address)
   }
   
-  const getAddresses = async (userId: string) => users[userId].addresses
+  const getAddresses = async (userId: string) => {
+    const docs = await db.collection('users').doc(userId).collection('addresses').get() 
+    return docs as Address[] 
+  } 
 
   const connectFriend = async (userId: string, friendUserId: string) => {
-    users = update([userId, 'friends'], concat([friendUserId]), users)
-    users = update([friendUserId, 'friends'], concat([userId]), users)
+    db.collection('users').doc(userId).collection('friends').doc(friendUserId).set({})
+    db.collection('users').doc(friendUserId).collection('friends').doc(userId).set({})
   }
 
   const addFriend = async (userId: string, friendUserId: string) => {
-    users = update([userId, 'friends'], concat([friendUserId]), users)
+    db.collection('users').doc(userId).collection('friends').doc(friendUserId).set({})
   }
 
   const removeFriend = async (userId: string, friendUserId: string) => {
-    users = update([userId, 'friends'], without([friendUserId]), users)
+    db.collection('users').doc(userId).collection('friends').doc(friendUserId).delete()
   }
 
   const createGame = async (game: Game) => {
     const gameId = uniqueId('game-')
-    const gameData: GameData = {
-      game: set('gameId', gameId, game),
-      outgoingInvitations: [],
-      responses: [],
-      notifications: []
-    }
-
-    users = set([game.hostId, 'games', gameId], gameData, users)
+    db.collection('users').doc(game.hostId).collection('games').doc(gameId).set(game)
     return gameId
   }
 
   const inviteToGame = async (userId: string, gameId: string, playerId: string) => {
-    users = set([userId, 'games', gameId, 'outgoingInvitations'], concat([playerId]), users)
-    const invitation = {
+    await db.collection('users').doc(userId).collection('games').doc(gameId).collection('invitations').doc(playerId).set({})
+
+    const invitationId = uniqueId('invitation-')
+    const invitation: Invitation = {
       hostId: userId,
       gameId,
       playerId
     }
-    users = set([playerId, 'incomingInvitations'], concat([invitation]), users)
-    notifyGameSubscribers(userId, gameId)
-    notifyGamesSubscribers(playerId)
+    await db.collection('users').doc(playerId).collection('invitations').doc(invitationId).set(invitation)
   }
 
   const respondToGameInvitation = async (userId: string, hostId: string, gameId: string, status: InvitationStatus, notes: string) => {
@@ -101,47 +74,74 @@ export const GamesTestDB: () => GamesDB = () => {
       hostId,
       playerId: userId,
       status,
-      notes
+      notes,
+      timestamp: Timestamp.now()
     }
 
-    users = update([hostId, 'games', gameId, 'responses'], concat([response]), users)
-    notifyGameSubscribers(hostId, gameId)
+    db.collection('users').doc(hostId).collection('games').doc(gameId).collection('responses').doc(userId).set(response)
   }
   
-  const notifyGamesSubscriber = (userId: string) => (notify: GamesEvent) => {
-    notify(map(gameData => gameData.game, users[userId].games))
-  }
+  const listenToGames =  (userId: string, onGames: GamesEvent) => {
+    let ownGames: Game[] = []
+    let invitationGames: Game[] = []
 
-  const notifyGamesSubscribers = (userId: string) => 
-    forEach(notifyGamesSubscriber(userId), users[userId].notifications)
-  
-  const listenToGames = (userId: string, onGames: GamesEvent) => {
-    users = set([userId, 'notifications'], concat([onGames]), users)
-
-    Promise.resolve(onGames).then(notifyGamesSubscriber(userId))
-
-    return () => {
-      users = set([userId, 'notifications'], without([onGames]), users)
+    const notify = () => {
+      onGames(concat(ownGames, invitationGames))
     }
-  }
 
-  const notifyGameSubscriber = (userId: string, gameId: string) => (notify: GameEvent) => {
-    const game = users[userId].games[gameId].game
-    const invitations = map(playerId => ({ hostId: userId, gameId, playerId }), users[userId].games[gameId].outgoingInvitations)
-    const responses = users[userId].games[gameId].responses
-    notify(game, invitations, responses)
-  }
+    db.collection('users').doc(userId).collection('games').get().then(docs => {
+      ownGames = docs as Game[]
+    })
 
-  const notifyGameSubscribers = (userId: string, gameId: string) => 
-    forEach(notifyGameSubscriber(userId, gameId), users[userId].games[gameId].notifications)
+    return db.collection('users').doc(userId).collection('invitations').onSnapshot(docs => {
+      const games = map(doc => {
+        const invitation = doc as Invitation
+        return db.collection('users').doc(userId).collection('games').doc(invitation.gameId).get()
+      }, docs)
+
+      Promise.all(games).then(games => {
+        invitationGames = map(game => game! as Game, games)
+        notify()
+      })
+    })
+  }
 
   const listenToGame = (userId: string, gameId: string, onGame: GameEvent) => {
-    users = set([userId, 'games', gameId, 'notifications'], concat([onGame]), users)
-    
-    Promise.resolve(onGame).then(notifyGameSubscriber(userId, gameId))
+    let game: Game | undefined = undefined
+    let invitations: Invitation[] | undefined = undefined
+    let responses: InvitationResponse[] | undefined = undefined
 
-    return () => { 
-      users = set([userId, 'games', gameId, 'notifications'], without([onGame]), users)
+    const notify = () => {
+      if (game && invitations && responses) {
+        onGame(game, invitations, responses)
+      }
+    }
+
+    const unsubscribeGame = db.collection('users').doc(userId).collection('games').doc(gameId).onSnapshot(docData => {
+      game = docData as Game
+      notify()
+    })
+
+    const unsubscribeInvitations = db
+      .collection('users').doc(userId)
+      .collection('games').doc(gameId)
+      .collection('invitations').onSnapshot(docsData => {
+        invitations = map(docData => docData as Invitation, docsData)
+        notify()
+      })
+
+    const unsubscribeResponses = db
+      .collection('users').doc(userId)
+      .collection('games').doc(gameId)
+      .collection('responses').onSnapshot(docsData => {
+        responses = map(docData => docData as InvitationResponse, docsData)
+        notify()
+      })
+
+    return () => {
+      unsubscribeGame()
+      unsubscribeInvitations()
+      unsubscribeResponses()
     }
   }
 

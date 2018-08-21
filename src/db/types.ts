@@ -1,4 +1,4 @@
-import { Game, Invitation, InvitationResponse, InvitationStatus, User, Address } from '../model/types'
+import { Game, Invitation, InvitationResponse, User, Address } from '../model/types'
 
 export interface GamesEvent {
   (games: ReadonlyArray<Game>): void
@@ -11,20 +11,22 @@ export interface GameEvent {
 export type Unsubscribe = () => void
 
 export interface GamesDB {
-  createUser(name: string, email: string): Promise<string>
-  getUser(userId: string): Promise<User>
+  createUser(user: User): Promise<string>
+  getUser(userId: string): Promise<User | undefined>
 
   createAddress(userId: string, address: Address): Promise<void>
   getAddresses(userId: string): Promise<ReadonlyArray<Address>>
 
-  connectFriend(userId: string, friendUserId: string): Promise<void>
+  createFriendInvitation(userId: string): Promise<string>
+  acceptFriendInvitation(userId: string, invitationId: string, friendUserId: string): Promise<void>
+
   addFriend(userId: string, friendUserId: string): Promise<void>
   removeFriend(userId: string, friendUserId: string): Promise<void>
 
   createGame(game: Game): Promise<string>
   
-  inviteToGame(userId: string, gameId: string, playerId: string): Promise<void>
-  respondToGameInvitation(userId: string, hostId: string, gameId: string, status: InvitationStatus, notes: string): Promise<void>
+  inviteToGame(invitation: Invitation): Promise<void>
+  respondToGameInvitation(response: InvitationResponse): Promise<void>
   
   listenToGames(userId: string, onGames: GamesEvent): Unsubscribe
 
