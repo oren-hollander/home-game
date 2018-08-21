@@ -23,7 +23,7 @@ export interface GamesDB {
   addFriend(userId: string, friendUserId: string): Promise<void>
   removeFriend(userId: string, friendUserId: string): Promise<void>
 
-  createGame(game: Game): Promise<string>
+  createGame(game: Game): Promise<Game>
   
   inviteToGame(invitation: Invitation): Promise<void>
   respondToGameInvitation(response: InvitationResponse): Promise<void>

@@ -1,6 +1,6 @@
 import * as firebase from 'firebase/app'
 import { Game, InvitationStatus, Time, User, Address, Invitation, InvitationResponse } from '../model/types'
-import { map, concat, join, noop, isUndefined } from 'lodash/fp'
+import { map, concat, join, noop, assign } from 'lodash/fp'
 import { GamesDB as GamesDatabase, Unsubscribe, GameEvent, GamesEvent } from './types'
 
 type Firestore = firebase.firestore.Firestore
@@ -65,9 +65,9 @@ export const GamesDB: (db: Firestore, userId: string) => GamesDatabase = (db, us
     db.collection('users').doc(friendUserId).collection('friends').doc(userId).delete()
   }
 
-  const createGame: (game: Game) => Promise<string> = async game => {
-    const ref = await Games.add(game)
-    return ref.id
+  const createGame: (game: Game) => Promise<Game> = async game => {
+    const ref = await db.collection('users').doc(game.hostId).collection('games').add(game)
+    return assign(game, { 'gameId' : ref.id })
   }
 
   const inviteToGame: (invitation: Invitation) => Promise<void> = async ({ gameId, hostId, playerId }) => 
