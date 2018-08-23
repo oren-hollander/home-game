@@ -11,7 +11,7 @@ export interface GameEvent {
 export type Unsubscribe = () => void
 
 export interface GamesDB {
-  createUser(user: User): Promise<string>
+  createUser(user: User): Promise<void>
   getUser(userId: string): Promise<User | undefined>
 
   createAddress(userId: string, address: Address): Promise<void>
@@ -22,10 +22,12 @@ export interface GamesDB {
 
   addFriend(userId: string, friendUserId: string): Promise<void>
   removeFriend(userId: string, friendUserId: string): Promise<void>
+  getFriends(userId: string): Promise<User[]>
 
   createGame(game: Game): Promise<Game>
-  
-  inviteToGame(invitation: Invitation): Promise<void>
+  updateGame(game: Game, validateInvitations: boolean): Promise<void> 
+
+  inviteToGame(playerId: string, invitation: Invitation): Promise<void>
   respondToGameInvitation(response: InvitationResponse): Promise<void>
   
   listenToGames(userId: string, onGames: GamesEvent): Unsubscribe

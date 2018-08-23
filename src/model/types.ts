@@ -15,6 +15,7 @@ export interface InvitationResponse {
   readonly hostId: string
   readonly gameId: string
   readonly playerId: string
+  readonly valid: boolean
   readonly status: InvitationStatus
   readonly timestamp: Timestamp
   readonly notes?: string
@@ -23,7 +24,6 @@ export interface InvitationResponse {
 export interface Invitation {
   readonly hostId: string
   readonly gameId: string
-  readonly playerId: string
 }
 
 export interface Date {
