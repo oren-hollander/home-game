@@ -1,84 +1,81 @@
 import * as firebase from 'firebase/app'
-import { Game, InvitationStatus, Time, User, Address, Invitation, InvitationResponse } from '../model/types'
+import { Game, User, Address, Invitation, InvitationResponse } from '../model/types'
 import { map, concat, compact, noop, assign, omit, forEach } from 'lodash/fp'
-import { GamesDB as GamesDatabase, Unsubscribe, GameEvent, GamesEvent } from './types'
+import { GamesDatabase, Unsubscribe, GameEvent, GamesEvent } from './types'
 
 type Firestore = firebase.firestore.Firestore
 
-const Timestamp = firebase.firestore.Timestamp
+const USERS = 'users'
+const FRIENDS = 'friends'
+const FRIEND_INVITATIONS = 'friendInvitations'
+const ADDRESSES = 'addresses'
+const GAMES = 'games'
+const INVITATIONS = 'invitations'
+const RESPONSES = 'responses'
 
 export interface GamesEvent {
   (games: ReadonlyArray<Game>): void
 }
 
-export interface GamesDB {
-  addGame(game: Game): Promise<string>
-  inviteToGame(gameId: string, playerId: string): Promise<void>
-  respondToGameInvitation(hostId: string, gameId: string, status: InvitationStatus, arriveTime: Time): Promise<void>
-  listenToGames(onGames: GamesEvent): void 
-  unlistenToGames(): void
-}
-
-export const GamesDB: (db: Firestore, userId: string) => GamesDatabase = (db, userId) => {
+export const GamesDB: (db: Firestore) => GamesDatabase = (db) => {
   const createUser: (user: User) => Promise<void> = async user => {
-    db.collection('users').doc(userId).set(omit(['userId'], user))
+    await db.collection(USERS).doc(user.userId).set(omit(['userId'], user))
   }
 
   const getUser: (userId: string) => Promise<User | undefined> = async userId => {
-    const userSnapshot = await db.collection('users').doc(userId).get()
+    const userSnapshot = await db.collection(USERS).doc(userId).get()
     return userSnapshot.exists 
-      ? assign({}, userSnapshot.data()! as User)
+      ? assign({ userId: userSnapshot.id }, userSnapshot.data()!) as User
       : undefined
   }
 
   const createAddress: (userId: string, address: Address) => Promise<void> = async (userId, address) => {
-    db.collection('users').doc(userId).collection('addresses').add(address)
+    db.collection(USERS).doc(userId).collection(ADDRESSES).add(address)
   }
 
   const getAddresses: (userId: string) => Promise<ReadonlyArray<Address>> = async userId => {
-    const addressesSnapshot = await db.collection('users').doc(userId).collection('addresses').get()
+    const addressesSnapshot = await db.collection(USERS).doc(userId).collection(ADDRESSES).get()
     return map(snapshot => snapshot.data() as Address, addressesSnapshot.docs)
   }
 
   const createFriendInvitation: (userId: string) => Promise<string> = async userId => {
-    const snapshot = await db.collection('users').doc(userId).collection('friendInvitaions').add({})
+    const snapshot = await db.collection(USERS).doc(userId).collection(FRIEND_INVITATIONS).add({})
     return snapshot.id
   }
 
-  const acceptFriendInvitation: (userId: string, invitationId: string, friendUserId: string) => Promise<void> = async (userId, invitationId, friendUserId) => {
-    return db.runTransaction(async tx => {
-      tx.delete(db.collection('users').doc(friendUserId).collection('friendInvitations').doc(invitationId))
-      tx.set(db.collection('users').doc(friendUserId).collection('friends').doc(userId), {})
-      tx.set(db.collection('users').doc(userId).collection('friends').doc(friendUserId), {})
-    })
-  }
-
+  const acceptFriendInvitation: (userId: string, invitationId: string, friendUserId: string) => Promise<void> = async (userId, invitationId, friendUserId) => 
+    db.batch()
+      .set(db.collection(USERS).doc(friendUserId).collection(FRIENDS).doc(userId), {invitationId})
+      .set(db.collection(USERS).doc(userId).collection(FRIENDS).doc(friendUserId), {})
+      .delete(db.collection(USERS).doc(friendUserId).collection(FRIEND_INVITATIONS).doc(invitationId))
+      .commit()
+  
   const addFriend: (userId: string, friendUserId: string) => Promise<void> = async (userId, friendUserId) => {
-    db.collection('users').doc(userId).collection('friends').doc(friendUserId).set({})
+    db.collection(USERS).doc(userId).collection(FRIENDS).doc(friendUserId).set({})
   } 
   
   const removeFriend: (userId: string, friendUserId: string) => Promise<void> = async (userId, friendUserId) => {
-    db.collection('users').doc(userId).collection('friends').doc(friendUserId).delete()
+    db.collection(USERS).doc(userId).collection(FRIENDS).doc(friendUserId).delete()
   }
 
   const getFriends: (userId: string) => Promise<User[]> = async userId => {
-    const snapshot = await db.collection('users').doc(userId).collection('friends').get()
+    const snapshot = await db.collection(USERS).doc(userId).collection(FRIENDS).get()
     const userIds = map(snapshot => snapshot.id, snapshot.docs)
     const users = await Promise.all(map(getUser, userIds))
     return compact(users)
   }
 
   const createGame: (game: Game) => Promise<Game> = async game => {
-    const ref = await db.collection('users').doc(game.hostId).collection('games').add(omit(['gameId'], game))
+    const ref = await db.collection(USERS).doc(game.hostId).collection(GAMES).add(omit(['gameId'], game))
     return assign(game, { 'gameId' : ref.id })
   }
 
   const updateGame: (game: Game, validateInvitations: boolean) => Promise<void> = async (game, validateInvitations) => {
-    const gameRef = db.collection('users').doc(game.hostId).collection('games').doc(game.gameId)
-    await gameRef.set(game)
+    const gameRef = db.collection(USERS).doc(game.hostId).collection(GAMES).doc(game.gameId)
+    await gameRef.set(omit(['gameId'], game))
     if(validateInvitations){
       const batch = db.batch()
-      const responsesSnapshot = await gameRef.collection('responses').get()
+      const responsesSnapshot = await gameRef.collection(RESPONSES).get()
       forEach(snapshot => {
         batch.update(snapshot.ref, {valid: false})
       }, responsesSnapshot.docs)
@@ -87,14 +84,14 @@ export const GamesDB: (db: Firestore, userId: string) => GamesDatabase = (db, us
   }
 
   const inviteToGame: (playerId: string, invitation: Invitation) => Promise<void> = async (playerId, invitation) => 
-    db.runTransaction(async tx => {
-      tx.set(db.collection('users').doc(invitation.hostId).collection('games').doc(invitation.gameId).collection('invitations').doc(playerId), {})
-      tx.set(db.collection('users').doc(playerId).collection('invitations').doc(), invitation)
-    })
+    db.batch()
+      .set(db.collection(USERS).doc(invitation.hostId).collection(GAMES).doc(invitation.gameId).collection(INVITATIONS).doc(playerId), {})
+      .set(db.collection(USERS).doc(playerId).collection(INVITATIONS).doc(), invitation)
+      .commit()
 
   const respondToGameInvitation: (response: InvitationResponse) => Promise<void> = 
     async ({gameId, hostId, notes, playerId, status, timestamp}) => 
-      db.collection('users').doc(hostId).collection('games').doc(gameId).collection('responses').doc(playerId).set({status, timestamp, notes, valid: true})
+      db.collection(USERS).doc(hostId).collection(GAMES).doc(gameId).collection(RESPONSES).doc(playerId).set({status, timestamp, notes, valid: true})
 
   const listenToGames: (userId: string, onGames: GamesEvent) => Unsubscribe = (userId, onGames) => {
     let ownGames: Game[] = []
@@ -109,14 +106,14 @@ export const GamesDB: (db: Firestore, userId: string) => GamesDatabase = (db, us
       const midnight = new Date()
       midnight.setHours(24, 0, 0, 0)
       
-      const snapshot = await db.collection('users').doc(userId).collection('games')
-        .where('timestamp', '>=', Timestamp.fromDate(midnight))
+      const snapshot = await db.collection(USERS).doc(userId).collection(GAMES)
+        .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(midnight))
         .orderBy('timestamp', 'asc')
         .get()
       
       ownGames = map(doc => doc.data() as Game, snapshot.docs)
 
-      unsubscribe = db.collection('users').doc(userId).collection('invitations').onSnapshot(async snapshot => {
+      unsubscribe = db.collection(USERS).doc(userId).collection(INVITATIONS).onSnapshot(async snapshot => {
         const invitations: Invitation[] = 
           map(snapshot => ({
             hostId: snapshot.data().hostId,
@@ -124,7 +121,7 @@ export const GamesDB: (db: Firestore, userId: string) => GamesDatabase = (db, us
             playerId: userId
           }), snapshot.docs)
 
-        const gameSnapshots = await Promise.all(map(({hostId, gameId}) => db.collection('users').doc(hostId).collection('games').doc(gameId).get(), invitations))
+        const gameSnapshots = await Promise.all(map(({hostId, gameId}) => db.collection(USERS).doc(hostId).collection(GAMES).doc(gameId).get(), invitations))
         invitationGames = map(snapshot => snapshot.data() as Game, gameSnapshots)
         notify()
       })
@@ -148,17 +145,17 @@ export const GamesDB: (db: Firestore, userId: string) => GamesDatabase = (db, us
       }
     }
 
-    const unsubscribeGame = db.collection('users').doc('userId').collection('games').doc(gameId).onSnapshot(snapshot => {
+    const unsubscribeGame = db.collection(USERS).doc('userId').collection(GAMES).doc(gameId).onSnapshot(snapshot => {
       game = snapshot.data()! as Game
       notify()
     })
 
-    const unsubscribeInvitations = db.collection('users').doc('userId').collection('games').doc(gameId).collection('invitations').onSnapshot(querySnapshot => {
+    const unsubscribeInvitations = db.collection(USERS).doc('userId').collection(GAMES).doc(gameId).collection(INVITATIONS).onSnapshot(querySnapshot => {
       invitations = map(({ id }) => ({ hostId: userId, gameId, playerId: id }), querySnapshot.docs)
       notify()
     })
 
-    const unsubscribeResponses = db.collection('users').doc('userId').collection('games').doc(gameId).collection('responses').onSnapshot(querySnapshot => {
+    const unsubscribeResponses = db.collection(USERS).doc('userId').collection(GAMES).doc(gameId).collection(RESPONSES).onSnapshot(querySnapshot => {
       responses = map(docSnapshot => docSnapshot.data() as InvitationResponse, querySnapshot.docs)
       notify()
     })

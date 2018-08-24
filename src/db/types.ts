@@ -10,7 +10,7 @@ export interface GameEvent {
 
 export type Unsubscribe = () => void
 
-export interface GamesDB {
+export interface GamesDatabase {
   createUser(user: User): Promise<void>
   getUser(userId: string): Promise<User | undefined>
 
