@@ -51,7 +51,7 @@ export const setUser = async (email: string): Promise<string> => {
 
 export const signInAsAdmin = async (): Promise<string> => {
   const email = 'oren.hollander@gmail.com'
-  const password: string = '123456'
+  const password: string = ''
   if (password === '') {
     throw new Error('Please set admin password')
   }
