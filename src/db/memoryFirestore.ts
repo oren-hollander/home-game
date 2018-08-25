@@ -1,5 +1,5 @@
 import { app as firebaseApp, firestore } from 'firebase/app'
-import { forEach, last, initial, split, join, map, get, isEqual, update, chunk, fromPairs, merge } from 'lodash/fp'
+import { forEach, initial, split, join, map, get, isEqual, update, chunk, fromPairs, merge } from 'lodash/fp'
 import { isUndefined } from 'util';
 
 type App = firebaseApp.App
@@ -39,7 +39,7 @@ interface SetOp {
   op: 'set'
   documentRef: DocumentReference,
   data: DocumentData,
-  options: SetOptions
+  options?: SetOptions
 }
 
 interface DeleteOp {
@@ -173,7 +173,7 @@ const Firestore: () => Firestore = () => {
 
     const notifyObservers = () => {
       forEach(
-        observer => observer.next(DocumentSnapshot(docRef, collections[parent.path].documents[id].data)),
+        observer => observer.next!(DocumentSnapshot(docRef, collections[parent.path].documents[id].data)),
         collections[parent.path].documents[id].observers
       )
     }
@@ -234,7 +234,7 @@ const Firestore: () => Firestore = () => {
     }
   }
 
-  const parent = (path: string) => {
+  const parent = (path: string): string | null => {
     const elements = split('/', path)
     if (elements.length <= 1)
       return null
@@ -247,7 +247,7 @@ const Firestore: () => Firestore = () => {
     return CollectionReference(parentDocumentPath ? doc(parentDocumentPath) : null, collectionPath)
   }
 
-  const doc = (documentPath: string) => DocumentReference(collection(parent(documentPath)), documentPath)
+  const doc = (documentPath: string): DocumentReference => DocumentReference(collection(parent(documentPath) as string), documentPath)
 
   const runTransaction = async <T>(updateFunction: (tx: Transaction) => Promise<T>) => {
 
@@ -261,11 +261,11 @@ const Firestore: () => Firestore = () => {
         return documentRef.get()
       },
       delete: (documentRef: DocumentReference) => {
-        ops = [...ops, {op: 'delete', documentRef}]
+        ops = [...ops, { op: 'delete', documentRef }]
         return tx
       },
       set: (documentRef: DocumentReference, data: DocumentData, options?: SetOptions) => {
-        ops = [...ops, {op: 'set', documentRef, data, options}]
+        ops = [...ops, { op: 'set', documentRef, data, options } ]
         return tx
       },
       update: (documentRef: DocumentReference, ...args: any[]) => {
