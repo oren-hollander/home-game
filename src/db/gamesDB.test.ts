@@ -5,7 +5,7 @@ import { GamesDatabase } from './types'
 import { Game, Invitation, InvitationResponse } from '../model/types'
 import { Firestore, setUser, signInAsAdmin } from '../app/firestore'
 import { Schema, deleteDocuments, getDocumentRefs } from './deleteDatabase'
-import { set, map } from 'lodash/fp'
+import { set, map, noop } from 'lodash/fp'
 
 const schema: Schema = {
   users: {
@@ -423,9 +423,9 @@ describe('games database', () => {
       const hostGame = await createGame(hostId, firebase.firestore.Timestamp.now())
 
       await signInAsAdmin()
-      
+      let unsubscribe: () => void = noop
       const promise = new Promise<ReadonlyArray<Game>>(resolve => {
-        db.listenToGames(playerId, games => {
+        unsubscribe = db.listenToGames(playerId, games => {
           resolve(games) 
         })
       })
@@ -438,6 +438,7 @@ describe('games database', () => {
         playerGame, 
         hostGame
       ])) 
+      unsubscribe()
     }) 
 
     test('listen to game', async () => {
@@ -458,14 +459,17 @@ describe('games database', () => {
 
       await signInAsAdmin()
 
+      
       interface GameEventData {
         game: Game
         invitations: ReadonlyArray<string>
         responses: ReadonlyArray<InvitationResponse>
       }
 
+      let unsubscribe: () => void = noop
+
       const promise = new Promise<GameEventData>(resolve => {
-        db.listenToGame(hostId, game.gameId, (game, invitations, responses) => {
+        unsubscribe = db.listenToGame(hostId, game.gameId, (game, invitations, responses) => {
           resolve({ game, invitations, responses })
         })
       })
@@ -474,6 +478,7 @@ describe('games database', () => {
       expect(r.game.hostId).toEqual(hostId)
       expect(r.invitations).toEqual([playerId])
       expect(r.responses).toEqual([])
+      unsubscribe()
     })
   })
 })
