@@ -2,10 +2,10 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import { GamesDB } from './gamesDB'
 import { GamesDatabase } from './types'
-import { Game, Invitation } from '../model/types'
-import { Firestore } from '../app/firestore'
+import { Game, Invitation, InvitationResponse } from '../model/types'
+import { Firestore, setUser, signInAsAdmin } from '../app/firestore'
 import { Schema, deleteDocuments, getDocumentRefs } from './deleteDatabase'
-import { set } from 'lodash/fp'
+import { set, map } from 'lodash/fp'
 
 const schema: Schema = {
   users: {
@@ -50,37 +50,6 @@ describe('games database', () => {
       type: 'PLO'
     })
 
-  const signIn = async (email: string): Promise<string> => {
-    const password = '123456'
-    const auth = firebase.auth()
-    if (auth.currentUser && auth.currentUser.email === email) {
-      return auth.currentUser.uid
-    }
-    else {
-      await auth.signOut()
-      try {
-        await auth.signInWithEmailAndPassword(email, password)
-        return auth.currentUser!.uid
-      } 
-      catch (e) {
-        switch (e.code) {
-          case 'auth/user-not-found':
-            await auth.createUserWithEmailAndPassword(email, password)
-            return auth.currentUser!.uid
-          default:
-            throw e
-        }
-      }
-    }
-  }
-
-  const signInAsAdmin = async (): Promise<string> => {
-    const auth = firebase.auth()
-    await auth.signInWithEmailAndPassword('oren.hollander@gmail.com', '123456')
-    return auth.currentUser!.uid
-  }
-
-
   beforeEach(async () => {
     await signInAsAdmin()
 
@@ -92,7 +61,7 @@ describe('games database', () => {
  
   describe('create user', () => {
     test('should create a new user', async () => {
-      const userId = await signIn('test-user-1@homegame.app')
+      const userId = await setUser('test-user-1@homegame.app')
       await db.createUser({ userId, name: 'Some User' })
       const dbUser = await db.getUser(userId)
       expect(dbUser).not.toBeUndefined()
@@ -101,7 +70,7 @@ describe('games database', () => {
     })  
 
     test('should create Address', async () => {
-      const userId = await signIn('test-user-1@homegame.app')
+      const userId = await setUser('test-user-1@homegame.app')
       await db.createUser({ userId, name: 'Some User' })
       await db.createAddress(userId, {
         label: 'Home',
@@ -138,7 +107,7 @@ describe('games database', () => {
     }) 
 
     test('should create friend invitation', async () => {
-      const userId = await signIn('test-user-1@homegame.app')
+      const userId = await setUser('test-user-1@homegame.app')
       await db.createUser({ userId, name: 'Some User' })
       const invitationId = await db.createFriendInvitation(userId)
 
@@ -149,11 +118,11 @@ describe('games database', () => {
     })
 
     test('should accept friend invitation', async () => {
-      const user1Id = await signIn('test-user-1@homegame.app')
+      const user1Id = await setUser('test-user-1@homegame.app')
       await db.createUser({ userId: user1Id, name: 'User A' })
       const invitationId = await db.createFriendInvitation(user1Id)
 
-      const user2Id = await signIn('test-user-2@homegame.app')
+      const user2Id = await setUser('test-user-2@homegame.app')
       await db.createUser({ userId: user2Id, name: 'User B' })
       await db.acceptFriendInvitation(user2Id, invitationId, user1Id)
       
@@ -171,13 +140,13 @@ describe('games database', () => {
     }) 
 
     test('should add friend', async () => {
-      const user1Id = await signIn('test-user-1@homegame.app')
+      const user1Id = await setUser('test-user-1@homegame.app')
       await db.createUser({ userId: user1Id, name: 'User 1' })
 
-      const user2Id = await signIn('test-user-2@homegame.app')
+      const user2Id = await setUser('test-user-2@homegame.app')
       await db.createUser({ userId: user2Id, name: 'User 2' })
 
-      const user3Id = await signIn('test-user-3@homegame.app')
+      const user3Id = await setUser('test-user-3@homegame.app')
       await db.createUser({ userId: user3Id, name: 'User 3' })
 
       await db.addFriend(user3Id, user1Id)
@@ -198,13 +167,13 @@ describe('games database', () => {
     })
 
     test('should remove friend', async () => {
-      const user1Id = await signIn('test-user-1@homegame.app')
+      const user1Id = await setUser('test-user-1@homegame.app')
       await db.createUser({ userId: user1Id, name: 'User 1' })
 
-      const user2Id = await signIn('test-user-2@homegame.app')
+      const user2Id = await setUser('test-user-2@homegame.app')
       await db.createUser({ userId: user2Id, name: 'User 2' })
 
-      const user3Id = await signIn('test-user-3@homegame.app')
+      const user3Id = await setUser('test-user-3@homegame.app')
       await db.createUser({ userId: user3Id, name: 'User 3' })
 
       await db.addFriend(user3Id, user1Id)
@@ -221,7 +190,7 @@ describe('games database', () => {
     })
 
     test('should create game', async () => {
-      const userId = await signIn('test-user@homegame.app')
+      const userId = await setUser('test-user@homegame.app')
       await db.createUser({ userId: userId, name: 'User 1' })
       
       const timestamp = firebase.firestore.Timestamp.now()
@@ -268,7 +237,7 @@ describe('games database', () => {
     })
 
     test('should update game without response invalidation', async () => {
-      const userId = await signIn('test-user@homegame.app')
+      const userId = await setUser('test-user@homegame.app')
       await db.createUser({ userId: userId, name: 'User 1' })
 
       const timestampBefore = firebase.firestore.Timestamp.now()
@@ -294,7 +263,7 @@ describe('games database', () => {
       const timestampAfter = firebase.firestore.Timestamp.now()
       const updatedGame = set('timestamp', timestampAfter, game)
       
-      await db.updateGame(updatedGame, false)
+      await db.updateGame(updatedGame)
 
       await signInAsAdmin()
 
@@ -319,11 +288,11 @@ describe('games database', () => {
 
     })
 
-    test.only('invite to game', async () => {
-      const user1Id = await signIn('test-user-1@homegame.app')
+    test('invite to game', async () => {
+      const user1Id = await setUser('test-user-1@homegame.app')
       await db.createUser({ userId: user1Id, name: 'User 1' })
 
-      const user2Id = await signIn('test-user-2@homegame.app')
+      const user2Id = await setUser('test-user-2@homegame.app')
       await db.createUser({ userId: user2Id, name: 'User 2' })
 
       await db.addFriend(user2Id, user1Id)
@@ -347,55 +316,97 @@ describe('games database', () => {
       expect(querySnapshot.docs[0].data()).toEqual(invitation) 
     }) 
 
-    test.skip('should update game with response invalidation', async () => {
-      const userId = await signIn('test-user@homegame.app')
-      await db.createUser({ userId: userId, name: 'User 1' })
+    test('shoud accept invitation', async () => {
+      const user1Id = await setUser('test-user-1@homegame.app')
+      await db.createUser({ userId: user1Id, name: 'User 1' })
+
+      const user2Id = await setUser('test-user-2@homegame.app')
+      await db.createUser({ userId: user2Id, name: 'User 2' })
+
+      await db.addFriend(user2Id, user1Id)
+
+      const game = await createGame(user2Id, firebase.firestore.Timestamp.now())
+
+      const invitation: Invitation = {
+        hostId: user2Id,
+        gameId: game.gameId
+      }
+
+      await db.inviteToGame(user1Id, invitation)
+
+      await setUser('test-user-1@homegame.app')
+
+      const timestamp = firebase.firestore.Timestamp.now()
+
+      const invitationResponse: InvitationResponse = {
+        gameId: game.gameId,
+        hostId: user2Id,
+        playerId: user1Id,
+        timestamp,
+        status: 'approved',
+        valid: true
+      }
+
+      await db.respondToGameInvitation(invitationResponse)
+
+      await signInAsAdmin()
+
+      const snapshot = await firestore.collection('users').doc(user2Id).collection('games').doc(game.gameId).collection('responses').get()
+      expect(snapshot.docs.length).toBe(1)
+
+      const docs = map(snapshot => snapshot.data(), snapshot.docs)
+ 
+      expect(docs).toEqual(expect.arrayContaining([
+        {
+          status: 'approved',
+          timestamp, 
+          valid: true
+        }
+      ]))
+    })
+
+    test.only('should update game with response invalidation', async () => {
+      const user1Id = await setUser('test-user-1@homegame.app')
+      await db.createUser({ userId: user1Id, name: 'User 1' })
+
+      const user2Id = await setUser('test-user-2@homegame.app')
+      await db.createUser({ userId: user2Id, name: 'User 2' })
 
       const timestampBefore = firebase.firestore.Timestamp.now()
+      const game = await createGame(user2Id, timestampBefore)
 
-      const game = await db.createGame({
-        gameId: '',
-        hostId: userId,
-        address: {
-          label: 'Home',
-          city: 'NY',
-          houseNumber: '1',
-          street: 'Main'
-        },
-        maxPlayers: 8,
-        stakes: {
-          smallBlind: 5,
-          bigBlind: 5
-        },
-        timestamp: timestampBefore,
-        type: 'PLO'
+      await db.inviteToGame(user1Id, {
+        gameId: game.gameId,
+        hostId: user2Id
       })
+
+      await setUser('test-user-1@homegame.app')
+
+      await db.respondToGameInvitation({
+        gameId: game.gameId,
+        hostId: user2Id,
+        playerId: user1Id,
+        status: 'approved',
+        timestamp: firebase.firestore.Timestamp.now(),
+        valid: true
+      })
+
+      await setUser('test-user-2@homegame.app')
 
       const timestampAfter = firebase.firestore.Timestamp.now()
       const updatedGame = set('timestamp', timestampAfter, game)
 
-      await db.updateGame(updatedGame, true)
-
+      await db.updateGame(updatedGame)
+      await db.invalidateResponses(user2Id, game.gameId)
+ 
       await signInAsAdmin()
 
-      const gameSnapshot = await firestore.collection('users').doc(userId).collection('games').doc(game.gameId).get()
-      expect(gameSnapshot.exists).toBe(true)
-      expect(gameSnapshot.data()).toEqual({
-        hostId: userId,
-        address: {
-          label: 'Home',
-          city: 'NY',
-          houseNumber: '1',
-          street: 'Main'
-        },
-        maxPlayers: 8,
-        stakes: {
-          smallBlind: 5,
-          bigBlind: 5
-        },
-        timestamp: timestampAfter,
-        type: 'PLO'
-      })
+      const gameSnapshot = await firestore.collection('users').doc(user2Id).collection('games').doc(game.gameId).get()
+      expect(gameSnapshot.exists).toBe(true) 
+      expect(gameSnapshot.data()!.timestamp).toEqual(timestampAfter)
+      const response = await firestore.collection('users').doc(user2Id).collection('games').doc(game.gameId).collection('responses').doc(user1Id).get()
+
+      expect(response.data()!.valid).toEqual(false) 
     })
   })
 }) 

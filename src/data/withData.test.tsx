@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { render } from 'react-dom'
 import { SFC } from 'react'
-import { Firestore } from '../app/firestore'
+import { Firestore, signInAsAdmin } from '../app/firestore'
 import { Reducer, Action, createStore } from 'redux'
 import { Selector, Provider } from 'react-redux'
 import { identity } from 'lodash/fp'
@@ -11,12 +11,16 @@ import { defineExpectations, Expectation } from './expectEvents';
 describe('with data', () => {
   let db: firebase.firestore.Firestore
 
-  beforeEach(async () => {
+  beforeAll(() => {
     db = Firestore()
+  })
+
+  beforeEach(async () => {
+    await signInAsAdmin()
     await db.collection('test').doc('test').set({s: 'b', i: 2})
   })
 
-  test('', async () => {
+  test('with data', async () => {
     interface Data {
       s: string
       i: number

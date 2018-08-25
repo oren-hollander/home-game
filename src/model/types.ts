@@ -9,7 +9,7 @@ export interface Stakes {
   readonly bigBlind: number
 }
 
-export type InvitationStatus = 'approved' | 'declined'
+export type InvitationStatus = 'approved' | 'declined' | 'stand-by'
 
 export interface InvitationResponse {
   readonly hostId: string

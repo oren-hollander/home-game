@@ -25,7 +25,10 @@ export interface GamesDatabase {
   getFriends(userId: string): Promise<User[]>
 
   createGame(game: Game): Promise<Game>
-  updateGame(game: Game, validateInvitations: boolean): Promise<void> 
+  updateGame(game: Game): Promise<void> 
+
+  invalidateResponses(userId: string, gameId: string): Promise<void>
+  validateResponse(userId: string, gameId: string, playerId: string): Promise<void>
 
   inviteToGame(playerId: string, invitation: Invitation): Promise<void>
   respondToGameInvitation(response: InvitationResponse): Promise<void>
