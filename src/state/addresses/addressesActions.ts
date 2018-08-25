@@ -37,7 +37,7 @@ export const addAddressEffect = async (addAddress: AddAddress, store: Middleware
 
 export const updateAddressEffect = async (updateAddress: UpdateAddress, store: MiddlewareAPI<Dispatch, State>, { db }: Services) => {
   const userId = getUserId(store.getState())!
-  await db.collection('users').doc(userId).collection('addresses').doc(updateAddress.address.addressId).set(updateAddress.address)
+  await db.collection('users').doc(userId).collection('addresses').doc(updateAddress.address.label).set(updateAddress.address)
   store.dispatch(loadAddresses())
 }
 

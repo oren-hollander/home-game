@@ -16,6 +16,8 @@ export interface GamesDatabase {
 
   createAddress(userId: string, address: Address): Promise<void>
   getAddresses(userId: string): Promise<ReadonlyArray<Address>>
+  updateAddress(userId: string, address: Address): Promise<void>,
+  removeAddress(userId: string, addressId: string): Promise<void>,
 
   createFriendInvitation(userId: string): Promise<string>
   acceptFriendInvitation(userId: string, invitationId: string, friendUserId: string): Promise<void>

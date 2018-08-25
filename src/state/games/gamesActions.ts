@@ -17,7 +17,7 @@ export const SET_GAMES = 'games/set'
 export const createGame = (game: Game) => ({type: CREATE_GAME as typeof CREATE_GAME, game})
 export type CreateGame = ReturnType<typeof createGame>
 
-export const invite = (invitation: Invitation) => ({type: INVITE as typeof INVITE, invitation})
+export const invite = (invitation: Invitation, playerId: string) => ({type: INVITE as typeof INVITE, invitation, playerId})
 export type Invite = ReturnType<typeof invite>
 
 export const respondToInvitation = (response: InvitationResponse) => ({type: RESPOND_TO_INVITATION as typeof RESPOND_TO_INVITATION, response})
@@ -40,11 +40,11 @@ export const createGameEffect = (createGame: CreateGame, store: MiddlewareAPI<Di
 
 export const inviteEffect = (invite: Invite, store: MiddlewareAPI<Dispatch, State>, {db}: Services) => {
   db.runTransaction(async tx => {
-    const {gameId, hostId, playerId} = invite.invitation
-    const hostInvitation = db.collection('users').doc(hostId).collection('games').doc(gameId).collection('invitations').doc(playerId)
+    const {gameId, hostId} = invite.invitation
+    const hostInvitation = db.collection('users').doc(hostId).collection('games').doc(gameId).collection('invitations').doc(invite.playerId)
     tx.set(hostInvitation, invite.invitation)
 
-    const playerInvitation = db.collection('users').doc(playerId).collection('invitations').doc(gameId)
+    const playerInvitation = db.collection('users').doc(invite.playerId).collection('invitations').doc(gameId)
     tx.set(playerInvitation, invite.invitation)
   })
 }

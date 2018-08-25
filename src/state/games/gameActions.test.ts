@@ -22,6 +22,7 @@ describe('game effects', () => {
       maxPlayers: 8,
       timestamp: firebase.firestore.Timestamp.now(),
       address: {
+        addressId: '',
         label: 'home',
         houseNumber: '42b',
         street: 'main',

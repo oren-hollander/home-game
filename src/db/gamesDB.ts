@@ -30,13 +30,21 @@ export const GamesDB = (db: Firestore): GamesDatabase => {
   }
 
   const createAddress = async (userId: string, address: Address): Promise<void> => {
-    db.collection(USERS).doc(userId).collection(ADDRESSES).add(address)
+    await db.collection(USERS).doc(userId).collection(ADDRESSES).add(omit(['addressId'], address))
   }
 
   const getAddresses = async (userId: string): Promise<ReadonlyArray<Address>> => {
     const addressesSnapshot = await db.collection(USERS).doc(userId).collection(ADDRESSES).get()
-    return map(snapshot => snapshot.data() as Address, addressesSnapshot.docs)
+    return map(snapshot => assign({addressId: snapshot.id}, snapshot.data()) as Address, addressesSnapshot.docs)
   }
+
+  const updateAddress = async (userId: string, address: Address): Promise<void> => 
+    db.collection(USERS).doc(userId).collection(ADDRESSES).doc(address.addressId).set(omit(['addressId'], address))
+  
+  
+  const removeAddress = async (userId: string, addressId: string): Promise<void> => 
+    db.collection(USERS).doc(userId).collection(ADDRESSES).doc(addressId).delete()
+  
 
   const createFriendInvitation = async (userId: string): Promise<string> => {
     const snapshot = await db.collection(USERS).doc(userId).collection(FRIEND_INVITATIONS).add({})
@@ -180,6 +188,8 @@ export const GamesDB = (db: Firestore): GamesDatabase => {
 
     createAddress,
     getAddresses,
+    updateAddress,
+    removeAddress,
 
     createFriendInvitation,
     acceptFriendInvitation,

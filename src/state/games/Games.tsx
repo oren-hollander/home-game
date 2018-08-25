@@ -17,7 +17,6 @@ interface GamesProps {
   data: Game[]
 }
 
-
 export class GamesComponent extends Component<GamesProps> {
   render() {
     return (
@@ -27,9 +26,8 @@ export class GamesComponent extends Component<GamesProps> {
           {
             map(game => (
               <ListItem key={game.gameId}>
-                <Date day={game.date.day} month={game.date.month} year={game.date.year}/>
+                <Date day={game.timestamp.toDate().getDay()} month={game.timestamp.toDate().getMonth()} year={game.timestamp.toDate().getFullYear()}/>
                 {game.gameId}
-                {/* <ListItemText primary={'game.date'}/> */}
               </ListItem>
             ), this.props.data)
           }

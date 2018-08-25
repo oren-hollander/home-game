@@ -36,6 +36,7 @@ describe('games database', () => {
       gameId: '',
       hostId: userId,
       address: {
+        addressId: '',
         label: 'Home',
         city: 'NY',
         houseNumber: '1',
@@ -73,6 +74,7 @@ describe('games database', () => {
       const userId = await setUser('test-user-1@homegame.app')
       await db.createUser({ userId, name: 'Some User' })
       await db.createAddress(userId, {
+        addressId: '',
         label: 'Home',
         city: 'NY',
         houseNumber: '1A',
@@ -80,6 +82,7 @@ describe('games database', () => {
       })
  
       await db.createAddress(userId, {
+        addressId: '',
         label: 'Work',
         city: 'NY',
         houseNumber: '200',
@@ -198,6 +201,7 @@ describe('games database', () => {
         gameId: '',
         hostId: userId, 
         address: {
+          addressId: '',
           label: 'Home',
           city: 'NY',
           houseNumber: '1',
@@ -246,6 +250,7 @@ describe('games database', () => {
         gameId: '',
         hostId: userId,
         address: {
+          addressId: '',
           label: 'Home',
           city: 'NY',
           houseNumber: '1',

@@ -13,6 +13,7 @@ interface AddAddressDispatchProps {
 class AddAddressComponent extends Component<AddAddressDispatchProps, Address> {
   state: Address =  {
     addressId: '',
+    label: '',
     houseNumber: '',
     street: '',
     city: '',
@@ -24,14 +25,14 @@ class AddAddressComponent extends Component<AddAddressDispatchProps, Address> {
   }
 
   setAddress = () => {
-    if(this.state.addressId !== '')
+    if(this.state.label !== '')
       this.props.addAddress(this.state)
   }
 
   render() {
     return (
       <div>
-        <TextField margin='normal' label='Address label' onChange={this.change('addressId')}/>
+        <TextField margin='normal' label='Address label' onChange={this.change('label')}/>
         <TextField margin='normal' label='House Number' onChange={this.change('houseNumber')}/>
         <TextField margin='normal' label='Street' onChange={this.change('street')}/>
         <TextField margin='normal' label='City' onChange={this.change('city')}/>

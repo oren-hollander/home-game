@@ -49,6 +49,7 @@ export interface Game {
 }
 
 export interface Address {
+  readonly addressId: string
   readonly label: string
   readonly houseNumber: string
   readonly street: string

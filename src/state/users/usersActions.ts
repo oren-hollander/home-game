@@ -13,6 +13,7 @@ export const SET_USER = 'users/set'
 
 export const registerUser = (email: string, name: string, password: string) =>
   ({type: REGISTER_USER as typeof REGISTER_USER, email, name, password})
+  
 export type RegisterUser = ReturnType<typeof registerUser>
 
 export const setUser = (user: User) => ({type: SET_USER as typeof SET_USER, user})
@@ -34,8 +35,7 @@ export const registerUserEffect: Effect<RegisterUser> = async (registerUser, sto
   const userId = getUserId(store.getState())!
   const user: User = {
     userId,
-    name: registerUser.name,
-    email: registerUser.email
+    name: registerUser.name
   }
   return db.collection('users').doc(userId).set(user)
 }
