@@ -5,7 +5,7 @@ export interface GamesEvent {
 }
 
 export interface GameEvent {
-  (game: Game, invitations: ReadonlyArray<Invitation>, responses: ReadonlyArray<InvitationResponse>): void
+  (game: Game, invitations: ReadonlyArray<string>, responses: ReadonlyArray<InvitationResponse>): void
 }
 
 export type Unsubscribe = () => void
@@ -30,7 +30,7 @@ export interface GamesDatabase {
   updateGame(game: Game): Promise<void> 
 
   invalidateResponses(userId: string, gameId: string): Promise<void>
-  validateResponse(userId: string, gameId: string, playerId: string): Promise<void>
+  validateResponse(userId: string, hostId: string, gameId: string): Promise<void>
 
   inviteToGame(playerId: string, invitation: Invitation): Promise<void>
   respondToGameInvitation(response: InvitationResponse): Promise<void>

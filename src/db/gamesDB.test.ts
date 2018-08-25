@@ -94,6 +94,7 @@ describe('games database', () => {
       expect(addresses.length).toBe(2)
       expect(addresses).toEqual(expect.arrayContaining([
         {
+          addressId: expect.any(String),
           label: 'Work',
           city: 'NY',
           houseNumber: '200',
@@ -101,6 +102,7 @@ describe('games database', () => {
           notes: 'Code: 1234'
         },
         {
+          addressId: expect.any(String),
           label: 'Home',
           city: 'NY',
           houseNumber: '1A',
@@ -225,6 +227,7 @@ describe('games database', () => {
       expect(gameSnapshot.data()).toEqual({
         hostId: userId,
         address: {
+          addressId: expect.any(String),
           label: 'Home',
           city: 'NY',
           houseNumber: '1',
@@ -246,24 +249,7 @@ describe('games database', () => {
 
       const timestampBefore = firebase.firestore.Timestamp.now()
       
-      const game = await db.createGame({
-        gameId: '',
-        hostId: userId,
-        address: {
-          addressId: '',
-          label: 'Home',
-          city: 'NY',
-          houseNumber: '1',
-          street: 'Main'
-        },
-        maxPlayers: 8,
-        stakes: {
-          smallBlind: 5,
-          bigBlind: 5
-        },
-        timestamp: timestampBefore,
-        type: 'PLO'
-      }) 
+      const game = await createGame(userId, timestampBefore) 
 
       const timestampAfter = firebase.firestore.Timestamp.now()
       const updatedGame = set('timestamp', timestampAfter, game)
@@ -277,6 +263,7 @@ describe('games database', () => {
       expect(gameSnapshot.data()).toEqual({
         hostId: userId,
         address: {
+          addressId: expect.any(String),
           label: 'Home',
           city: 'NY',
           houseNumber: '1',
@@ -370,7 +357,7 @@ describe('games database', () => {
       ]))
     })
 
-    test.only('should update game with response invalidation', async () => {
+    test('whole flow', async () => {
       const user1Id = await setUser('test-user-1@homegame.app')
       await db.createUser({ userId: user1Id, name: 'User 1' })
 
@@ -409,9 +396,84 @@ describe('games database', () => {
       const gameSnapshot = await firestore.collection('users').doc(user2Id).collection('games').doc(game.gameId).get()
       expect(gameSnapshot.exists).toBe(true) 
       expect(gameSnapshot.data()!.timestamp).toEqual(timestampAfter)
-      const response = await firestore.collection('users').doc(user2Id).collection('games').doc(game.gameId).collection('responses').doc(user1Id).get()
+      
+      const invalidResponse = await firestore.collection('users').doc(user2Id).collection('games').doc(game.gameId).collection('responses').doc(user1Id).get()
+      expect(invalidResponse.get('valid')).toEqual(false) 
 
-      expect(response.data()!.valid).toEqual(false) 
+      await setUser('test-user-1@homegame.app')
+      await db.validateResponse(user1Id, user2Id, game.gameId)
+
+      await signInAsAdmin()
+
+      const validResponse = await firestore.collection('users').doc(user2Id).collection('games').doc(game.gameId).collection('responses').doc(user1Id).get()
+      expect(validResponse.get('valid')).toEqual(true) 
+    })
+
+    test('listen to games', async () => {      
+      const playerEmail = 'player@homegame.app'
+      const hostEmail = 'host@homegame.com'
+
+      const playerId = await setUser(playerEmail)
+      await db.createUser({ userId: playerId, name: 'Player' })
+      const playerGame = await createGame(playerId, firebase.firestore.Timestamp.now())
+
+      const hostId = await setUser(hostEmail)
+      await db.createUser({ userId: hostId, name: 'Host' })
+
+      const hostGame = await createGame(hostId, firebase.firestore.Timestamp.now())
+
+      await signInAsAdmin()
+      
+      const promise = new Promise<ReadonlyArray<Game>>(resolve => {
+        db.listenToGames(playerId, games => {
+          resolve(games) 
+        })
+      })
+
+      await db.inviteToGame(playerId, { gameId: hostGame.gameId, hostId })   
+ 
+      const games = await promise
+      expect(games.length).toBe(2) 
+      expect(games).toEqual(expect.arrayContaining([
+        playerGame, 
+        hostGame
+      ])) 
+    }) 
+
+    test('listen to game', async () => {
+      const playerEmail = 'player@homegame.app'
+      const hostEmail = 'host@homegame.com'
+
+      const playerId = await setUser(playerEmail)
+      await db.createUser({ userId: playerId, name: 'Player' })
+
+      const hostId = await setUser(hostEmail)
+      await db.createUser({ userId: hostId, name: 'Host' })
+
+      const game = await createGame(hostId, firebase.firestore.Timestamp.now())
+
+      await db.inviteToGame(playerId, { hostId, gameId: game.gameId })
+
+      await setUser(playerEmail)
+
+      await signInAsAdmin()
+
+      interface GameEventData {
+        game: Game
+        invitations: ReadonlyArray<string>
+        responses: ReadonlyArray<InvitationResponse>
+      }
+
+      const promise = new Promise<GameEventData>(resolve => {
+        db.listenToGame(hostId, game.gameId, (game, invitations, responses) => {
+          resolve({ game, invitations, responses })
+        })
+      })
+
+      const r = await promise
+      expect(r.game.hostId).toEqual(hostId)
+      expect(r.invitations).toEqual([playerId])
+      expect(r.responses).toEqual([])
     })
   })
-}) 
+})
