@@ -1,11 +1,9 @@
 import { Schema, deleteDocuments, getDocumentRefs } from './deleteDatabase'
-import { Firestore } from '../app/firestore'
-import * as firebase from 'firebase/app'
-import 'firebase/auth'
+import { Firestore, testConfig, signInAsAdmin } from '../state/app/firestore'
 
 describe('delete database', () => {
   test('should delete all documents', async () => {
-    const firestore = Firestore()
+    const firestore = Firestore(testConfig)
 
     const schema: Schema = {
       users: {
@@ -20,7 +18,7 @@ describe('delete database', () => {
       }
     }
 
-    await firebase.auth().signInWithEmailAndPassword('oren.hollander@gmail.com', '123456')
+    await signInAsAdmin()
 
     const refs = await getDocumentRefs(firestore.collection.bind(firestore), schema)
     await deleteDocuments(firestore, refs)

@@ -16,7 +16,6 @@ export const getDocumentRefs = async (collection: (name: string) => CollectionRe
   }
 
   const collectionNames = keys(schema)
-
   return flatten(await Promise.all(map(async name => {
     const refs = await getCollectionDocumentRefs(name)
     const subRefs = flatten(await Promise.all(map(ref => getDocumentRefs(ref.collection.bind(ref), schema[name]), refs)))

@@ -1,21 +1,21 @@
 import * as firebase from 'firebase/app'
 import 'firebase/firestore'
 import { createGameEffect, createGame } from './gamesActions'
-import { Game } from '../../model/types'
-import { CallbackStore } from '../callbackStore/callbackStore'
-import { Firestore, signInAsAdmin } from '../../app/firestore'
+import { Game } from '../../db/types'
+import { CallbackStore } from '../app/callbackStore'
+import { Firestore, signInAsAdmin, testConfig } from '../app/firestore'
 
-describe('game effects', () => {
+describe.skip('game effects', () => {
   let db: firebase.firestore.Firestore
 
   beforeAll(async () => {
-    db = Firestore()
+    db = Firestore(testConfig)
     await signInAsAdmin()
   })
  
   test('createGameEffect', async () => {
     const game: Game = {
-      hostId: 'oren.hollander@gmail.com',
+      hostId: 'host@homegame.app',
       gameId: 'game',
       type: 'NLH',
       stakes: {smallBlind: 5, bigBlind: 5},

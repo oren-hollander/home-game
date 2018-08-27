@@ -1,5 +1,5 @@
 import * as firebase from 'firebase/app'
-import {CallbackStore} from '../state/callbackStore/callbackStore'
+import {CallbackStore} from './callbackStore'
 
 export interface Services {
   callbacks: CallbackStore,

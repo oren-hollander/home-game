@@ -2,7 +2,7 @@ import {Dispatch, MiddlewareAPI} from "redux"
 import * as firebase from 'firebase/app'
 import {map} from 'lodash/fp'
 import {createEffectHandler} from '../../effect/effect'
-import {State} from '../index'
+import {State} from '../state'
 import {getUserId} from '../auth/authReducer'
 
 interface Services {

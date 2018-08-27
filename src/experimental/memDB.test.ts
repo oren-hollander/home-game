@@ -1,6 +1,4 @@
 import { DB, MemDB, DocumentData } from './memDB'
-// import * as firebase from 'firebase/app'
-// import 'firebase/firestore'
 
 describe('mem db', () => {
   let memDB: DB

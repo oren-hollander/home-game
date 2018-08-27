@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Component, ComponentType } from 'react'
 import { Action } from 'redux'
 import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux'
-import { State } from '../state'
+import { State } from '../state/state'
 import { Selector } from 'reselect'
 
 interface CompProps<D> {

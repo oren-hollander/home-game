@@ -1,7 +1,6 @@
 import * as firebase from 'firebase/app'
-import { Game, User, Address, Invitation, InvitationResponse } from '../model/types'
+import { Game, User, Address, Invitation, InvitationResponse } from './types'
 import { map, concat, compact, assign, omit, forEach, isUndefined } from 'lodash/fp'
-import { GamesDatabase, Unsubscribe, GameEvent, GamesEvent } from './types'
 
 type Firestore = firebase.firestore.Firestore
 
@@ -13,11 +12,43 @@ const GAMES = 'games'
 const INVITATIONS = 'invitations'
 const RESPONSES = 'responses'
 
-export interface GamesEvent {
-  (games: ReadonlyArray<Game>): void
+export type GamesEvent = (games: ReadonlyArray<Game>) => void
+
+export type GameEvent = (game: Game, invitations: ReadonlyArray<string>, responses: ReadonlyArray<InvitationResponse>) => void
+
+export type Unsubscribe = () => void
+
+export interface GamesDatabase {
+  createUser(user: User): Promise<void>
+  getUser(userId: string): Promise<User | undefined>
+
+  createAddress(userId: string, address: Address): Promise<void>
+  getAddresses(userId: string): Promise<ReadonlyArray<Address>>
+  updateAddress(userId: string, address: Address): Promise<void>,
+  removeAddress(userId: string, addressId: string): Promise<void>,
+
+  createFriendInvitation(userId: string): Promise<string>
+  acceptFriendInvitation(userId: string, invitationId: string, friendUserId: string): Promise<void>
+
+  addFriend(userId: string, friendUserId: string): Promise<void>
+  removeFriend(userId: string, friendUserId: string): Promise<void>
+  getFriends(userId: string): Promise<User[]>
+
+  createGame(game: Game): Promise<Game>
+  updateGame(game: Game): Promise<void>
+
+  invalidateResponses(userId: string, gameId: string): Promise<void>
+  validateResponse(userId: string, hostId: string, gameId: string): Promise<void>
+
+  inviteToGame(playerId: string, invitation: Invitation): Promise<void>
+  respondToGameInvitation(response: InvitationResponse): Promise<void>
+
+  listenToGames(userId: string, onGames: GamesEvent): Unsubscribe
+
+  listenToGame(userId: string, gameId: string, onGame: GameEvent): Unsubscribe
 }
 
-export const GamesDB = (db: Firestore): GamesDatabase => {
+export const GamesDatabase = (db: Firestore): GamesDatabase => {
   const createUser: (user: User) => Promise<void> = async user => {
     await db.collection(USERS).doc(user.userId).set(omit(['userId'], user))
   }

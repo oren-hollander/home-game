@@ -3,7 +3,7 @@ import { ChangeEvent, Component } from 'react'
 import { connect, MapDispatchToProps } from 'react-redux'
 import TextField from '@material-ui/core/TextField/TextField'
 import Button from '@material-ui/core/es/Button'
-import { Address } from '../../model/types'
+import { Address } from '../../db/types'
 import { addAddress } from './addressesActions'
 
 interface AddAddressDispatchProps {

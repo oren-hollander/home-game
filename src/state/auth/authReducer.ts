@@ -1,7 +1,7 @@
 import {Reducer} from 'redux'
 import {EMAIL_VERIFIED, EMAIL_NOT_VERIFIED, USER_SIGNED_IN, USER_SIGNED_OUT, AuthAction} from './authActions'
 import {Selector} from 'reselect'
-import {State} from "../index";
+import {State} from "../state";
 
 export interface AuthState {
   userId: string | null

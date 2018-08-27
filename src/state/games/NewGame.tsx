@@ -6,11 +6,11 @@ import FormControl from '@material-ui/core/FormControl/FormControl'
 import InputLabel from '@material-ui/core/InputLabel/InputLabel'
 import Select from '@material-ui/core/Select/Select'
 import MenuItem from '@material-ui/core/MenuItem/MenuItem'
-import {GameType} from '../../model/types'
+import {GameType} from '../../db/types'
 import TextField from '@material-ui/core/TextField/TextField'
 import Button from '@material-ui/core/es/Button'
 import {getAddressCount} from '../addresses/addressesReducer'
-import {State} from '../index'
+import {State} from '../state'
 import {Link} from 'react-router-dom'
 
 interface NewGameState {

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { render } from 'react-dom'
 import { SFC } from 'react'
-import { Firestore, signInAsAdmin } from '../app/firestore'
+import { Firestore, signInAsAdmin, testConfig } from '../state/app/firestore'
 import { Reducer, Action, createStore } from 'redux'
 import { Selector, Provider } from 'react-redux'
 import { identity } from 'lodash/fp'
@@ -12,12 +12,17 @@ describe('with data', () => {
   let db: firebase.firestore.Firestore
 
   beforeAll(() => {
-    db = Firestore()
+    db = Firestore(testConfig)
   })
 
   beforeEach(async () => {
     await signInAsAdmin()
     await db.collection('test').doc('test').set({s: 'b', i: 2})
+  })
+
+  afterEach(async () => {
+    await signInAsAdmin()
+    await db.collection('test').doc('test').delete()
   })
 
   test('with data', async () => {

@@ -6,10 +6,7 @@ interface Services {
   [key: string]: any
 }
 
-// export type Effect<T extends Action<string> = AnyAction> = (action: T, store: MiddlewareAPI, services: Services) => void
-export interface Effect<T extends Action<string>> {
-  (action: T, store: MiddlewareAPI, services: Services): void
-}
+export type Effect<T extends Action<string>> = (action: T, store: MiddlewareAPI, services: Services) => void
 
 export type EffectHandler = <T extends Action<string>, S extends Services>(type: string) => Effect<T>[]
 

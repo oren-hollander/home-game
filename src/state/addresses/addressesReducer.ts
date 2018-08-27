@@ -1,8 +1,8 @@
 import { Reducer } from 'redux'
-import { Address } from '../../model/types'
+import { Address } from '../../db/types'
 import { SET_ADDRESSES, AddressesAction } from './addressesActions'
 import { Selector } from 'reselect'
-import { State } from '../index'
+import { State } from '../state'
 
 export const addressesReducer: Reducer<Address[], AddressesAction> = (addresses = [], action) => {
   switch(action.type) {

@@ -1,42 +1,63 @@
-import { Game, Invitation, InvitationResponse, User, Address } from '../model/types'
+import * as firebase from 'firebase/app'
 
-export interface GamesEvent {
-  (games: ReadonlyArray<Game>): void
+type Timestamp = firebase.firestore.Timestamp
+
+export type GameType = 'NLH' | 'PLO'
+
+export interface Stakes { 
+  readonly smallBlind: number
+  readonly bigBlind: number
 }
 
-export interface GameEvent {
-  (game: Game, invitations: ReadonlyArray<string>, responses: ReadonlyArray<InvitationResponse>): void
+export type InvitationStatus = 'approved' | 'declined' | 'stand-by'
+
+export interface InvitationResponse {
+  readonly hostId: string
+  readonly gameId: string
+  readonly playerId: string
+  readonly valid: boolean
+  readonly status: InvitationStatus
+  readonly timestamp: Timestamp
+  readonly notes?: string
 }
 
-export type Unsubscribe = () => void
-
-export interface GamesDatabase {
-  createUser(user: User): Promise<void>
-  getUser(userId: string): Promise<User | undefined>
-
-  createAddress(userId: string, address: Address): Promise<void>
-  getAddresses(userId: string): Promise<ReadonlyArray<Address>>
-  updateAddress(userId: string, address: Address): Promise<void>,
-  removeAddress(userId: string, addressId: string): Promise<void>,
-
-  createFriendInvitation(userId: string): Promise<string>
-  acceptFriendInvitation(userId: string, invitationId: string, friendUserId: string): Promise<void>
-
-  addFriend(userId: string, friendUserId: string): Promise<void>
-  removeFriend(userId: string, friendUserId: string): Promise<void>
-  getFriends(userId: string): Promise<User[]>
-
-  createGame(game: Game): Promise<Game>
-  updateGame(game: Game): Promise<void> 
-
-  invalidateResponses(userId: string, gameId: string): Promise<void>
-  validateResponse(userId: string, hostId: string, gameId: string): Promise<void>
-
-  inviteToGame(playerId: string, invitation: Invitation): Promise<void>
-  respondToGameInvitation(response: InvitationResponse): Promise<void>
-  
-  listenToGames(userId: string, onGames: GamesEvent): Unsubscribe
-
-  listenToGame(userId: string, gameId: string, onGame: GameEvent): Unsubscribe
+export interface Invitation {
+  readonly hostId: string
+  readonly gameId: string
 }
 
+export interface Date {
+  readonly year: number
+  readonly month: number
+  readonly day: number
+}
+
+export interface Time {
+  readonly hour: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23
+  readonly minute: 0 | 15 | 30 | 45
+}
+
+export interface Game {
+  readonly gameId: string
+  readonly hostId: string
+  readonly type: GameType
+  readonly stakes: Stakes
+  readonly maxPlayers: number
+  readonly timestamp: Timestamp
+  readonly address: Address
+  readonly notes?: string
+}
+
+export interface Address {
+  readonly addressId: string
+  readonly label: string
+  readonly houseNumber: string
+  readonly street: string
+  readonly city: string
+  readonly notes?: string
+}
+
+export interface User {
+  readonly userId: string
+  readonly name: string
+}

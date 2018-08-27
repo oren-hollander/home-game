@@ -1,10 +1,10 @@
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import {Action, Dispatch, MiddlewareAPI} from 'redux'
-import {Services} from '../../app/services'
+import {Services} from '../app/services'
 import {createEffectHandler, Effect, EffectMap} from '../../effect/effect'
-import {State} from '../index'
-import {User} from '../../model/types'
+import {State} from '../state'
+import {User} from '../../db/types'
 import {setUser} from '../users/usersActions'
 
 export const SEND_EMAIL_VERIFICATION = 'auth/send-email-verification'

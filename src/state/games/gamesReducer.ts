@@ -1,6 +1,6 @@
-import { Game } from '../../model/types'
+import { Game } from '../../db/types'
 import { GamesAction, SET_GAMES } from './gamesActions'
-import { State } from '../index'
+import { State } from '../state'
 import { Selector } from 'reselect'
 
 export type GamesState = Game[]

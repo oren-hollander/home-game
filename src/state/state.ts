@@ -6,7 +6,7 @@ import { friendsReducer, FriendsState } from './friends/friendsReducer'
 import { gamesReducer, GamesState } from './games/gamesReducer'
 import { GamesAction } from './games/gamesActions'
 import { FriendsAction } from './friends/friendsActions'
-import { User, Address } from '../model/types'
+import { User, Address } from '../db/types'
 import { usersReducer } from './users/usersReducer'
 import { addressesReducer } from './addresses/addressesReducer'
 

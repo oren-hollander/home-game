@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {connect} from 'react-redux'
-import {State} from '../index'
+import {State} from '../state'
 import {SFC} from 'react'
 import {getUserId} from '../auth/authReducer'
 

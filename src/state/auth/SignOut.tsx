@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {connect} from 'react-redux'
-import {State} from '../index'
+import {State} from '../state'
 import {isUserSignedIn} from './authReducer'
 import {Dispatch} from 'redux'
 import {signOut} from './authActions'

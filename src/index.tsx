@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import {App} from './app/App'
+import {App} from './state/app/App'
 import {Redirect, Route, Switch} from 'react-router-dom'
 import './index.css'
 import registerServiceWorker from './registerServiceWorker'
@@ -9,7 +9,7 @@ import 'firebase/auth'
 import 'firebase/firestore'
 import { createStore, applyMiddleware} from 'redux'
 import {connect, MapDispatchToProps, MapStateToProps, Provider} from 'react-redux'
-import {reducer, State} from './state/'
+import {reducer, State} from './state/state'
 import 'typeface-roboto'
 import {userSignedIn, userSignedOut, verifyEmail} from './state/auth/authActions'
 import { createBrowserHistory } from 'history'
@@ -24,26 +24,12 @@ import {RouteComponentProps} from 'react-router'
 import Typography from '@material-ui/core/Typography'
 import {isEmailVerified} from './state/auth/authReducer'
 import {parse} from 'query-string'
-import {CallbackStore} from './state/callbackStore/callbackStore'
+import {CallbackStore} from './state/app/callbackStore'
+import {Firestore, productionConfig} from './state/app/firestore'
 
 const history = createBrowserHistory()
 
-const config = {
-  apiKey: "AIzaSyCL0jL94GPb7HvZxUgZdnpqqyx5liMeY3A",
-  authDomain: "fire-base-test-4304c.firebaseapp.com",
-  databaseURL: "https://fire-base-test-4304c.firebaseio.com",
-  projectId: "fire-base-test-4304c",
-  storageBucket: "fire-base-test-4304c.appspot.com",
-  messagingSenderId: "223479729697"
-}
-
-firebase.initializeApp(config)
-const firestore = firebase.firestore()
-const settings = {
-  timestampsInSnapshots: true
-}
-
-firestore.settings(settings)
+const firestore = Firestore(productionConfig)
 
 const services = {
   db: firestore,
