@@ -11,7 +11,7 @@ import {getGames} from './gamesReducer'
 import Button from '@material-ui/core/Button/'
 import AddIcon from '@material-ui/icons/Add'
 import { listen } from '../../data/listen'
-import { Date } from './Date'
+import { Date } from '../components/Date'
 
 interface GamesProps {
   data: Game[]

@@ -1,31 +1,27 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import {App} from './state/app/App'
-import {Redirect, Route, Switch} from 'react-router-dom'
+import { App } from './app/app/App'
+import { Route, Switch } from 'react-router-dom'
 import './index.css'
 import registerServiceWorker from './registerServiceWorker'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
-import { createStore, applyMiddleware} from 'redux'
-import {connect, MapDispatchToProps, MapStateToProps, Provider} from 'react-redux'
-import {reducer, State} from './state/state'
+import { createStore, applyMiddleware } from 'redux'
+import { Provider } from 'react-redux'
+import { reducer } from './app/state'
 import 'typeface-roboto'
-import {userSignedIn, userSignedOut, verifyEmail} from './state/auth/authActions'
+import { userSignedIn, userSignedOut } from './app/auth/authActions'
 import { createBrowserHistory } from 'history'
 import { connectRouter, routerMiddleware, ConnectedRouter } from 'connected-react-router'
-import {createEffectsMiddleware, combineEffectHandlers, EffectHandler} from './effect/effect'
-import {friendsEffects} from './state/friends/friendsActions'
-import {authEffects} from './state/auth/authActions'
-import {gamesEffects} from './state/games/gamesActions'
-import {usersEffects} from './state/users/usersActions'
-import {Component} from 'react'
-import {RouteComponentProps} from 'react-router'
-import Typography from '@material-ui/core/Typography'
-import {isEmailVerified} from './state/auth/authReducer'
-import {parse} from 'query-string'
-import {CallbackStore} from './state/app/callbackStore'
-import {Firestore, productionConfig} from './state/app/firestore'
+import { createEffectsMiddleware, combineEffectHandlers, EffectHandler } from './effect/effect'
+import { friendsEffects } from './app/friends/friendsActions'
+import { authEffects } from './app/auth/authActions'
+import { gamesEffects } from './app/games/gamesActions'
+import { usersEffects } from './app/users/usersActions'
+import { CallbackStore } from './services/callbackStore'
+import { Firestore, productionConfig } from './db/firestore'
+import { Auth } from './app/auth/Auth'
 
 const history = createBrowserHistory()
 
@@ -59,44 +55,6 @@ firebase.auth().onAuthStateChanged(user => {
     store.dispatch(userSignedOut())
   }
 })
-
-interface AuthStateProps {
-  verified: boolean
-}
-
-interface AuthDispatchProps {
-  verifyEmail: (oobCode: string) => void
-}
-
-type AuthProps = RouteComponentProps<{}> & AuthStateProps & AuthDispatchProps
-
-class AuthComponent extends Component<AuthProps>{
-
-  componentDidMount(){
-    const query = parse(this.props.location.search)
-    if(query.mode === 'verifyEmail')
-      this.props.verifyEmail(query.oobCode)
-  }
-
-  render() {
-    if(this.props.verified)
-      return <Redirect to='/'/>
-
-    return <Typography>Verifying...</Typography>
-  }
-}
-
-const mapStateToProps: MapStateToProps<AuthStateProps, {}, State> = state => ({
-  verified: isEmailVerified(state)
-})
-
-const mapDispatchToProps: MapDispatchToProps<AuthDispatchProps, {}> = dispatch => ({
-  verifyEmail(oobCode: string) {
-    dispatch(verifyEmail(oobCode))
-  }
-})
-
-const Auth = connect(mapStateToProps, mapDispatchToProps)(AuthComponent)
 
 ReactDOM.render(
   <Provider store={store}>

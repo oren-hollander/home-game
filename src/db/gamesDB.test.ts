@@ -2,7 +2,7 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import { GamesDatabase } from './gamesDB'
 import { Game, Invitation, InvitationResponse } from './types'
-import { Firestore, createUser, signInAsAdmin, deleteUser, testConfig, signInAsUser } from '../state/app/firestore'
+import { Firestore, createUser, signInAsAdmin, deleteUser, testConfig, signInAsUser } from './firestore'
 import { Schema, deleteDocuments, getDocumentRefs } from './deleteDatabase'
 import { set, map, noop } from 'lodash/fp'
 

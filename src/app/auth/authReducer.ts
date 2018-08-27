@@ -4,13 +4,13 @@ import {Selector} from 'reselect'
 import {State} from "../state";
 
 export interface AuthState {
-  userId: string | null
+  userId: string 
   signedIn: boolean
   emailVerified: boolean
 }
 
 const defaultAuthState: AuthState = {
-  userId: null,
+  userId: '',
   signedIn: false,
   emailVerified: false
 }
@@ -24,7 +24,7 @@ export const reducer: Reducer<AuthState> = (state: AuthState = defaultAuthState,
     case USER_SIGNED_IN:
       return {...state, signedIn: true, userId: action.user.uid, emailVerified: action.user.emailVerified}
     case USER_SIGNED_OUT:
-      return {...state, signedIn: false, userId: null, emailVerified: false}
+      return {...state, signedIn: false, userId: '', emailVerified: false}
     default:
       return state
   }

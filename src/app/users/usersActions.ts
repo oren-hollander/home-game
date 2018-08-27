@@ -1,5 +1,5 @@
 import {User} from '../../db/types'
-import {Services} from '../app/services'
+import {Services} from '../../services/services'
 import {State} from '../state'
 import {Dispatch, MiddlewareAPI} from 'redux'
 import {getUserId} from '../auth/authReducer'

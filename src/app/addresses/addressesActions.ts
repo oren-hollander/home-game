@@ -2,7 +2,7 @@ import { createEffectHandler } from '../../effect/effect'
 import { Address } from '../../db/types'
 import { Dispatch, MiddlewareAPI } from 'redux'
 import { State } from '../state'
-import { Services } from '../app/services'
+import { Services } from '../../services/services'
 import { getUserId } from '../auth/authReducer'
 import { map } from 'lodash/fp'
 

@@ -2,8 +2,8 @@ import * as firebase from 'firebase/app'
 import 'firebase/firestore'
 import { createGameEffect, createGame } from './gamesActions'
 import { Game } from '../../db/types'
-import { CallbackStore } from '../app/callbackStore'
-import { Firestore, signInAsAdmin, testConfig } from '../app/firestore'
+import { CallbackStore } from '../../services/callbackStore'
+import { Firestore, signInAsAdmin, testConfig } from '../../db/firestore'
 
 describe.skip('game effects', () => {
   let db: firebase.firestore.Firestore

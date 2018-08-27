@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { render } from 'react-dom'
 import { SFC } from 'react'
-import { Firestore, signInAsAdmin, testConfig } from '../state/app/firestore'
+import { Firestore, signInAsAdmin, testConfig } from '../db/firestore'
 import { Reducer, Action, createStore } from 'redux'
 import { Selector, Provider } from 'react-redux'
 import { identity } from 'lodash/fp'
