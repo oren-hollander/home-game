@@ -4,7 +4,6 @@ import { GamesDatabase } from '../db/gamesDB'
 
 export interface Services {
   callbacks: CallbackStore
-  db: firebase.firestore.Firestore
-  gamesDb: GamesDatabase
+  db: GamesDatabase
   auth: firebase.auth.Auth
 }

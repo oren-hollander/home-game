@@ -14,6 +14,7 @@ import { AddFriend } from '../friends/AddFriend'
 import { InviteFriend } from '../friends/InviteFriend'
 import { AddAddress } from '../addresses/AddAddress'
 import { Typography } from '@material-ui/core'
+import { Addresses } from '../addresses/Addresses'
 
 const NoMatch = () => <Typography variant="title" color="inherit">404</Typography>
 
@@ -23,27 +24,26 @@ interface AppProps {
 
 namespace UI {
 
-  export const App: SFC<AppProps> = ({ name }) => {
-    console.log('render')
-    return <Page>
+  export const App: SFC<AppProps> = ({ name }) => 
+    <Page>
       <Toolbar>
         {name}
         <SignOut/>
       </Toolbar>
       <Switch>
         <Route exact={true} path='/'>
-          {() => <><Redirect to='/games' /><Games/></>}
+          {() => <Redirect to='/games' />}
         </Route>
         <Route path='/games/new' component={NewGame} />
         <Route path='/games' component={Games} />
         <Route path='/addFriend/:playerId' component={AddFriend} />
         <Route path='/inviteFriend' component={InviteFriend} />
-        <Route path='/address' component={AddAddress} />
+        <Route path='/addresses/new' component={AddAddress} />
+        <Route path='/addresses' component={Addresses} />
         <Route component={NoMatch} />
       </Switch> 
       <StatusBar/>
     </Page>
-  }
 }
 
 const mapStateToProps: MapStateToProps<AppProps, {}, State> = (state: State): AppProps => ({

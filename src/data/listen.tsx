@@ -1,33 +1,37 @@
 import * as React from 'react'
 import { Component, ComponentType } from 'react'
-import { Action } from 'redux'
 import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux'
-import { State } from '../app/state'
+import { State, HomeGameThunkAction, HomeGameThunkDispatch } from '../app/state'
 import { Selector } from 'reselect'
+import { Unsubscribe } from 'firebase';
+import { noop } from 'lodash/fp'
 
 interface CompProps<D> {
   data: D
 }
 
-export const listen = <D extends any>(listen: Action<string>, unlisten: Action<string>, selector: Selector<State, D>) => (Comp: ComponentType<CompProps<D>>) => {
+type ListenToData = () => HomeGameThunkAction<Unsubscribe>
+
+export const listen = <D extends any>(listen: ListenToData, selector: Selector<State, D>) => (Comp: ComponentType<CompProps<D>>) => {
   interface ListenStateProps {
     data: D
   }
 
   interface ListenDispatchProps {
-    listen: () => void
-    unlisten: () => void
+    listen: () => Unsubscribe
   }
 
   type ListenProps = ListenStateProps & ListenDispatchProps
 
   class Listen extends Component<ListenProps> {
+    unsubscribe: Unsubscribe = noop
+
     componentDidMount() {
-      this.props.listen()
+      this.unsubscribe = this.props.listen()
     }
 
     componentWillUnmount() {
-      this.props.unlisten()
+      this.unsubscribe()
     }
 
     render() {
@@ -35,9 +39,8 @@ export const listen = <D extends any>(listen: Action<string>, unlisten: Action<s
     }
   }
 
-  const mapDispatchToProps: MapDispatchToProps<ListenDispatchProps, {}> = dispatch => ({
-    listen: () => dispatch(listen),
-    unlisten: () => dispatch(unlisten)
+  const mapDispatchToProps: MapDispatchToProps<ListenDispatchProps, {}> = (dispatch: HomeGameThunkDispatch): ListenDispatchProps => ({
+    listen: () => dispatch(listen())
   })
 
   const mapStateToProps: MapStateToProps<ListenStateProps, {}, State> = state => ({

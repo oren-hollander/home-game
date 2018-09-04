@@ -1,4 +1,4 @@
-import { HomeGameThunkAction } from '../state'
+import { HomeGameAsyncThunkAction } from '../state'
 import { hasErrors, hasStatus } from './statusReducer'
 import { delay } from '../../util/delay'
 
@@ -21,7 +21,7 @@ type DequeueStatus = ReturnType<typeof dequeueStatus>
 
 export type StatusAction = EnqueueError | DequeueError | EnqueueStatus | DequeueStatus
 
-const hideError = (): HomeGameThunkAction => async (dispatch, getState) => {
+const hideError = (): HomeGameAsyncThunkAction => async (dispatch, getState) => {
   dispatch(dequeueError())
   if (hasErrors(getState())) {
     await delay(1000)
@@ -29,7 +29,7 @@ const hideError = (): HomeGameThunkAction => async (dispatch, getState) => {
   }
 }
 
-export const showError = (message: string): HomeGameThunkAction => async (dispatch, getState) => {
+export const showError = (message: string): HomeGameAsyncThunkAction => async (dispatch, getState) => {
   const errorsExist = hasErrors(getState())
   dispatch(enqueueError(message))
   if (!errorsExist) {
@@ -38,7 +38,7 @@ export const showError = (message: string): HomeGameThunkAction => async (dispat
   }
 }
 
-const hideStatus = (): HomeGameThunkAction => async (dispatch, getState) => {
+const hideStatus = (): HomeGameAsyncThunkAction => async (dispatch, getState) => {
   dispatch(dequeueStatus())
   if (hasStatus(getState())) {
     await delay(1000)
@@ -46,7 +46,7 @@ const hideStatus = (): HomeGameThunkAction => async (dispatch, getState) => {
   }
 }
 
-export const showStatus = (status: string): HomeGameThunkAction => async (dispatch, getState) => {
+export const showStatus = (status: string): HomeGameAsyncThunkAction => async (dispatch, getState) => {
   const statusExist = hasStatus(getState())
   dispatch(enqueueStatus(status))
   if (!statusExist) {

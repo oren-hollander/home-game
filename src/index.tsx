@@ -27,8 +27,7 @@ const history = createBrowserHistory()
 const firestore = Firestore(productionConfig)
 
 const services: Services = {
-  db: firestore,
-  gamesDb: GamesDatabase(firestore),
+  db: GamesDatabase(firestore),
   auth: firebase.auth(),
   callbacks: CallbackStore()
 }

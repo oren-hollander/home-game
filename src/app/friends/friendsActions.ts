@@ -1,5 +1,5 @@
 import { map } from 'lodash/fp'
-import { HomeGameThunkAction } from '../state'
+import { HomeGameAsyncThunkAction } from '../state'
 import { getUser } from '../auth/authReducer'
 
 export const ADD_FRIEND = 'friends/add'
@@ -17,7 +17,7 @@ export type RemoveFriend = ReturnType<typeof removeFriend>
 export const loadFriends = (userId: string) => ({type: LOAD_FRIENDS as typeof LOAD_FRIENDS, payload: {userId}})
 export type LoadFriends = ReturnType<typeof loadFriends>
 
-export const setFriends = (friendIds: string[]) => ({ type: SET_FRIENDS as typeof SET_FRIENDS, payload: { friendIds } })
+export const setFriends = (friendIds: ReadonlyArray<string>) => ({ type: SET_FRIENDS as typeof SET_FRIENDS, payload: { friendIds } })
 export type SetFriends = ReturnType<typeof setFriends>
 
 export const connectFriends = (friendId: string) => ({ type: CONNECT_FRIENDS as typeof CONNECT_FRIENDS, friendId })
@@ -25,23 +25,25 @@ export type ConnectFriends = ReturnType<typeof connectFriends>
 
 export type FriendsAction = AddFriend | RemoveFriend | LoadFriends | SetFriends | ConnectFriends
 
-export const addFriendEffect = (friendId: string): HomeGameThunkAction => async (dispatch, getState, { db }) => {
+export const addFriendEffect = (friendId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).name
-  await db.collection('users').doc(userId).collection('friends').doc(friendId).set({})
+  await db.addFriend(userId, friendId)
 }
 
-export const removeFriendEffect = (userId: string, friendId: string): HomeGameThunkAction => async (dispatch, getState, { db }) =>
-  await db.collection('users').doc(userId).collection('friends').doc(friendId).delete()
-
-export const loadFriendsEffect = (): HomeGameThunkAction => async (dispatch, getState, { db }) => {
+export const removeFriendEffect = (friendId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).name
-  const friends = await db.collection('users').doc(userId).collection('friends').get()
-  const friendIds: string[] = map(friend => friend.id, friends.docs)
+  await db.removeFriend(userId, friendId)
+}
+
+export const loadFriendsEffect = (): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+  const userId = getUser(getState()).name
+  const friends = await db.getFriends(userId)
+  const friendIds = map(user => user.userId, friends)
   dispatch(setFriends(friendIds))
 }
 
-export const connectFriendsEffect = (friendId: string): HomeGameThunkAction => async (dispatch, getState, { db }) => {
+export const connectFriendsEffect = (friendId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).name
-  await db.collection('users').doc(userId).collection('friends').doc(friendId).set({})
-  await db.collection('users').doc(friendId).collection('friends').doc(userId).set({})
+  await db.addFriend(userId, friendId)
+  await db.addFriend(friendId, userId)
 }

@@ -36,13 +36,8 @@ describe('games database', () => {
         houseNumber: '1',
         street: 'Main'
       },
-      maxPlayers: 8,
-      stakes: {
-        smallBlind: 5,
-        bigBlind: 5
-      },
       timestamp,
-      type: 'PLO'
+      description: '5/5 PLO game'
     })
 
   const deleteDatabase = async () => {
@@ -76,7 +71,7 @@ describe('games database', () => {
   })
 
   afterAll(async () => {
-    await deleteDatabase()
+    await deleteDatabase() 
     await deleteUsers()
   })
  

@@ -1,7 +1,7 @@
 import {FriendsAction, ADD_FRIEND, REMOVE_FRIEND, SET_FRIENDS, LOAD_FRIENDS} from './friendsActions'
 import {concat, without} from 'lodash/fp'
 
-export type FriendsState = string[]
+export type FriendsState = ReadonlyArray<string>
 
 export const friendsReducer = (friends: FriendsState = [], action: FriendsAction): FriendsState => {
   switch (action.type) {

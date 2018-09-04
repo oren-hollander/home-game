@@ -32,7 +32,7 @@ export interface GamesDatabase {
 
   addFriend(userId: string, friendUserId: string): Promise<void>
   removeFriend(userId: string, friendUserId: string): Promise<void>
-  getFriends(userId: string): Promise<User[]>
+  getFriends(userId: string): Promise<ReadonlyArray<User>>
 
   createGame(game: Game): Promise<Game>
   updateGame(game: Game): Promise<void>
@@ -71,7 +71,6 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
 
   const updateAddress = async (userId: string, address: Address): Promise<void> => 
     db.collection(USERS).doc(userId).collection(ADDRESSES).doc(address.addressId).set(omit(['addressId'], address))
-  
   
   const removeAddress = async (userId: string, addressId: string): Promise<void> => 
     db.collection(USERS).doc(userId).collection(ADDRESSES).doc(addressId).delete()

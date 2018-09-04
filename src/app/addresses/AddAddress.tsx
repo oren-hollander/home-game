@@ -1,13 +1,17 @@
 import * as React from 'react'
 import { ChangeEvent, Component } from 'react'
-import { connect, MapDispatchToProps } from 'react-redux'
+import { connect } from 'react-redux'
 import TextField from '@material-ui/core/TextField/TextField'
 import Button from '@material-ui/core/es/Button'
 import { Address } from '../../db/types'
 import { addAddress } from './addressesActions'
+import { HomeGameThunkDispatch } from '../state'
+import { isEmpty } from 'lodash/fp'
+import { showError } from '../status/statusActions'
 
 interface AddAddressDispatchProps {
   addAddress: (address: Address) => void
+  showError: (error: string) => void
 }
 
 class AddAddressComponent extends Component<AddAddressDispatchProps, Address> {
@@ -25,8 +29,12 @@ class AddAddressComponent extends Component<AddAddressDispatchProps, Address> {
   }
 
   setAddress = () => {
-    if(this.state.label !== '')
+    if (isEmpty(this.state.label) || isEmpty(this.state.houseNumber) || isEmpty(this.state.street) || isEmpty(this.state.city)) {
+      this.props.showError('Fill in the address details')
+    }
+    else {
       this.props.addAddress(this.state)
+    }
   }
 
   render() {
@@ -43,7 +51,8 @@ class AddAddressComponent extends Component<AddAddressDispatchProps, Address> {
   }
 }
 
-const mapDispatchToProps: MapDispatchToProps<AddAddressDispatchProps, {}> = dispatch => ({
+const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): AddAddressDispatchProps => ({
+  showError: (error: string) => dispatch(showError(error)),
   addAddress: (address: Address) => dispatch(addAddress(address))
 })
 

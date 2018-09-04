@@ -16,15 +16,15 @@ import { AddressesAction } from './addresses/addressesActions'
 import { UsersAction } from './users/usersActions'
 import { RouterAction } from 'connected-react-router';
 
+export type HomeGameAsyncThunkAction<T = void> = ThunkAction<Promise<T>, State, Services, HomeGameAction>
 export type HomeGameThunkAction<T = void> = ThunkAction<T, State, Services, HomeGameAction>
-// export type HomeGameThunkActionCreator<T = void> = ActionCreator<ThunkAction<T, State, Services, HomeGameAction>>
 export type HomeGameThunkDispatch = ThunkDispatch<State, Services, HomeGameAction>
 
 export interface State {
   auth: AuthState,
   friends: FriendsState,
   games: GamesState,
-  addresses: Address[],
+  addresses: ReadonlyArray<Address>,
   status: StatusState
 }
 

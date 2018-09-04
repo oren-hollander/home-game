@@ -1,52 +1,36 @@
 import { Address } from '../../db/types'
-import { HomeGameThunkAction } from '../state'
+import { HomeGameAsyncThunkAction } from '../state'
 import { getUser } from '../auth/authReducer'
-import { map } from 'lodash/fp'
+import { push } from 'connected-react-router';
 
 export const SET_ADDRESSES = 'addresses/set'
-export const ADD_ADDRESS = 'addresses/add'
-export const REMOVE_ADDRESS = 'addresses/remove'
-export const UPDATE_ADDRESS = 'addresses/update'
-export const LOAD_ADDRESSES = 'addresses/load'
 
-export const setAddresses = (addresses: Address[]) => ({ type: SET_ADDRESSES as typeof SET_ADDRESSES, addresses })
+export const setAddresses = (addresses: ReadonlyArray<Address>) => ({ type: SET_ADDRESSES as typeof SET_ADDRESSES, addresses })
 export type SetAddresses = ReturnType<typeof setAddresses>
 
-export const addAddress = (address: Address) => ({ type: ADD_ADDRESS as typeof ADD_ADDRESS, address })
-export type AddAddress = ReturnType<typeof addAddress>
+export type AddressesAction = SetAddresses 
 
-export const removeAddress = (addressId: string) => ({ type: REMOVE_ADDRESS as typeof REMOVE_ADDRESS, addressId })
-export type RemoveAddress = ReturnType<typeof removeAddress>
-
-export const updateAddress = (address: Address) => ({ type: UPDATE_ADDRESS as typeof UPDATE_ADDRESS, address })
-export type UpdateAddress = ReturnType<typeof updateAddress>
-
-export const loadAddresses = () => ({ type: LOAD_ADDRESSES as typeof LOAD_ADDRESSES })
-export type LoadAddresses = ReturnType<typeof loadAddresses>
-
-export type AddressesAction = SetAddresses | AddAddress | RemoveAddress | UpdateAddress | LoadAddresses
-
-export const addAddressEffect = (address: Address): HomeGameThunkAction => async (dispatch, getState, { db }) => {
+export const addAddress = (address: Address): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).userId
-  await db.collection('users').doc(userId).collection('addresses').add(address)
-  dispatch(loadAddresses())
+  await db.createAddress(userId, address)
+  await dispatch(loadAddresses())
+  await dispatch(push('/addresses'))
 }
 
-export const updateAddressEffect = (address: Address): HomeGameThunkAction => async (dispatch, getState, { db }) => {
+export const updateAddress = (address: Address): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).userId
-  await db.collection('users').doc(userId).collection('addresses').doc(address.label).set(address)
-  dispatch(loadAddresses())
+  await db.updateAddress(userId, address)
+  await dispatch(loadAddresses())
 }
 
-export const removeAddressEffect = (addressId: string): HomeGameThunkAction => async (dispatch, getState, { db }) => {
+export const removeAddress = (addressId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).userId
-  await db.collection('users').doc(userId).collection('addresses').doc(addressId).delete()
-  dispatch(loadAddresses())
+  await db.removeAddress(userId, addressId)
+  await dispatch(loadAddresses())
 }
 
-export const loadAddressesEffect = (): HomeGameThunkAction => async (dispatch, getState, { db }) => {
+export const loadAddresses = (): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).userId
-  const addressRefs = await db.collection('users').doc(userId).collection('addresses').get()
-  const addresses = map(doc => doc.data() as Address, addressRefs.docs)
+  const addresses = await db.getAddresses(userId)
   dispatch(setAddresses(addresses))
 }

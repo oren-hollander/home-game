@@ -1,6 +1,6 @@
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-import { HomeGameThunkAction } from '../state'
+import { HomeGameAsyncThunkAction } from '../state'
 import { createUserEffect } from '../users/usersActions'
 import { showError, showStatus } from '../status/statusActions'
 import { isEmpty } from 'lodash/fp'
@@ -23,13 +23,13 @@ export type UserSignedOut  = ReturnType<typeof userSignedOut>
 
 export type AuthAction = EmailVerified | UserSignedIn | UserSignedOut 
 
-export const sendEmailVerification = (): HomeGameThunkAction => async (dispatch, getState, { auth }) => {
+export const sendEmailVerification = (): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {
   await auth.currentUser!.sendEmailVerification()
   const email = getUserEmail(getState())
   dispatch(showStatus(`Verification email sent to ${email}`))
 }
 
-export const verifyEmail = (oobCode: string): HomeGameThunkAction => async (dispatch, getState, { auth }) => {
+export const verifyEmail = (oobCode: string): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {
   try {
     await auth.applyActionCode(oobCode)
     await auth.currentUser!.getIdToken(true)
@@ -43,7 +43,7 @@ export const verifyEmail = (oobCode: string): HomeGameThunkAction => async (disp
   }
 }
 
-export const sendPasswordResetEmail = (email: string): HomeGameThunkAction => async (dispatch, getState, { auth} ) => {
+export const sendPasswordResetEmail = (email: string): HomeGameAsyncThunkAction => async (dispatch, getState, { auth} ) => {
   try {
     await auth.sendPasswordResetEmail(email)
     dispatch(showStatus(`Password reset email sent to ${email}`))
@@ -54,7 +54,7 @@ export const sendPasswordResetEmail = (email: string): HomeGameThunkAction => as
   }
 } 
 
-export const resetPassword = (oobCode: string, password: string): HomeGameThunkAction => async (dispatch, getState, { auth }) => {
+export const resetPassword = (oobCode: string, password: string): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {
   try {
     await auth.verifyPasswordResetCode(oobCode)
     await auth.confirmPasswordReset(oobCode, password)
@@ -66,7 +66,7 @@ export const resetPassword = (oobCode: string, password: string): HomeGameThunkA
   }
 }
 
-export const signIn = (email: string, password: string): HomeGameThunkAction => async (dispatch, getState, { auth }) => {
+export const signIn = (email: string, password: string): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {
   try {
     await auth.signInWithEmailAndPassword(email, password)
   }
@@ -75,12 +75,12 @@ export const signIn = (email: string, password: string): HomeGameThunkAction => 
   }
 }
 
-export const signOut = (): HomeGameThunkAction => (dispatch, getState, { auth }) => {
+export const signOut = (): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {
   auth.signOut()
   dispatch(push('/'))
 }
 
-export const registerUser = (email: string, name: string, password: string): HomeGameThunkAction => async (dispatch, getState, { auth }) => {
+export const registerUser = (email: string, name: string, password: string): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {
   if (isEmpty(name)) {
     dispatch(showError('You must provide a name'))
     return

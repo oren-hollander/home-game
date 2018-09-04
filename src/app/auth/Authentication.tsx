@@ -6,6 +6,7 @@ import { connect, MapStateToProps } from 'react-redux'
 import { EmailVerification } from './EmailVerification'
 import { App } from '../app/App'
 import { Signing } from './Signing'
+import { Route } from 'react-router-dom'
 
 interface AuthenticationProps {
   signedIn: boolean,
@@ -16,7 +17,7 @@ namespace UI {
   export const Authentication: SFC<AuthenticationProps> = ({ signedIn, verified }) => {
     if (signedIn) {
       if (verified) {
-        return <App />
+        return <Route component={App} />
       }
       else {
         return <EmailVerification />
