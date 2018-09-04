@@ -12,9 +12,12 @@ import Button from '@material-ui/core/Button/'
 import AddIcon from '@material-ui/icons/Add'
 import { listen } from '../../data/listen'
 import { Date } from '../../ui/Date'
+import { compose } from 'recompose'
+import { State } from '../state';
+import { connect } from 'react-redux';
 
 interface GamesProps {
-  data: ReadonlyArray<Game>
+  games: ReadonlyArray<Game>
 }
 
 namespace UI {
@@ -30,7 +33,7 @@ namespace UI {
                   <Date day={game.timestamp.toDate().getDay()} month={game.timestamp.toDate().getMonth()} year={game.timestamp.toDate().getFullYear()} />
                   {game.gameId}
                 </ListItem>
-              ), this.props.data)
+              ), this.props.games)
             }
           </List>
           <Link to="/games/new"><Button color="primary" variant="fab"><AddIcon /></Button></Link>
@@ -40,4 +43,11 @@ namespace UI {
   }
 }
 
-export const Games = listen(listenToGames, getGames)(UI.Games)
+const mapStateToProps = (state: State): GamesProps => ({
+  games: getGames(state)
+})
+
+export const Games = compose(
+  listen(listenToGames),
+  connect(mapStateToProps)
+)(UI.Games)

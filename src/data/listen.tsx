@@ -1,30 +1,21 @@
 import * as React from 'react'
 import { Component, ComponentType } from 'react'
-import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux'
-import { State, HomeGameThunkAction, HomeGameThunkDispatch } from '../app/state'
-import { Selector } from 'reselect'
-import { Unsubscribe } from 'firebase';
+import { connect } from 'react-redux'
+import { State, HomeGameThunkDispatch, HomeGameAction } from '../app/state'
+import { Unsubscribe } from 'firebase'
 import { noop } from 'lodash/fp'
+import { ThunkAction } from 'redux-thunk'
+import { Services } from '../services/services'
 
-interface CompProps<D> {
-  data: D
-}
+type ListenToData = () => ThunkAction<Unsubscribe, State, Services, HomeGameAction>
 
-type ListenToData = () => HomeGameThunkAction<Unsubscribe>
-
-export const listen = <D extends any>(listen: ListenToData, selector: Selector<State, D>) => (Comp: ComponentType<CompProps<D>>) => {
-  interface ListenStateProps {
-    data: D
-  }
-
-  interface ListenDispatchProps {
+export const listen = (listen: ListenToData) => (Comp: ComponentType) => {
+  interface ListenProps {
     listen: () => Unsubscribe
   }
 
-  type ListenProps = ListenStateProps & ListenDispatchProps
-
   class Listen extends Component<ListenProps> {
-    unsubscribe: Unsubscribe = noop
+    private unsubscribe: Unsubscribe = noop
 
     componentDidMount() {
       this.unsubscribe = this.props.listen()
@@ -35,17 +26,13 @@ export const listen = <D extends any>(listen: ListenToData, selector: Selector<S
     }
 
     render() {
-      return <Comp data={this.props.data} />
+      return <Comp />
     }
   }
 
-  const mapDispatchToProps: MapDispatchToProps<ListenDispatchProps, {}> = (dispatch: HomeGameThunkDispatch): ListenDispatchProps => ({
+  const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): ListenProps => ({
     listen: () => dispatch(listen())
   })
 
-  const mapStateToProps: MapStateToProps<ListenStateProps, {}, State> = state => ({
-    data: selector(state)
-  })
-
-  return connect(mapStateToProps, mapDispatchToProps)(Listen)
+  return connect(undefined, mapDispatchToProps)(Listen)
 }
