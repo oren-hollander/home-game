@@ -59,6 +59,7 @@ export const resetPassword = (oobCode: string, password: string): HomeGameThunkA
     await auth.verifyPasswordResetCode(oobCode)
     await auth.confirmPasswordReset(oobCode, password)
     dispatch(showStatus('Password successfully changed'))
+    dispatch(push('/'))
   }
   catch (e) {
     dispatch(showError(e.message))
