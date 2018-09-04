@@ -1,22 +1,23 @@
 import * as React from 'react'
-import {connect} from 'react-redux'
-import {State} from '../state'
-import {SFC} from 'react'
-import {getUserId} from '../auth/authReducer'
-
+import { connect } from 'react-redux'
+import { State } from '../state'
+import { SFC } from 'react'
+import { getUser } from '../auth/authReducer'
 
 interface InviteFriendProps {
   userId: string
 }
 
-export const InviteFriendComponent: SFC<InviteFriendProps> = ({userId}) =>
-  <div>
-    Send this link to your friend:
+namespace UI {
+  export const InviteFriend: SFC<InviteFriendProps> = ({ userId }) =>
+    <div>
+      Send this link to your friend:
     <pre>https://homegame.app/addFriend/{userId}</pre>
-  </div>
+    </div>
+}
 
 const mapStateToProps = (state: State): InviteFriendProps => ({
-  userId: getUserId(state)!
+  userId: getUser(state).userId
 })
 
-export const InviteFriend = connect(mapStateToProps)(InviteFriendComponent)
+export const InviteFriend = connect(mapStateToProps)(UI.InviteFriend)

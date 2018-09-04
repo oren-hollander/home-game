@@ -1,30 +1,19 @@
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-import {Action, Dispatch, MiddlewareAPI} from 'redux'
-import {Services} from '../../services/services'
-import {createEffectHandler, Effect, EffectMap} from '../../effect/effect'
-import {State} from '../state'
-import {User} from '../../db/types'
-import {setUser} from '../users/usersActions'
+import { HomeGameThunkAction } from '../state'
+import { createUserEffect } from '../users/usersActions'
+import { showError, showStatus } from '../status/statusActions'
+import { isEmpty } from 'lodash/fp'
+import { push } from 'connected-react-router'
+import { getUserEmail } from './authReducer'
 
-export const SEND_EMAIL_VERIFICATION = 'auth/send-email-verification'
-export const VERIFY_EMAIL = 'auth/verify-email'
-export const RESET_PASSWORD = 'auth/reset-password'
 export const EMAIL_VERIFIED = 'auth/email-verified'
 export const EMAIL_NOT_VERIFIED = 'auth/email-not-verified'
 export const USER_SIGNED_IN = 'auth/user-signed-in'
 export const USER_SIGNED_OUT = 'auth/user-signed-out'
-export const SIGN_IN = 'auth/sign-in'
-export const SIGN_OUT = 'auth/sign-out'
-
-export const sendEmailVerification = () => ({type: SEND_EMAIL_VERIFICATION as typeof SEND_EMAIL_VERIFICATION})
-export type SendEmailVerification = ReturnType<typeof sendEmailVerification>
 
 const emailVerified = () => ({type: EMAIL_VERIFIED as typeof EMAIL_VERIFIED})
 export type EmailVerified = ReturnType<typeof emailVerified>
-
-const emailNotVerified = (message: string) => ({type: EMAIL_NOT_VERIFIED as typeof EMAIL_NOT_VERIFIED, message})
-export type EmailNotVerified  = ReturnType<typeof emailNotVerified>
 
 export const userSignedIn = (user: firebase.User) => ({type: USER_SIGNED_IN as typeof USER_SIGNED_IN, user})
 export type UserSignedIn = ReturnType<typeof userSignedIn>
@@ -32,59 +21,79 @@ export type UserSignedIn = ReturnType<typeof userSignedIn>
 export const userSignedOut = () => ({type: USER_SIGNED_OUT as typeof USER_SIGNED_OUT})
 export type UserSignedOut  = ReturnType<typeof userSignedOut>
 
-export const verifyEmail = (oobCode: string) => ({ type: VERIFY_EMAIL as typeof VERIFY_EMAIL, oobCode })
-export type VerifyEmail = ReturnType<typeof verifyEmail>
+export type AuthAction = EmailVerified | UserSignedIn | UserSignedOut 
 
-export const resetPassword = (oobCode: string) => ({ type: RESET_PASSWORD as typeof RESET_PASSWORD, oobCode })
-export type ResetPassword = ReturnType<typeof resetPassword>
-
-export const signIn = (email: string, password: string) => ({type: SIGN_IN as typeof SIGN_IN, email, password})
-export type SignIn = ReturnType<typeof signIn>
-
-export const signOut = () => ({type: SIGN_OUT as typeof SIGN_OUT})
-export type SignOut = ReturnType<typeof signOut>
-
-export type AuthAction = SendEmailVerification | VerifyEmail | ResetPassword | EmailVerified | EmailNotVerified | UserSignedIn | UserSignedOut | SignIn | SignOut
-
-export const sendEmailVerificationEffect: Effect<VerifyEmail> = async (verifyEmail: VerifyEmail, store: MiddlewareAPI<Dispatch, State>, {auth}: Services) => {
-  auth.currentUser!.sendEmailVerification()
+export const sendEmailVerification = (): HomeGameThunkAction => async (dispatch, getState, { auth }) => {
+  await auth.currentUser!.sendEmailVerification()
+  const email = getUserEmail(getState())
+  dispatch(showStatus(`Verification email sent to ${email}`))
 }
 
-export const verifyEmailEffect: Effect<VerifyEmail> = async (verifyEmail: VerifyEmail, store: MiddlewareAPI<Dispatch, State>, { auth }: Services) => {
+export const verifyEmail = (oobCode: string): HomeGameThunkAction => async (dispatch, getState, { auth }) => {
   try {
-    await auth.applyActionCode(verifyEmail.oobCode)
-    store.dispatch(emailVerified())
+    await auth.applyActionCode(oobCode)
+    await auth.currentUser!.getIdToken(true)
+    await auth.currentUser!.reload()
+    dispatch(createUserEffect({ userId: auth.currentUser!.uid, name: auth.currentUser!.displayName! }))
+    dispatch(push('/'))
+    dispatch(emailVerified())
   }
   catch (e) {
-    store.dispatch(emailNotVerified(e.message))
+    dispatch(showError(e.message))
   }
 }
 
-export const resetPasswordEffect: Effect<ResetPassword> = async (resetPassword: ResetPassword, store: MiddlewareAPI<Dispatch, State>, { auth }: Services) => {
-  await auth.applyActionCode(resetPassword.oobCode)
+export const sendPasswordResetEmail = (email: string): HomeGameThunkAction => async (dispatch, getState, { auth} ) => {
+  try {
+    await auth.sendPasswordResetEmail(email)
+    dispatch(showStatus(`Password reset email sent to ${email}`))
+
+  }
+  catch (e) {
+    dispatch(showError(e.message))
+  }
+} 
+
+export const resetPassword = (oobCode: string, password: string): HomeGameThunkAction => async (dispatch, getState, { auth }) => {
+  try {
+    await auth.verifyPasswordResetCode(oobCode)
+    await auth.confirmPasswordReset(oobCode, password)
+    dispatch(showStatus('Password successfully changed'))
+  }
+  catch (e) {
+    dispatch(showError(e.message))
+  }
 }
 
-const signInEffect: Effect<SignIn> = (signIn, store, services) => {
-  services.auth.signInWithEmailAndPassword(signIn.email, signIn.password)
+export const signIn = (email: string, password: string): HomeGameThunkAction => async (dispatch, getState, { auth }) => {
+  try {
+    await auth.signInWithEmailAndPassword(email, password)
+  }
+  catch (e) {
+    dispatch(showError(e.message))
+  }
 }
 
-const signOutEffect: Effect<SignOut> = (signOut, store, {auth}) => {
+export const signOut = (): HomeGameThunkAction => (dispatch, getState, { auth }) => {
   auth.signOut()
+  dispatch(push('/'))
 }
 
-const userSignedInEffect: Effect<UserSignedIn> = async (userSignedIn, store, {db}) => {
-  const userSnapshot = await db.collection('users').doc(userSignedIn.user.uid).get()
-  const user: User = userSnapshot.data()! as User
-  store.dispatch(setUser(user))
+export const registerUser = (email: string, name: string, password: string): HomeGameThunkAction => async (dispatch, getState, { auth }) => {
+  if (isEmpty(name)) {
+    dispatch(showError('You must provide a name'))
+    return
+  }
+  try {
+    const credentials = await auth.createUserWithEmailAndPassword(email, password)
+    const user = credentials.user!
+    await user.updateProfile({ displayName: name, photoURL: null })
+    // await user.getIdToken(true)
+    // await user.reload()
+    dispatch(userSignedIn(credentials.user!))
+    dispatch(push('/'))
+  }
+  catch(e) { 
+    dispatch(showError(e.message))
+  }
 }
-
-const x: EffectMap<Action<string>> = {
-  [SIGN_IN]: signInEffect,
-  [SIGN_OUT]: signOutEffect,
-  [VERIFY_EMAIL]: verifyEmailEffect,
-  [SEND_EMAIL_VERIFICATION]: sendEmailVerificationEffect,
-  [USER_SIGNED_IN]: userSignedInEffect,
-  [RESET_PASSWORD]: resetPasswordEffect
-}
-
-export const authEffects = createEffectHandler(x)

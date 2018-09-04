@@ -1,15 +1,18 @@
 import * as firebase from 'firebase/app'
 import 'firebase/firestore'
-import { createGameEffect, createGame } from './gamesActions'
+import { createGameEffect } from './gamesActions'
 import { Game } from '../../db/types'
 import { CallbackStore } from '../../services/callbackStore'
 import { Firestore, signInAsAdmin, testConfig } from '../../db/firestore'
+import { GamesDatabase } from '../../db/gamesDB';
 
 describe.skip('game effects', () => {
   let db: firebase.firestore.Firestore
+  let gamesDb: GamesDatabase 
 
   beforeAll(async () => {
     db = Firestore(testConfig)
+    gamesDb = GamesDatabase(db)
     await signInAsAdmin()
   })
  
@@ -30,11 +33,9 @@ describe.skip('game effects', () => {
       }
     }
 
-    const store = {
-      dispatch: jest.fn(),
-      getState: jest.fn()
-    }
+    const dispatch = jest.fn()
+    const getState = jest.fn()
 
-    return createGameEffect(createGame(game), store, {db, auth: firebase.auth(), callbacks: CallbackStore()})
+    return createGameEffect(game)(dispatch, getState, { db, gamesDb, auth: firebase.auth(), callbacks: CallbackStore()})
   })
 })

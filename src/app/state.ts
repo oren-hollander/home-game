@@ -6,24 +6,35 @@ import { friendsReducer, FriendsState } from './friends/friendsReducer'
 import { gamesReducer, GamesState } from './games/gamesReducer'
 import { GamesAction } from './games/gamesActions'
 import { FriendsAction } from './friends/friendsActions'
-import { User, Address } from '../db/types'
-import { usersReducer } from './users/usersReducer'
+import { StatusAction } from './status/statusActions'
+import { Address } from '../db/types'
 import { addressesReducer } from './addresses/addressesReducer'
+import { statusReducer, StatusState } from './status/statusReducer'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+import { Services } from '../services/services'
+import { AddressesAction } from './addresses/addressesActions'
+import { UsersAction } from './users/usersActions'
+import { RouterAction } from 'connected-react-router';
+
+export type HomeGameThunkAction<T = void> = ThunkAction<T, State, Services, HomeGameAction>
+// export type HomeGameThunkActionCreator<T = void> = ActionCreator<ThunkAction<T, State, Services, HomeGameAction>>
+export type HomeGameThunkDispatch = ThunkDispatch<State, Services, HomeGameAction>
 
 export interface State {
   auth: AuthState,
   friends: FriendsState,
   games: GamesState,
-  user: User | null,
-  addresses: Address[]
+  addresses: Address[],
+  status: StatusState
 }
 
-export type Action = AuthAction | GamesAction | FriendsAction
+export type HomeGameAction = AuthAction | GamesAction | FriendsAction | StatusAction | AddressesAction | UsersAction | RouterAction
 
-export const reducer: Reducer<State, Action> = combineReducers({
+export const reducer: Reducer<State, HomeGameAction> = combineReducers({
   auth: authReducer,
   friends: friendsReducer,
   games: gamesReducer,
-  user: usersReducer,
-  addresses: addressesReducer
+  addresses: addressesReducer,
+  status: statusReducer
 })
+

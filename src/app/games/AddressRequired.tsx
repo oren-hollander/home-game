@@ -1,6 +1,6 @@
 import * as React from 'react'
-import {SFC} from 'react'
-import {Link} from 'react-router-dom'
+import { SFC } from 'react'
+import { Link } from 'react-router-dom'
 
 export const AddressRequired: SFC = () =>
   <div>

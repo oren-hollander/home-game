@@ -1,6 +1,5 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { App } from './app/app/App'
+import { render } from 'react-dom'
 import { Route, Switch } from 'react-router-dom'
 import './index.css'
 import registerServiceWorker from './registerServiceWorker'
@@ -14,39 +13,35 @@ import 'typeface-roboto'
 import { userSignedIn, userSignedOut } from './app/auth/authActions'
 import { createBrowserHistory } from 'history'
 import { connectRouter, routerMiddleware, ConnectedRouter } from 'connected-react-router'
-import { createEffectsMiddleware, combineEffectHandlers, EffectHandler } from './effect/effect'
-import { friendsEffects } from './app/friends/friendsActions'
-import { authEffects } from './app/auth/authActions'
-import { gamesEffects } from './app/games/gamesActions'
-import { usersEffects } from './app/users/usersActions'
 import { CallbackStore } from './services/callbackStore'
 import { Firestore, productionConfig } from './db/firestore'
-import { Auth } from './app/auth/Auth'
+import { Authentication } from './app/auth/Authentication'
+import { AuthHandler } from './app/auth/AuthHandler'
+import { GamesDatabase } from './db/gamesDB'
+import { Services } from './services/services'
+import * as thunk from 'redux-thunk'
+import { now, max, delay } from 'lodash/fp'
 
 const history = createBrowserHistory()
 
 const firestore = Firestore(productionConfig)
 
-const services = {
+const services: Services = {
   db: firestore,
+  gamesDb: GamesDatabase(firestore),
   auth: firebase.auth(),
   callbacks: CallbackStore()
 }
-
-const effects: EffectHandler = combineEffectHandlers(friendsEffects, authEffects, gamesEffects, usersEffects)
 
 const store = createStore(
   connectRouter(history)(reducer),
   applyMiddleware(
     routerMiddleware(history),
-    createEffectsMiddleware(effects, services)
+    thunk.default.withExtraArgument(services)
   )
 )
 
-if(!firebase.auth().currentUser){
-  store.dispatch(userSignedOut())
-}
-
+const ts = now()
 firebase.auth().onAuthStateChanged(user => {
   if(user){
     store.dispatch(userSignedIn(user))
@@ -54,18 +49,27 @@ firebase.auth().onAuthStateChanged(user => {
   else {
     store.dispatch(userSignedOut())
   }
+  const ms = max([0, 0 - (now() - ts)])!
+  delay(ms, renderApp)
 })
 
-ReactDOM.render(
-  <Provider store={store}>
-    <ConnectedRouter history={history}>
-      <Switch>
-        <Route path="/auth" component={Auth}/>
-        <Route component={App}/>
-      </Switch>
-    </ConnectedRouter>
-  </Provider>,
-  document.getElementById('root') as HTMLElement
-)
+const renderApp = () => {
+  render(
+    <Provider store={store}>
+      <ConnectedRouter history={history}>
+        <Switch>
+          <Route path="/auth" component={AuthHandler} />
+          <Route component={Authentication} />
+        </Switch>
+      </ConnectedRouter>
+    </Provider>,
+    document.getElementById('root') as HTMLElement
+  )
+
+}
+
+const Welcome = () => <div>Welcome. Loading...</div>
+
+render(<Welcome />, document.getElementById('root') as HTMLElement)
 
 registerServiceWorker()

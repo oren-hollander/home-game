@@ -1,26 +1,19 @@
 import * as React from 'react'
-import {connect} from 'react-redux'
-import {State} from '../state'
-import {isUserSignedIn} from './authReducer'
-import {Dispatch} from 'redux'
+import {connect, MapDispatchToProps} from 'react-redux'
 import {signOut} from './authActions'
+import { HomeGameThunkDispatch } from '../state'
+import Button from '@material-ui/core/Button'
 
 interface SignOutProps {
-  isSignedIn: boolean,
   signOut: () => void
 }
 
-const SignOutComponent = ({isSignedIn, signOut}: SignOutProps) => isSignedIn ? <button onClick={signOut}>Sign Out</button> : null
+namespace UI {
+  export const SignOut = ({ signOut }: SignOutProps) => <Button color="primary" variant="contained" onClick={signOut}>Sign Out</Button>
+}
 
-const mapStateToProps = (state: State) => ({
-  isSignedIn: isUserSignedIn(state)
+const mapDispatchToProps: MapDispatchToProps<SignOutProps, {}> = (dispatch: HomeGameThunkDispatch) => ({
+  signOut: () => dispatch(signOut())
 })
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  signOut: () => {
-    const so = signOut()
-    dispatch(so)
-  }
-})
-
-export const SignOut = connect(mapStateToProps, mapDispatchToProps)(SignOutComponent)
+export const SignOut = connect(undefined, mapDispatchToProps)(UI.SignOut)

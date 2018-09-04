@@ -1,9 +1,6 @@
-import { createEffectHandler } from '../../effect/effect'
 import { Address } from '../../db/types'
-import { Dispatch, MiddlewareAPI } from 'redux'
-import { State } from '../state'
-import { Services } from '../../services/services'
-import { getUserId } from '../auth/authReducer'
+import { HomeGameThunkAction } from '../state'
+import { getUser } from '../auth/authReducer'
 import { map } from 'lodash/fp'
 
 export const SET_ADDRESSES = 'addresses/set'
@@ -29,34 +26,27 @@ export type LoadAddresses = ReturnType<typeof loadAddresses>
 
 export type AddressesAction = SetAddresses | AddAddress | RemoveAddress | UpdateAddress | LoadAddresses
 
-export const addAddressEffect = async (addAddress: AddAddress, store: MiddlewareAPI<Dispatch, State>, { db }: Services) => {
-  const userId = getUserId(store.getState())!
-  await db.collection('users').doc(userId).collection('addresses').add(addAddress.address)
-  store.dispatch(loadAddresses())
+export const addAddressEffect = (address: Address): HomeGameThunkAction => async (dispatch, getState, { db }) => {
+  const userId = getUser(getState()).userId
+  await db.collection('users').doc(userId).collection('addresses').add(address)
+  dispatch(loadAddresses())
 }
 
-export const updateAddressEffect = async (updateAddress: UpdateAddress, store: MiddlewareAPI<Dispatch, State>, { db }: Services) => {
-  const userId = getUserId(store.getState())!
-  await db.collection('users').doc(userId).collection('addresses').doc(updateAddress.address.label).set(updateAddress.address)
-  store.dispatch(loadAddresses())
+export const updateAddressEffect = (address: Address): HomeGameThunkAction => async (dispatch, getState, { db }) => {
+  const userId = getUser(getState()).userId
+  await db.collection('users').doc(userId).collection('addresses').doc(address.label).set(address)
+  dispatch(loadAddresses())
 }
 
-export const removeAddressEffect = async (removeAddress: RemoveAddress, store: MiddlewareAPI<Dispatch, State>, { db }: Services) => {
-  const userId = getUserId(store.getState())!
-  await db.collection('users').doc(userId).collection('addresses').doc(removeAddress.addressId).delete()
-  store.dispatch(loadAddresses())
+export const removeAddressEffect = (addressId: string): HomeGameThunkAction => async (dispatch, getState, { db }) => {
+  const userId = getUser(getState()).userId
+  await db.collection('users').doc(userId).collection('addresses').doc(addressId).delete()
+  dispatch(loadAddresses())
 }
 
-export const loadAddressesEffect = async (loadAddresses: LoadAddresses, store: MiddlewareAPI<Dispatch, State>, { db }: Services) => {
-  const userId = getUserId(store.getState())!
+export const loadAddressesEffect = (): HomeGameThunkAction => async (dispatch, getState, { db }) => {
+  const userId = getUser(getState()).userId
   const addressRefs = await db.collection('users').doc(userId).collection('addresses').get()
   const addresses = map(doc => doc.data() as Address, addressRefs.docs)
-  store.dispatch(setAddresses(addresses))
+  dispatch(setAddresses(addresses))
 }
-
-export const addressesEffects = createEffectHandler({
-  [ADD_ADDRESS]: addAddressEffect,
-  [REMOVE_ADDRESS]: removeAddressEffect,
-  [UPDATE_ADDRESS]: updateAddressEffect,
-  [LOAD_ADDRESSES]: loadAddressesEffect
-})
