@@ -1,32 +1,41 @@
 import * as React from 'react'
-import {Component} from 'react'
-import {Redirect, RouteComponentProps} from 'react-router-dom'
-import {connect} from 'react-redux'
-import {Dispatch} from 'redux'
-import {addFriend} from './friendsActions'
+import { Component } from 'react'
+import { Redirect, RouteComponentProps } from 'react-router-dom'
+import { connect } from 'react-redux'
+import { acceptFriendInvitation } from './friendsActions'
+import { HomeGameThunkDispatch } from '../state';
+import { parse } from 'query-string'
 
 interface AddFriendProps  {
-  addFriend: (playerId: string) => void
+  acceptFriendInvitation: (playerId: string, invitationId: string) => void
 }
 
-export class AddFriendComponent extends Component<RouteComponentProps<{playerId: string}> & AddFriendProps, {loaded: boolean}> {
-
-  state = {loaded: false}
-
-  componentDidMount() {
-    this.props.addFriend(this.props.match.params.playerId)
-    this.setState({loaded: true})
+namespace UI {
+  interface AddFriendState {
+    loaded: boolean
   }
 
-  render() {
-    return this.state.loaded ? null : <Redirect to='/'/>
+  export class AddFriend extends Component<RouteComponentProps<{}> & AddFriendProps, AddFriendState> {
+    state: AddFriendState = { loaded: false }
+
+    async componentDidMount() {
+      const { userId, invitationId } = parse(this.props.location.search)
+      await this.props.acceptFriendInvitation(userId, invitationId)
+      this.setState({ loaded: true })
+    }
+
+    render() {
+      return this.state.loaded 
+        ? <> Connecting friends... </>
+        : <Redirect to='/' />
+    }
   }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  addFriend: (playerId: string) => {
-    dispatch(addFriend(playerId))
+const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): AddFriendProps => ({
+  acceptFriendInvitation: (playerId: string, invitationId: string) => {
+    dispatch(acceptFriendInvitation(playerId, invitationId))
   }
 })
 
-export const AddFriend = connect(undefined, mapDispatchToProps)(AddFriendComponent)
+export const AddFriend = connect(undefined, mapDispatchToProps)(UI.AddFriend)

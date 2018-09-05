@@ -8,42 +8,43 @@ export const LOAD_FRIENDS = 'friends/load'
 export const SET_FRIENDS = 'friends/set'
 export const CONNECT_FRIENDS = 'friends/connect'
 
-export const addFriend = (friendId: string) => ({type: ADD_FRIEND as typeof ADD_FRIEND, friendId})
-export type AddFriend = ReturnType<typeof addFriend>
-
-export const removeFriend = (userId: string, friendId: string) => ({type: REMOVE_FRIEND as typeof REMOVE_FRIEND, userId, friendId})
-export type RemoveFriend = ReturnType<typeof removeFriend>
-
-export const loadFriends = (userId: string) => ({type: LOAD_FRIENDS as typeof LOAD_FRIENDS, payload: {userId}})
-export type LoadFriends = ReturnType<typeof loadFriends>
-
 export const setFriends = (friendIds: ReadonlyArray<string>) => ({ type: SET_FRIENDS as typeof SET_FRIENDS, payload: { friendIds } })
 export type SetFriends = ReturnType<typeof setFriends>
 
-export const connectFriends = (friendId: string) => ({ type: CONNECT_FRIENDS as typeof CONNECT_FRIENDS, friendId })
-export type ConnectFriends = ReturnType<typeof connectFriends>
+export type FriendsAction = SetFriends 
 
-export type FriendsAction = AddFriend | RemoveFriend | LoadFriends | SetFriends | ConnectFriends
+export const createFriendInvitation = (): HomeGameAsyncThunkAction<string> => async (dispatch, getState, { db }) => {
+  const userId = getUser(getState()).userId
+  return await db.createFriendInvitation(userId)
+}
 
-export const addFriendEffect = (friendId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
-  const userId = getUser(getState()).name
+export const acceptFriendInvitation = (friendId: string, invitationId: string): HomeGameAsyncThunkAction<void> => async (dispatch, getState, { db }) => {
+  const userId = getUser(getState()).userId
+  return await db.acceptFriendInvitation(userId, invitationId, friendId)
+}
+
+export const addFriend = (friendId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+  const userId = getUser(getState()).userId
   await db.addFriend(userId, friendId)
+  await dispatch(loadFriends())
 }
 
-export const removeFriendEffect = (friendId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
-  const userId = getUser(getState()).name
+export const removeFriend = (friendId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+  const userId = getUser(getState()).userId
   await db.removeFriend(userId, friendId)
+  await dispatch(loadFriends())
 }
 
-export const loadFriendsEffect = (): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
-  const userId = getUser(getState()).name
+export const loadFriends = (): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+  const userId = getUser(getState()).userId
   const friends = await db.getFriends(userId)
   const friendIds = map(user => user.userId, friends)
   dispatch(setFriends(friendIds))
 }
 
-export const connectFriendsEffect = (friendId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
-  const userId = getUser(getState()).name
+export const connectFriends = (friendId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+  const userId = getUser(getState()).userId
   await db.addFriend(userId, friendId)
   await db.addFriend(friendId, userId)
+  await dispatch(loadFriends())
 }

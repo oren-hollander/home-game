@@ -1,23 +1,59 @@
 import * as React from 'react'
+import { Component } from 'react'
 import { connect } from 'react-redux'
-import { State } from '../state'
-import { SFC } from 'react'
+import { State, HomeGameThunkDispatch } from '../state'
 import { getUser } from '../auth/authReducer'
+import { createFriendInvitation } from './friendsActions'
+import { isEmpty } from 'lodash/fp'
 
-interface InviteFriendProps {
+interface InviteFriendStateProps {
   userId: string
 }
 
-namespace UI {
-  export const InviteFriend: SFC<InviteFriendProps> = ({ userId }) =>
-    <div>
-      Send this link to your friend:
-    <pre>https://homegame.app/addFriend/{userId}</pre>
-    </div>
+interface InviteFriendDispatchProps {
+  createFriendInvitation: () => Promise<string>
 }
 
-const mapStateToProps = (state: State): InviteFriendProps => ({
+type InviteFriendProps = InviteFriendStateProps & InviteFriendDispatchProps
+
+namespace UI {
+  interface InviteFriendState {
+    invitationId: string
+  }
+
+  export class InviteFriend extends Component<InviteFriendProps, InviteFriendState> {
+    state: InviteFriendState = {
+      invitationId: ''
+    }
+
+    createFriendInvitation = async () => {
+      const invitationId = await this.props.createFriendInvitation()
+      this.setState({ invitationId })
+    }
+
+    render() {
+      return (
+        <div>
+          { 
+            isEmpty(this.state.invitationId) 
+              ? <button onClick={this.createFriendInvitation}>Create Invitation</button>
+              : <>
+                  Send this link to your friend:
+                  <pre>https://homegame.app/addFriend?userId={this.props.userId}&invitationId={this.state.invitationId}</pre>
+                </>
+          }
+        </div>
+      )
+    }
+  }
+}
+
+const mapStateToProps = (state: State): InviteFriendStateProps => ({
   userId: getUser(state).userId
 })
 
-export const InviteFriend = connect(mapStateToProps)(UI.InviteFriend)
+const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): InviteFriendDispatchProps => ({
+  createFriendInvitation: () => dispatch(createFriendInvitation())
+})
+
+export const InviteFriend = connect(mapStateToProps, mapDispatchToProps)(UI.InviteFriend)

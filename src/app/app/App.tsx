@@ -36,7 +36,7 @@ namespace UI {
         </Route>
         <Route path='/games/new' component={NewGame} />
         <Route path='/games' component={Games} />
-        <Route path='/addFriend/:playerId' component={AddFriend} />
+        <Route path='/addFriend' component={AddFriend} />
         <Route path='/inviteFriend' component={InviteFriend} />
         <Route path='/addresses/new' component={AddAddress} />
         <Route path='/addresses' component={Addresses} />

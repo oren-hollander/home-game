@@ -39,8 +39,8 @@ namespace UI {
     }
 
     updateAddress = (e: ChangeEvent<HTMLSelectElement>) => {
-      console.log(e.target.value)
-      // this.setState({addressId: e.target.selectedIndex })
+      // console.log(e.target.value)
+      this.setState({addressId: e.target.value})
     }
 
     render() {
@@ -72,6 +72,7 @@ namespace UI {
 const mapStateToProps = (state: State): NewGameProps => ({
   addresses: getAddresses(state)
 })
+
 export const NewGame = compose(
   load(loadAddresses),
   connect(mapStateToProps)
