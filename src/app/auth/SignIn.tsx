@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { ChangeEvent, Component } from 'react'
-import Button from '@material-ui/core/Button'
 import { connect, MapDispatchToProps } from 'react-redux'
 import { signIn } from './authActions'
 import { merge } from 'lodash/fp'
@@ -49,9 +48,9 @@ namespace UI {
               <input type="password" placeholder="password" onChange={this.updateField('password')} />
             </label>
           </div>
-          <Button color="primary" variant="contained" onClick={this.signIn}>
+          <button onClick={this.signIn}>
             Sign In
-          </Button>
+          </button>
           <p>
             Forgot your password?
             <Link to="/reset-password">Reset Password</Link>

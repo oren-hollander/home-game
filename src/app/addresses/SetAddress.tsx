@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { ChangeEvent, Component } from 'react'
-import Button from '@material-ui/core/es/Button'
 import { Address } from '../../db/types'
 import { isEmpty } from 'lodash/fp'
 
@@ -59,7 +58,7 @@ export class SetAddress extends Component<SetAddressProps, Address> {
         <input defaultValue={this.state.street} placeholder="Street" onChange={this.change('street')} />
         <input defaultValue={this.state.city} placeholder="City" onChange={this.change('city')} />
         <input defaultValue={this.state.notes} placeholder="Notes" onChange={this.change('notes')} />
-        <Button variant="contained" color="primary" onClick={this.setAddress}>{this.props.buttonLabel}</Button>
+        <button onClick={this.setAddress}>{this.props.buttonLabel}</button>
       </div>
     )
   }

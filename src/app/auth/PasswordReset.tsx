@@ -1,8 +1,6 @@
 import * as React from 'react'
 import { Component, ChangeEvent } from 'react'
 import { isEmpty } from 'lodash/fp'
-import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography'
 import { connect, MapDispatchToProps } from 'react-redux'
 import { sendPasswordResetEmail } from './authActions'
 import { HomeGameThunkDispatch } from '../state'
@@ -46,7 +44,7 @@ namespace UI {
 
     render() {
       return <>
-        <Typography color="primary" variant="caption">
+        <div>
           <p>
             To verify your email, click on the 'Send' button.
           </p>
@@ -56,9 +54,9 @@ namespace UI {
           <p>
             Click on that link to verify your email address
           </p>
-        </Typography>
+        </div>
         <input type="email" onChange={this.emailChanged} />
-        <Button color="primary" variant="contained" onClick={this.sendPasswordResetEmail}>Send</Button>
+        <button onClick={this.sendPasswordResetEmail}>Send</button>
       </>
     }
   }

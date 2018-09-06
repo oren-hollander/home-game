@@ -1,8 +1,6 @@
 import * as React from 'react'
 import { ChangeEvent, Component } from 'react'
-import Typography from '@material-ui/core/Typography'
 import { Address, Game } from '../../db/types'
-import TextField from '@material-ui/core/TextField/TextField'
 import { Link } from 'react-router-dom'
 import { load } from '../../data/load'
 import { loadAddresses } from '../addresses/addressesActions'
@@ -30,7 +28,7 @@ namespace UI {
       addressId: isEmpty(this.props.addresses) ? '' : head(this.props.addresses)!.addressId
     }
 
-    setText = (key: keyof NewGameState) => (event: ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+    setText = (key: keyof NewGameState) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       this.setState({ [key]: event.target.value } as {})
     }
 
@@ -51,10 +49,10 @@ namespace UI {
       }
       return (
         <div>
-          <Typography variant="title" color="inherit">New Game</Typography>
+          New Game
           <form autoComplete="off">
-            <TextField margin='normal' label='Start Time' type='text' onChange={this.setText('startTime')} />
-            <TextField margin='normal' multiline={true} label='Notes' rows='4' onChange={this.setText('description')} />
+            <input type='text' onChange={this.setText('startTime')} />
+            <textarea onChange={this.setText('description')} />
             <label>
               Address
             <select onChange={this.updateAddress}>

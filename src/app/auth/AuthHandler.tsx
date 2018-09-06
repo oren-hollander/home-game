@@ -5,11 +5,10 @@ import { parse } from 'query-string'
 import { connect, MapDispatchToProps } from 'react-redux'
 import { HomeGameThunkDispatch } from '../state'
 import { verifyEmail, resetPassword } from './authActions'
-import { Page } from '../../ui/page'
-import { Toolbar } from '../../ui/toolbar'
-import { StatusBar } from '../../ui/statusBar'
+import { Page } from '../../ui/Page'
+import { Toolbar } from '../../ui/Toolbar'
+import { StatusBar } from '../../ui/StatusBar'
 import { Link } from 'react-router-dom'
-import { Button } from '@material-ui/core'
 
 namespace UI {
   interface StateProps {
@@ -68,9 +67,9 @@ namespace UI {
             <label>
               New Password
               <input type="password" placeholder="password" onChange={this.updatePassword} />
-              <Button color="primary" variant="contained" onClick={this.resetPassword}>
+              <button onClick={this.resetPassword}>
                 Reset
-              </Button>
+              </button>
             </label>
           </>
         )

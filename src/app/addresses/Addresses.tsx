@@ -1,13 +1,8 @@
 import * as React from 'react'
 import { Component } from 'react'
 import { Address } from '../../db/types'
-import { Typography } from '@material-ui/core'
-import List from '@material-ui/core/List'
 import { Link } from 'react-router-dom'
-import ListItem from '@material-ui/core/ListItem'
 import { map } from 'lodash/fp'
-import Button from '@material-ui/core/Button/'
-import AddIcon from '@material-ui/icons/Add'
 import { load } from '../../data/load'
 import { loadAddresses } from './addressesActions'
 import { getAddresses } from './addressesReducer'
@@ -24,19 +19,19 @@ namespace UI {
     render() {
       return (
         <div>
-          <Typography variant="title" color="inherit">Addresses</Typography>
-          <List component="nav">
+          Addresses
+          <div>
             {
               map(address => (
-                <ListItem key={address.addressId}>
+                <div key={address.addressId}>
                   <Link to={`/addresses/${address.addressId}`}>
                     {address.label} - {address.houseNumber} {address.street} {address.city} 
                   </Link>
-                </ListItem>
+                </div>
               ), this.props.addresses)
             }
-          </List>
-          <Link to="/create-address"><Button color="primary" variant="fab"><AddIcon /></Button></Link>
+          </div>
+          <Link to="/create-address"><button>New</button></Link>
         </div>
       )
     }

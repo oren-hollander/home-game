@@ -1,15 +1,10 @@
 import * as React from 'react'
 import { Component } from 'react'
 import { Link } from 'react-router-dom'
-import Typography from '@material-ui/core/Typography'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
 import { map } from 'lodash/fp'
 import { Game } from '../../db/types'
 import { listenToGames } from './gamesActions'
 import { getGames } from './gamesReducer'
-import Button from '@material-ui/core/Button/'
-import AddIcon from '@material-ui/icons/Add'
 import { listen } from '../../data/listen'
 import { Date } from '../../ui/Date'
 import { compose } from 'recompose'
@@ -25,18 +20,18 @@ namespace UI {
     render() {
       return (
         <div>
-          <Typography variant="title" color="inherit">Games</Typography>
-          <List component="nav">
+          Games
+          <div>
             {
               map(game => (
-                <ListItem key={game.gameId}>
+                <div key={game.gameId}>
                   <Date day={game.timestamp.toDate().getDay()} month={game.timestamp.toDate().getMonth()} year={game.timestamp.toDate().getFullYear()} />
                   {game.gameId}
-                </ListItem>
+                </div>
               ), this.props.games)
             }
-          </List>
-          <Link to="/games/new"><Button color="primary" variant="fab"><AddIcon /></Button></Link>
+          </div>
+          <Link to="/games/new"><button>New</button></Link>
         </div>
       )
     }

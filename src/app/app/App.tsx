@@ -3,9 +3,7 @@ import { SFC } from 'react'
 import { connect, MapStateToProps } from 'react-redux'
 import { State } from '../state'
 import { getUser } from '../auth/authReducer'
-import { Page } from '../../ui/page'
-import { Toolbar } from '../../ui/toolbar'
-import { StatusBar } from '../../ui/statusBar'
+import { StatusBar } from '../../ui/StatusBar'
 import { SignOut } from '../auth/SignOut'
 import { Switch, Redirect, Route, RouteComponentProps } from 'react-router-dom'
 import { NewGame } from '../games/NewGame'
@@ -13,11 +11,10 @@ import { Games } from '../games/Games'
 import { AddFriend } from '../friends/AddFriend'
 import { InviteFriend } from '../friends/InviteFriend'
 import { AddAddress } from '../addresses/AddAddress'
-import { Typography } from '@material-ui/core'
 import { Addresses } from '../addresses/Addresses'
 import { EditAddress, EditAddressProps } from '../addresses/EditAddress'
 
-const NoMatch = () => <Typography variant="title" color="inherit">404</Typography>
+const NoMatch: SFC = () => <>404</>
 
 interface AppProps {
   name: string
@@ -27,11 +24,11 @@ namespace UI {
   const EditAddressById: SFC<RouteComponentProps<EditAddressProps>> = ({ match }) => <EditAddress addressId={match.params.addressId}/>
 
   export const App: SFC<AppProps> = ({ name }) => 
-    <Page>
-      <Toolbar>
+    <div>
+      <div>
         {name}
         <SignOut/>
-      </Toolbar>
+      </div>
       <Switch>
         <Route exact={true} path='/'>
           {() => <Redirect to='/games' />}
@@ -45,8 +42,10 @@ namespace UI {
         <Route path='/addresses' component={Addresses} />        
         <Route component={NoMatch} />
       </Switch> 
-      <StatusBar/>
-    </Page>
+      <div>
+        <StatusBar />
+      </div>
+    </div>
 }
 
 const mapStateToProps: MapStateToProps<AppProps, {}, State> = (state: State): AppProps => ({

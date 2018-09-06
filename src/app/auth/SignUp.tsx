@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { ChangeEvent, Component } from 'react'
-import Button from '@material-ui/core/Button'
 import { connect, MapDispatchToProps } from 'react-redux'
 import { registerUser } from '../auth/authActions'
 import { ThunkDispatch } from 'redux-thunk'
@@ -54,9 +53,9 @@ namespace UI {
               <input type="password" placeholder="password" onChange={this.updateField('password')} />
             </label>
           </div>
-          <Button color="primary" variant="contained" onClick={this.signUp}>
+          <button onClick={this.signUp}>
             Sign Up
-          </Button>
+          </button>
         </div>
       )
     }

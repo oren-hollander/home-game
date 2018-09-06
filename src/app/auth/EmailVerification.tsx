@@ -1,15 +1,13 @@
 import * as React from 'react'
 import { SFC } from 'react'
-import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography'
 import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux'
 import { sendEmailVerification } from './authActions'
 import { State, HomeGameThunkDispatch } from '../state'
 import { getUser, getUserEmail } from './authReducer'
 import { SignOut } from './SignOut'
-import { Page } from '../../ui/page'
-import { Toolbar } from '../../ui/toolbar'
-import { StatusBar } from '../../ui/statusBar'
+import { Page } from '../../ui/Page'
+import { Toolbar } from '../../ui/Toolbar'
+import { StatusBar } from '../../ui/StatusBar'
 import { showError } from '../status/statusActions'
 
 interface EmailVerificationDispatchProps {
@@ -30,7 +28,7 @@ namespace UI {
       <Toolbar>
         <SignOut />
       </Toolbar>
-      <Typography color="primary" variant="caption">
+      <div>
         <p>
           {name}, the email you signed up with ({email}) is not yet verified.
         </p>
@@ -40,8 +38,8 @@ namespace UI {
         <p>
           An email with a link will be sent to you. click on that link to veryfy your email address.
         </p>
-      </Typography>
-      <Button color="primary" variant="contained" onClick={sendEmailVerification}>Send</Button>
+      </div>
+      <button onClick={sendEmailVerification}>Send</button>
       <StatusBar/>
     </Page>
 }
