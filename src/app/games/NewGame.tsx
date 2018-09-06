@@ -39,7 +39,6 @@ namespace UI {
     }
 
     updateAddress = (e: ChangeEvent<HTMLSelectElement>) => {
-      // console.log(e.target.value)
       this.setState({addressId: e.target.value})
     }
 

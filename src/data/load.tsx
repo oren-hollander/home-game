@@ -7,7 +7,7 @@ import { Services } from '../services/services'
 
 type LoadData = () => ThunkAction<Promise<void>, State, Services, HomeGameAction>
 
-export const load = (loadData: LoadData) => (Comp: ComponentType) => {
+export const load = <T extends any>(loadData: LoadData) => (Comp: ComponentType<T>): ComponentType<T> => {
   interface LoadProps {
     load: () => void
   }
@@ -18,7 +18,7 @@ export const load = (loadData: LoadData) => (Comp: ComponentType) => {
     }
 
     render() {
-      return <Comp />
+      return <Comp {...this.props}/>
     }
   }
 
@@ -26,5 +26,5 @@ export const load = (loadData: LoadData) => (Comp: ComponentType) => {
     load: () => dispatch(loadData())
   })
 
-  return connect(undefined, mapDispatchToProps)(Load)
+  return connect(undefined, mapDispatchToProps)(Load) as {} as ComponentType<T>
 }

@@ -29,12 +29,14 @@ namespace UI {
             {
               map(address => (
                 <ListItem key={address.addressId}>
-                  {address.label} - {address.houseNumber} {address.street} {address.city} 
+                  <Link to={`/addresses/${address.addressId}`}>
+                    {address.label} - {address.houseNumber} {address.street} {address.city} 
+                  </Link>
                 </ListItem>
               ), this.props.addresses)
             }
           </List>
-          <Link to="/addresses/new"><Button color="primary" variant="fab"><AddIcon /></Button></Link>
+          <Link to="/create-address"><Button color="primary" variant="fab"><AddIcon /></Button></Link>
         </div>
       )
     }

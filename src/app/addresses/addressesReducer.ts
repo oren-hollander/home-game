@@ -3,7 +3,7 @@ import { Address } from '../../db/types'
 import { SET_ADDRESSES, AddressesAction } from './addressesActions'
 import { Selector } from 'reselect'
 import { State } from '../state'
-import { isEmpty } from 'lodash/fp'
+import { isEmpty, find } from 'lodash/fp'
 
 export const addressesReducer: Reducer<ReadonlyArray<Address>, AddressesAction> = (addresses = [], action) => {
   switch(action.type) {
@@ -15,4 +15,7 @@ export const addressesReducer: Reducer<ReadonlyArray<Address>, AddressesAction> 
 }
 
 export const getAddresses: Selector<State, ReadonlyArray<Address>> = state => state.addresses
+export const getAddress = (addressId: string): Selector<State, Address> => state =>
+  find(address => address.addressId === addressId, state.addresses)!
+
 export const hasAddresses: Selector<State, boolean> = state => !isEmpty(state.addresses)
