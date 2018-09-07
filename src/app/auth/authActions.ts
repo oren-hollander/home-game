@@ -2,7 +2,7 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import { HomeGameAsyncThunkAction } from '../state'
 import { createUserEffect } from '../users/usersActions'
-import { showError, showStatus } from '../status/statusActions'
+import { ErrorStatus, InfoStatus, SuccessStatus, showStatus } from '../status/statusActions'
 import { isEmpty } from 'lodash/fp'
 import { push } from 'connected-react-router'
 import { getUserEmail } from './authReducer'
@@ -26,7 +26,7 @@ export type AuthAction = EmailVerified | UserSignedIn | UserSignedOut
 export const sendEmailVerification = (): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {
   await auth.currentUser!.sendEmailVerification()
   const email = getUserEmail(getState())
-  dispatch(showStatus(`Verification email sent to ${email}`))
+  dispatch(showStatus(ErrorStatus(`Verification email sent to ${email}`)))
 }
 
 export const verifyEmail = (oobCode: string): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {
@@ -39,18 +39,18 @@ export const verifyEmail = (oobCode: string): HomeGameAsyncThunkAction => async 
     dispatch(emailVerified())
   }
   catch (e) {
-    dispatch(showError(e.message))
+    dispatch(showStatus(ErrorStatus(e.message)))
   }
 }
 
 export const sendPasswordResetEmail = (email: string): HomeGameAsyncThunkAction => async (dispatch, getState, { auth} ) => {
   try {
+    dispatch(showStatus(InfoStatus(`Sending a password reset eamil to ${email}.`)))
     await auth.sendPasswordResetEmail(email)
-    dispatch(showStatus(`Password reset email sent to ${email}`))
-
+    dispatch(showStatus(SuccessStatus(`Password reset email sent to ${email}`)))
   }
   catch (e) {
-    dispatch(showError(e.message))
+    dispatch(showStatus(ErrorStatus(e.message)))
   }
 } 
 
@@ -58,11 +58,11 @@ export const resetPassword = (oobCode: string, password: string): HomeGameAsyncT
   try {
     await auth.verifyPasswordResetCode(oobCode)
     await auth.confirmPasswordReset(oobCode, password)
-    dispatch(showStatus('Password successfully changed'))
+    dispatch(showStatus(SuccessStatus('Password successfully changed')))
     dispatch(push('/'))
   }
   catch (e) {
-    dispatch(showError(e.message))
+    dispatch(showStatus(ErrorStatus(e.message)))
   }
 }
 
@@ -71,30 +71,28 @@ export const signIn = (email: string, password: string): HomeGameAsyncThunkActio
     await auth.signInWithEmailAndPassword(email, password)
   }
   catch (e) {
-    dispatch(showError(e.message))
+    dispatch(showStatus(ErrorStatus(e.message)))
   }
 }
 
 export const signOut = (): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {
-  auth.signOut()
+  await auth.signOut()
   dispatch(push('/'))
 }
 
 export const registerUser = (email: string, name: string, password: string): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {
   if (isEmpty(name)) {
-    dispatch(showError('You must provide a name'))
+    dispatch(showStatus(ErrorStatus('You must provide a name')))
     return
   }
   try {
     const credentials = await auth.createUserWithEmailAndPassword(email, password)
     const user = credentials.user!
     await user.updateProfile({ displayName: name, photoURL: null })
-    // await user.getIdToken(true)
-    // await user.reload()
     dispatch(userSignedIn(credentials.user!))
     dispatch(push('/'))
   }
   catch(e) { 
-    dispatch(showError(e.message))
+    dispatch(showStatus(ErrorStatus(e.message)))
   }
 }

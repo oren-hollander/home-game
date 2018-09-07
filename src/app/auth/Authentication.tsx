@@ -5,6 +5,7 @@ import { State } from '../state'
 import { connect, MapStateToProps } from 'react-redux'
 import { EmailVerification } from './EmailVerification'
 import { App } from '../app/App'
+// import { App } from '../app/AppDemo'
 import { Signing } from './Signing'
 import { Route } from 'react-router-dom'
 

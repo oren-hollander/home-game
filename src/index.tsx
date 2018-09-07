@@ -20,6 +20,7 @@ import { GamesDatabase } from './db/gamesDB'
 import { Services } from './services/services'
 import * as thunk from 'redux-thunk'
 import { now, max, delay } from 'lodash/fp'
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 const history = createBrowserHistory()
 

@@ -1,8 +1,8 @@
 import { Address } from '../../db/types'
 import { HomeGameAsyncThunkAction } from '../state'
 import { getUser } from '../auth/authReducer'
-import { push } from 'connected-react-router';
-
+import { push } from 'connected-react-router'
+import { SuccessStatus, showStatus} from '../status/statusActions'
 export const SET_ADDRESSES = 'addresses/set'
 
 export const setAddresses = (addresses: ReadonlyArray<Address>) => ({ type: SET_ADDRESSES as typeof SET_ADDRESSES, addresses })
@@ -21,6 +21,7 @@ export const updateAddress = (address: Address): HomeGameAsyncThunkAction => asy
   const userId = getUser(getState()).userId
   await db.updateAddress(userId, address)
   await dispatch(loadAddresses())
+  dispatch(showStatus(SuccessStatus('Address updated')))
 }
 
 export const removeAddress = (addressId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {

@@ -1,5 +1,25 @@
+/* html { */
+  /* background-color: lightslategray; */
+/* } */
+
 body {
-  margin: 0;
   padding: 0;
+  margin: 0;
   font-family: sans-serif;
 }
+
+/* div#root {
+  background-color: lightslategray;
+} */
+
+/* a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+a:visited {
+  text-decoration: none;
+} */

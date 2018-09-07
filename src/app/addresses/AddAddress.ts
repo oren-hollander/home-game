@@ -2,11 +2,11 @@ import { connect } from 'react-redux'
 import { Address } from '../../db/types'
 import { addAddress } from './addressesActions'
 import { HomeGameThunkDispatch, State } from '../state'
-import { showError } from '../status/statusActions'
+import { showStatus, ErrorStatus } from '../status/statusActions'
 import { SetAddress, SetAddressDispatchProps, SetAddressStateProps } from './SetAddress'
 
 const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): SetAddressDispatchProps => ({
-  showError: (error: string) => dispatch(showError(error)),
+  showError: (error: string) => dispatch(showStatus(ErrorStatus(error))),
   setAddress: (address: Address) => dispatch(addAddress(address))
 })
 

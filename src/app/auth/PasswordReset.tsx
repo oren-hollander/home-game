@@ -4,7 +4,15 @@ import { isEmpty } from 'lodash/fp'
 import { connect, MapDispatchToProps } from 'react-redux'
 import { sendPasswordResetEmail } from './authActions'
 import { HomeGameThunkDispatch } from '../state'
-import { showError } from '../status/statusActions'
+import { showStatus, ErrorStatus } from '../status/statusActions'
+import { RouteComponentProps } from 'react-router-dom'
+import { parse } from 'query-string'
+import {
+  Form, FormGroup, Button, Input, Label,
+  Jumbotron,
+  Container, Row, Col
+} from 'reactstrap'
+import { Status } from '../status/Status'
 
 interface PasswordResetDispatchProps {
   sendPasswordResetEmail(email: string): void
@@ -19,9 +27,12 @@ interface PasswordResetState {
 type PasswordResetProps =  PasswordResetDispatchProps
 
 namespace UI {
-  export class PasswordReset extends Component<PasswordResetProps, PasswordResetState> {
+  export class PasswordReset extends Component<RouteComponentProps<{}> & PasswordResetProps, PasswordResetState> {
+
+    query = parse(this.props.location.search) as { email: string }
+
     state: PasswordResetState = {
-      email: '',
+      email: this.query.email,
       oobCode: ''
     }
 
@@ -44,7 +55,27 @@ namespace UI {
 
     render() {
       return <>
-        <div>
+        <Container style={{ paddingTop: '16px' }}>
+          <Row>
+            <Col>
+              <Jumbotron>
+                <Form color='primary'>
+                  <FormGroup>
+                    <Label for="email">Email</Label>
+                    <Input type="email" name="email" id="email" placeholder="email" defaultValue={this.state.email} onChange={this.emailChanged} />
+                  </FormGroup>
+                </Form>
+                <Button color="primary" onClick={this.sendPasswordResetEmail}>Send</Button>
+              </Jumbotron>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <Status />
+            </Col>
+          </Row>
+        </Container>
+        {/* <div>
           <p>
             To verify your email, click on the 'Send' button.
           </p>
@@ -55,8 +86,8 @@ namespace UI {
             Click on that link to verify your email address
           </p>
         </div>
-        <input type="email" onChange={this.emailChanged} />
-        <button onClick={this.sendPasswordResetEmail}>Send</button>
+        <input type="email" defaultValue={this.state.email} onChange={this.emailChanged} />
+        <button onClick={this.sendPasswordResetEmail}>Send</button> */}
       </>
     }
   }
@@ -67,7 +98,7 @@ const mapDispatchToProps: MapDispatchToProps<PasswordResetDispatchProps, {}> = (
     dispatch(sendPasswordResetEmail(email))
   },
   showError(error: string) {
-    dispatch(showError(error))
+    dispatch(showStatus(ErrorStatus(error)))
   }
 })
 

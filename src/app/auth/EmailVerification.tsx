@@ -4,11 +4,9 @@ import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux'
 import { sendEmailVerification } from './authActions'
 import { State, HomeGameThunkDispatch } from '../state'
 import { getUser, getUserEmail } from './authReducer'
-import { SignOut } from './SignOut'
 import { Page } from '../../ui/Page'
-import { Toolbar } from '../../ui/Toolbar'
-import { StatusBar } from '../../ui/StatusBar'
-import { showError } from '../status/statusActions'
+import { Status } from '../status/Status'
+import { showStatus, ErrorStatus } from '../status/statusActions'
 
 interface EmailVerificationDispatchProps {
   sendEmailVerification(): void
@@ -25,9 +23,6 @@ type EmailVerificationProps = EmailVerificationStateProps & EmailVerificationDis
 namespace UI {
   export const EmailVerification: SFC<EmailVerificationProps> = ({name, email, sendEmailVerification }) => 
     <Page>
-      <Toolbar>
-        <SignOut />
-      </Toolbar>
       <div>
         <p>
           {name}, the email you signed up with ({email}) is not yet verified.
@@ -40,7 +35,7 @@ namespace UI {
         </p>
       </div>
       <button onClick={sendEmailVerification}>Send</button>
-      <StatusBar/>
+      <Status/>
     </Page>
 }
 
@@ -49,7 +44,7 @@ const mapDispatchToProps: MapDispatchToProps<EmailVerificationDispatchProps, {}>
     dispatch(sendEmailVerification())
   },
   showError(error: string) {
-    dispatch(showError(error))
+    dispatch(showStatus(ErrorStatus(error)))
   }
 })
 

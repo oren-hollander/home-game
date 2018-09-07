@@ -1,11 +1,19 @@
 import * as React from 'react'
-import { ChangeEvent, Component } from 'react'
+import { defaultTo } from 'lodash/fp'
+import { ChangeEvent, SFC, Component } from 'react'
 import { Address } from '../../db/types'
 import { isEmpty } from 'lodash/fp'
+import { Toolbar } from '../../ui/Toolbar'
+import { Status } from '../status/Status'
+
+import {
+  Form, FormGroup, Button, Input, Label,
+  Jumbotron
+} from 'reactstrap'
 
 export interface SetAddressStateProps {
   buttonLabel: string
-  address: Address
+  address?: Address
 }
 
 export interface SetAddressDispatchProps {
@@ -15,24 +23,44 @@ export interface SetAddressDispatchProps {
 
 type SetAddressProps = SetAddressStateProps & SetAddressDispatchProps
 
-const emptyAddress: Address = {
-  addressId: '',
-  city: '',
-  houseNumber:'',
-  label: '',
-  street: ''
+interface FormFieldProps { 
+  id: string
+  defaultValue: string
+  type: 'text' | 'textarea'
+  label: string
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void
 }
 
+const FormField: SFC<FormFieldProps> = ({ id, type, defaultValue, label, onChange }) =>
+  <FormGroup>
+    <Label for={id}>{label}</Label>
+    <Input type={type} name={id} id={id} placeholder={label} defaultValue={defaultValue} onChange={onChange} />
+  </FormGroup> 
+
 export class SetAddress extends Component<SetAddressProps, Address> {
-  state: Address = emptyAddress
+  // state: Address = this.props.address || emptyAddress
+  
   static getDerivedStateFromProps(props: SetAddressProps, state: Address) {
-    return props.address ? props.address : emptyAddress
+    if (state) {
+      return state
+    }
+    if (props.address) {
+      return props.address
+    }
+    return state
+  //   if (state === emptyAddress) {
+  //     return props.address ? props.address : emptyAddress
+  //   } 
+
+  //   return state
   } 
 
   change = (key: keyof Address) => (event: ChangeEvent<HTMLInputElement>) => {
     const text = event.target.value
-    this.setState({ label: text } as Pick<Address, keyof Address>, () => {
-      console.log('change', key, text, this.state)
+    const x = this
+    console.log('state before', this.state, key)
+    x.setState({ houseNumber: text } as Pick<Address, keyof Address>, () => {
+      console.log(x, 'state after', this.state)
     })
   }
 
@@ -41,25 +69,29 @@ export class SetAddress extends Component<SetAddressProps, Address> {
       this.props.showError('Fill in the address details')
     }
     else {
-      console.log('set', this.state)
-
       this.props.setAddress(this.state)
     }
   }
 
   render() {
-    if (this.state === emptyAddress) {
+    if (!this.props.address) {
       return 'Loading'
     }
     return (
-      <div>
-        <input defaultValue={this.state.label} placeholder="Label" onChange={this.change('label')} />
-        <input defaultValue={this.state.houseNumber} placeholder="Number" onChange={this.change('houseNumber')} />
-        <input defaultValue={this.state.street} placeholder="Street" onChange={this.change('street')} />
-        <input defaultValue={this.state.city} placeholder="City" onChange={this.change('city')} />
-        <input defaultValue={this.state.notes} placeholder="Notes" onChange={this.change('notes')} />
-        <button onClick={this.setAddress}>{this.props.buttonLabel}</button>
-      </div>
+      <>
+        <Toolbar path={[{ title: 'Home', path: '/' }, {title: 'Addresses', path: '/addresses'}]} />
+        <Jumbotron>
+          <Form color='primary'>
+            <FormField id="label" label="Label" type="text" defaultValue={this.state.label} onChange={this.change('label')} />
+            <FormField id="number" label="House Number" type="text" defaultValue={this.state.houseNumber} onChange={this.change('houseNumber')} />
+            <FormField id="street" label="Street" type="text" defaultValue={this.state.street} onChange={this.change('street')}/>
+            <FormField id="city" label="City" type="text" defaultValue={this.state.city} onChange={this.change('city')}/>
+            <FormField id="notes" label="Notes" type="textarea" defaultValue={defaultTo('', this.state.notes)} onChange={this.change('notes')}/>
+            <Button color="primary" onClick={this.setAddress}>{this.props.buttonLabel}</Button>{' '}
+          </Form>
+        </Jumbotron>
+        <Status />
+      </>
     )
   }
 }

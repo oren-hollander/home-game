@@ -3,7 +3,7 @@ import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux'
 import { Address } from '../../db/types'
 import { updateAddress, loadAddresses } from './addressesActions'
 import { HomeGameThunkDispatch, State } from '../state'
-import { showError } from '../status/statusActions'
+import { showStatus, ErrorStatus } from '../status/statusActions'
 import { SetAddress, SetAddressDispatchProps, SetAddressStateProps } from './SetAddress'
 import { compose } from 'recompose'
 import { load } from '../../data/load'
@@ -14,7 +14,7 @@ export interface EditAddressProps {
 }
 
 const mapDispatchToProps: MapDispatchToProps<SetAddressDispatchProps, {}> = (dispatch: HomeGameThunkDispatch): SetAddressDispatchProps => ({
-  showError: (error: string) => dispatch(showError(error)),
+  showError: (error: string) => dispatch(showStatus(ErrorStatus(error))),
   setAddress: (address: Address) => dispatch(updateAddress(address))
 })
 
@@ -27,5 +27,3 @@ export const EditAddress: ComponentType<EditAddressProps> = compose(
   load(loadAddresses),
   connect(mapStateToProps, mapDispatchToProps)
 )(SetAddress) as ComponentType<EditAddressProps>
-
-// export const EditAddress: SFC<EditAddressProps> = ({ addressId }) => EditAddressX<

@@ -9,6 +9,12 @@ import { getAddresses } from './addressesReducer'
 import { State } from '../state'
 import { connect } from 'react-redux'
 import { compose } from 'recompose'
+import { Status } from '../status/Status'
+import { Toolbar } from '../../ui/Toolbar'
+import {
+  ListGroup, ListGroupItem,
+  Container, Row, Col
+} from 'reactstrap'
 
 interface AddressesProps {
   addresses: ReadonlyArray<Address>
@@ -18,21 +24,34 @@ namespace UI {
   export class Addresses extends Component<AddressesProps> {
     render() {
       return (
-        <div>
-          Addresses
-          <div>
-            {
-              map(address => (
-                <div key={address.addressId}>
-                  <Link to={`/addresses/${address.addressId}`}>
-                    {address.label} - {address.houseNumber} {address.street} {address.city} 
-                  </Link>
-                </div>
-              ), this.props.addresses)
-            }
-          </div>
-          <Link to="/create-address"><button>New</button></Link>
-        </div>
+        <>
+          <Toolbar path={[{title: 'Home', path: '/'}]}/>
+          <Container style={{ paddingTop: '16px' }}>
+            <Row>
+              <Col>
+                <ListGroup>
+                  {
+                    map(address => (
+                      <ListGroupItem key={address.addressId}>
+                        <Link to={`/addresses/${address.addressId}`}>
+                          {address.label} - {address.houseNumber} {address.street} {address.city}
+                        </Link>
+                      </ListGroupItem>
+                    ), this.props.addresses)
+                  }
+                  <ListGroupItem color="primary">
+                    <Link to="/addresses/new">Create new address</Link>
+                  </ListGroupItem>
+                </ListGroup>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <Status />
+              </Col>
+            </Row>
+          </Container >
+        </>
       )
     }
   }

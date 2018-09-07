@@ -4,7 +4,13 @@ import { connect, MapDispatchToProps } from 'react-redux'
 import { signIn } from './authActions'
 import { merge } from 'lodash/fp'
 import { HomeGameThunkDispatch } from '../state'
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
+import { Status } from '../status/Status'
+import {
+  Form, FormGroup, Button, Input, Label, 
+  Jumbotron,
+  Container, Row, Col
+} from 'reactstrap'
 
 type SignInProps = {
   signIn(email: string, password: string): void
@@ -35,27 +41,36 @@ namespace UI {
 
     render() {
       return (
-        <>
-          <div>
-            <label>
-              Email
-              <input id="email" type="email" placeholder="email" onChange={this.updateField('email')} />
-            </label>
-          </div>
-          <div>
-            <label>
-              Password
-              <input type="password" placeholder="password" onChange={this.updateField('password')} />
-            </label>
-          </div>
-          <button onClick={this.signIn}>
-            Sign In
-          </button>
-          <p>
-            Forgot your password?
-            <Link to="/reset-password">Reset Password</Link>
-          </p>
-        </>
+        <Container style={{ paddingTop: '16px' }}>
+          <Row>
+            <Col>
+              <Jumbotron>
+                <Form color='primary'>
+                  <FormGroup>
+                    <Label for="email">Email</Label>
+                    <Input type="email" name="email" id="email" placeholder="email" onChange={this.updateField('email')} />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label for="password">Password</Label>
+                    <Input type="password" name="password" id="password" placeholder="password" onChange={this.updateField('password')} />
+                  </FormGroup>
+                  <Button color="primary" onClick={this.signIn}>Sign In</Button>{' '}
+                  <Link to="/sign-up"><Button outline={true} color="secondary">Sign Up</Button></Link>
+                </Form>              
+              </Jumbotron>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+                Forgot your password? <Link to={`/reset-password?email=${this.state.email}`}>Reset Password</Link>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <Status />
+            </Col>
+          </Row>
+        </Container>
       )
     }
   }

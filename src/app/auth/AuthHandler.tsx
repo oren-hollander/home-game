@@ -5,10 +5,6 @@ import { parse } from 'query-string'
 import { connect, MapDispatchToProps } from 'react-redux'
 import { HomeGameThunkDispatch } from '../state'
 import { verifyEmail, resetPassword } from './authActions'
-import { Page } from '../../ui/Page'
-import { Toolbar } from '../../ui/Toolbar'
-import { StatusBar } from '../../ui/StatusBar'
-import { Link } from 'react-router-dom'
 
 namespace UI {
   interface StateProps {
@@ -102,13 +98,13 @@ export const AuthHandler: SFC<RouteComponentProps<{}>> = ({ location: { search }
   } 
 
   return (
-    <Page>
-      <Toolbar>
-        <Link to="/">Home</Link>
-      </Toolbar>
+    // <Page>
+      // <Toolbar>
+        // <Link to="/">Home</Link>
+      // </Toolbar>
       <Handler/>
-      <StatusBar/>
-    </Page>
+      // <Status/>
+    // </Page>
   )
 }
 
