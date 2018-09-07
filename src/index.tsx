@@ -67,7 +67,7 @@ const renderApp = () => {
 
 }
 
-const Welcome = () => <div>Welcome. Loading...</div>
+const Welcome = () => <div>Loading...</div>
 
 render(<Welcome />, document.getElementById('root') as HTMLElement)
 

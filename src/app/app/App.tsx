@@ -25,15 +25,15 @@ namespace UI {
   export const App: SFC<AppProps> = ({ name }) => 
     <>
       <Switch>
-        <Route exact={true} path='/' component={Home}/>
-        <Route path='/games/new' component={NewGame} />
-        <Route path='/games' component={Games} />
-        <Route path='/friends/accept' component={AcceptFriendInvitation} />
-        <Route path='/friends/invite' component={InviteFriend} />
-        <Route path='/friends' component={Friends} />
-        <Route path='/addresses/new' component={AddAddress} />
-        <Route path='/addresses/:addressId' component={EditAddressById} />
-        <Route path='/addresses' component={Addresses} />        
+        <Route path='/' exact={true} component={Home}/>
+        <Route path='/games/new' exact={true} component={NewGame} />
+        <Route path='/games' exact={true} component={Games} />
+        <Route path='/friends/accept' exact={true} component={AcceptFriendInvitation} />
+        <Route path='/friends/invite' exact={true} component={InviteFriend} />
+        <Route path='/friends' exact={true} component={Friends} />
+        <Route path='/addresses/new' exact={true} component={AddAddress} />
+        <Route path='/addresses/:addressId' exact={true} component={EditAddressById} />
+        <Route path='/addresses' exact={true} component={Addresses} />        
         <Route component={NoMatch} />
       </Switch> 
     </>
