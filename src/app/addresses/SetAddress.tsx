@@ -2,7 +2,7 @@ import * as React from 'react'
 import { defaultTo } from 'lodash/fp'
 import { ChangeEvent, SFC, Component } from 'react'
 import { Address } from '../../db/types'
-import { isEmpty } from 'lodash/fp'
+import { isEmpty, isEqual } from 'lodash/fp'
 import { Toolbar } from '../../ui/Toolbar'
 import { Status } from '../status/Status'
 
@@ -38,30 +38,20 @@ const FormField: SFC<FormFieldProps> = ({ id, type, defaultValue, label, onChang
   </FormGroup> 
 
 export class SetAddress extends Component<SetAddressProps, Address> {
-  // state: Address = this.props.address || emptyAddress
-  
+  state = {} as Address
   static getDerivedStateFromProps(props: SetAddressProps, state: Address) {
-    if (state) {
+    if (!isEqual(state, {})) {
       return state
     }
     if (props.address) {
       return props.address
     }
-    return state
-  //   if (state === emptyAddress) {
-  //     return props.address ? props.address : emptyAddress
-  //   } 
-
-  //   return state
+    return state 
   } 
 
   change = (key: keyof Address) => (event: ChangeEvent<HTMLInputElement>) => {
     const text = event.target.value
-    const x = this
-    console.log('state before', this.state, key)
-    x.setState({ houseNumber: text } as Pick<Address, keyof Address>, () => {
-      console.log(x, 'state after', this.state)
-    })
+    this.setState({ [key]: text } as Pick<Address, keyof Address>)
   }
 
   setAddress = () => {

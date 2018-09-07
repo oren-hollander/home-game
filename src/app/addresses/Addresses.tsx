@@ -57,12 +57,9 @@ namespace UI {
   }
 }
 
-const mapStateToProps = (state: State): AddressesProps => {
-  const x = getAddresses(state)
-  return {
-    addresses: x
-  }
-}
+const mapStateToProps = (state: State): AddressesProps => ({
+   addresses: getAddresses(state)
+})
 
 export const Addresses = compose(
   load(loadAddresses),

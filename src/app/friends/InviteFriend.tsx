@@ -5,6 +5,15 @@ import { State, HomeGameThunkDispatch } from '../state'
 import { getUser } from '../auth/authReducer'
 import { createFriendInvitation } from './friendsActions'
 import { isEmpty } from 'lodash/fp'
+import { Status } from '../status/Status'
+import { Toolbar } from '../../ui/Toolbar'
+import { copyToClipboard } from '../clipboard/clipboardActions'
+
+import {
+  Button,
+  Jumbotron,
+  Container, Row, Col
+} from 'reactstrap'
 
 interface InviteFriendStateProps {
   userId: string
@@ -12,6 +21,7 @@ interface InviteFriendStateProps {
 
 interface InviteFriendDispatchProps {
   createFriendInvitation: () => Promise<string>
+  copy: (text: string) => void
 }
 
 type InviteFriendProps = InviteFriendStateProps & InviteFriendDispatchProps
@@ -31,18 +41,46 @@ namespace UI {
       this.setState({ invitationId })
     }
 
+    invitationUrl = () => `https://homegame.app/freinds/accept?userId=${this.props.userId}&invitationId=${this.state.invitationId}`
+    
+    copyToClipboard = () => {
+      this.props.copy(this.invitationUrl())
+    }
+
     render() {
+      
       return (
-        <div>
-          { 
-            isEmpty(this.state.invitationId) 
-              ? <button onClick={this.createFriendInvitation}>Create Invitation</button>
-              : <>
-                  Send this link to your friend:
-                  <pre>https://homegame.app/addFriend?userId={this.props.userId}&invitationId={this.state.invitationId}</pre>
-                </>
-          }
-        </div>
+        <>
+          <Toolbar path={[{ title: 'Home', path: '/' }, { title: 'Friends', path: '/friends' }]} />
+          <Container style={{ paddingTop: '16px' }}>
+            <Row>
+              <Col>
+                <Jumbotron>
+                {
+                   isEmpty(this.state.invitationId)
+                      ?  
+                      <>
+                        <p>Invite a friend.</p>
+                        <p>By clicking 'Create', you will get an invitation link.</p>
+                        <Button color="primary" onClick={this.createFriendInvitation}>Create Invitation</Button>
+                      </>
+                      : 
+                      <>
+                        <p>Send this invitation link to your friend:</p>
+                        <pre>{this.invitationUrl()}</pre>
+                        <Button color="primary" onClick={this.copyToClipboard}>Copy</Button>
+                      </>
+                }
+                </Jumbotron>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <Status />
+              </Col>
+            </Row>
+          </Container>
+        </>
       )
     }
   }
@@ -53,7 +91,12 @@ const mapStateToProps = (state: State): InviteFriendStateProps => ({
 })
 
 const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): InviteFriendDispatchProps => ({
-  createFriendInvitation: () => dispatch(createFriendInvitation())
+  createFriendInvitation() {
+     return dispatch(createFriendInvitation())
+  },
+  copy(text: string) {
+    dispatch(copyToClipboard(text))
+  }
 })
 
 export const InviteFriend = connect(mapStateToProps, mapDispatchToProps)(UI.InviteFriend)

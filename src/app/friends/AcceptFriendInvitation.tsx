@@ -6,17 +6,17 @@ import { acceptFriendInvitation } from './friendsActions'
 import { HomeGameThunkDispatch } from '../state';
 import { parse } from 'query-string'
 
-interface AddFriendProps  {
+interface AcceptFriendInvitationProps  {
   acceptFriendInvitation: (playerId: string, invitationId: string) => void
 }
 
 namespace UI {
-  interface AddFriendState {
+  interface AcceptFriendInvitationState {
     loaded: boolean
   }
 
-  export class AddFriend extends Component<RouteComponentProps<{}> & AddFriendProps, AddFriendState> {
-    state: AddFriendState = { loaded: false }
+  export class AcceptFriendInvitation extends Component<RouteComponentProps<{}> & AcceptFriendInvitationProps, AcceptFriendInvitationState> {
+    state: AcceptFriendInvitationState = { loaded: false }
 
     async componentDidMount() {
       const { userId, invitationId } = parse(this.props.location.search)
@@ -32,10 +32,10 @@ namespace UI {
   }
 }
 
-const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): AddFriendProps => ({
+const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): AcceptFriendInvitationProps => ({
   acceptFriendInvitation: (playerId: string, invitationId: string) => {
     dispatch(acceptFriendInvitation(playerId, invitationId))
   }
 })
 
-export const AddFriend = connect(undefined, mapDispatchToProps)(UI.AddFriend)
+export const AcceptFriendInvitation = connect(undefined, mapDispatchToProps)(UI.AcceptFriendInvitation)

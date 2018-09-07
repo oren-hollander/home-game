@@ -37,7 +37,7 @@ export class Home extends Component<{}, HomeState> {
                   <Link to="/addresses">Addresses</Link>
                 </ListGroupItem>
                 <ListGroupItem>
-                  <Link to="/">Invite a friend</Link>
+                  <Link to="/friends">Friends</Link>
                 </ListGroupItem>
               </ListGroup>
             </Col>
