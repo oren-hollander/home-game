@@ -4,7 +4,7 @@ import { GamesDatabase } from './gamesDB'
 import { Game, Invitation, InvitationResponse } from './types'
 import { Firestore, createUser, signInAsAdmin, deleteUser, testConfig, signInAsUser } from './firestore'
 import { Schema, deleteDocuments, getDocumentRefs } from './deleteDatabase'
-import { set, map, noop } from 'lodash/fp'
+import { set, assign, omit, map, noop } from 'lodash/fp'
 
 const schema: Schema = {
   users: {
@@ -213,31 +213,14 @@ describe('games database', () => {
     await db.createUser({ userId: hostId, name: 'Host' })
     
     const timestamp = firebase.firestore.Timestamp.now()
-    const game: Game = await createGame(hostId, timestamp)
+    const game = await createGame(hostId, timestamp)
 
-    const { gameId } = await db.createGame(game)
-    
     await signInAsAdmin()
 
-    const gameSnapshot = await firestore.collection('users').doc(hostId).collection('games').doc(gameId).get()
+    const gameSnapshot = await firestore.collection('users').doc(hostId).collection('games').doc(game.gameId).get()
+    
     expect(gameSnapshot.exists).toBe(true)
-    expect(gameSnapshot.data()).toEqual({
-      hostId: hostId,
-      address: {
-        addressId: expect.any(String),
-        label: 'Home',
-        city: 'NY',
-        houseNumber: '1',
-        street: 'Main'
-      },
-      maxPlayers: 8,
-      stakes: {
-        smallBlind: 5,
-        bigBlind: 5
-      },
-      timestamp,
-      type: 'PLO'
-    })
+    expect(gameSnapshot.data()).toEqual(omit(['gameId'], game))
   })
 
   test('should update game without response invalidation', async () => {
@@ -257,24 +240,7 @@ describe('games database', () => {
 
     const gameSnapshot = await firestore.collection('users').doc(hostId).collection('games').doc(game.gameId).get()
     expect(gameSnapshot.exists).toBe(true)
-    expect(gameSnapshot.data()).toEqual({
-      hostId: hostId,
-      address: {
-        addressId: expect.any(String),
-        label: 'Home',
-        city: 'NY',
-        houseNumber: '1',
-        street: 'Main'
-      },
-      maxPlayers: 8,
-      stakes: {
-        smallBlind: 5,
-        bigBlind: 5
-      },
-      timestamp: timestampAfter,
-      type: 'PLO'
-    })
-
+    expect(gameSnapshot.data()).toEqual(assign({ timestamp: timestampAfter }, omit(['gameId'], updatedGame)))
   })
 
   test('invite to game', async () => {
