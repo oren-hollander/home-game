@@ -11,7 +11,7 @@ interface Page {
 }
 
 interface ToolbarProps {
-  path: ReadonlyArray<Page>
+  path: ReadonlyArray<Page> 
 }
 
 interface ToolbarState {

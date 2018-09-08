@@ -64,7 +64,6 @@ const renderApp = () => {
     </Provider>,
     document.getElementById('root') as HTMLElement
   )
-
 }
 
 const Welcome = () => <div>Loading...</div>

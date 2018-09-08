@@ -41,7 +41,7 @@ namespace UI {
       this.setState({ invitationId })
     }
 
-    invitationUrl = () => `https://homegame.app/freinds/accept?userId=${this.props.userId}&invitationId=${this.state.invitationId}`
+    invitationUrl = () => `https://homegame.app/friends/accept?userId=${this.props.userId}&invitationId=${this.state.invitationId}`
     
     copyToClipboard = () => {
       this.props.copy(this.invitationUrl())

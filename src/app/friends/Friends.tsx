@@ -31,9 +31,7 @@ namespace UI {
               {
                 map(friend => (
                   <ListGroupItem key={friend.userId}>
-                    <Link to={`/friends/${friend.userId}`}>
-                      {friend.name}
-                    </Link>
+                    {friend.name}
                   </ListGroupItem>
                 ), friends)
               }

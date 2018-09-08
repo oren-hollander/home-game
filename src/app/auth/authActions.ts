@@ -26,7 +26,7 @@ export type AuthAction = EmailVerified | UserSignedIn | UserSignedOut
 export const sendEmailVerification = (): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {
   await auth.currentUser!.sendEmailVerification()
   const email = getUserEmail(getState())
-  dispatch(showStatus(ErrorStatus(`Verification email sent to ${email}`)))
+  dispatch(showStatus(SuccessStatus(`Verification email sent to ${email}`)))
 }
 
 export const verifyEmail = (oobCode: string): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {

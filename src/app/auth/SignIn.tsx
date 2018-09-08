@@ -4,13 +4,13 @@ import { connect, MapDispatchToProps } from 'react-redux'
 import { signIn } from './authActions'
 import { merge } from 'lodash/fp'
 import { HomeGameThunkDispatch } from '../state'
-import { Link } from 'react-router-dom'
-import { Status } from '../status/Status'
-import {
-  Form, FormGroup, Button, Input, Label, 
-  Jumbotron,
-  Container, Row, Col
-} from 'reactstrap'
+  import { Link } from 'react-router-dom'
+  import { Status } from '../status/Status'
+  import {
+    Form, FormGroup, Button, Input, Label, 
+    Jumbotron,
+    Container, Row, Col
+  } from 'reactstrap'
 
 type SignInProps = {
   signIn(email: string, password: string): void
