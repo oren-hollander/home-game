@@ -7,12 +7,8 @@ import { HomeGameThunkDispatch } from '../state'
 import { parse } from 'query-string'
 import { Alert } from 'reactstrap'
 import { delay } from '../../util/delay'
-import { Toolbar } from '../../ui/Toolbar'
-import { Status } from '../status/Status'
-import {
-  Jumbotron,
-  Container, Row, Col
-} from 'reactstrap'
+import { Page } from '../../ui/Page'
+import { Jumbotron } from 'reactstrap'
 
 interface AcceptFriendInvitationProps  {
   acceptFriendInvitation: (playerId: string, invitationId: string) => void
@@ -55,26 +51,14 @@ namespace UI {
     }
 
     render() {
-        return (
-        <>
-        <Toolbar path={[{ title: 'Home', path: '/' }, { title: 'Friends', path: '/friends' }]} />
-        <Container style={{ paddingTop: '16px' }}>
-          <Row>
-            <Col>
-              <Jumbotron>
-                Connecting friend
-                <this.ConnectFriendStatus/>
-              </Jumbotron>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <Status />
-            </Col>
-          </Row>
-        </Container>
-      </>
-    )
+      return (
+        <Page>
+          <Jumbotron>
+            Connecting friend
+          <this.ConnectFriendStatus />
+          </Jumbotron>
+        </Page>
+      )
     }
   }
 }

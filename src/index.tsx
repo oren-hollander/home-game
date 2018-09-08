@@ -21,6 +21,7 @@ import { Services } from './services/services'
 import * as thunk from 'redux-thunk'
 import { now, max, delay } from 'lodash/fp'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import Logo from './home-game.png'
 
 const history = createBrowserHistory()
 
@@ -48,7 +49,7 @@ firebase.auth().onAuthStateChanged(user => {
   else {
     store.dispatch(userSignedOut())
   }
-  const ms = max([0, 0 - (now() - ts)])!
+  const ms = max([0, 1000 - (now() - ts)])!
   delay(ms, renderApp)
 })
 
@@ -66,7 +67,16 @@ const renderApp = () => {
   )
 }
 
-const Welcome = () => <div>Loading...</div>
+const Welcome = () => 
+  <div>
+    <img src={Logo} style={{
+      display: 'block',
+      marginLeft: 'auto',
+      marginRight: 'auto',
+      width: '50%'
+    }}/>
+    <h1 className="text-muted" style={{textAlign: 'center'}}>Loading...</h1>
+  </div>
 
 render(<Welcome />, document.getElementById('root') as HTMLElement)
 

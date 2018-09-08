@@ -148,7 +148,7 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
     midnight.setHours(0, 0, 0, 0)
       
     db.collection(USERS).doc(userId).collection(GAMES)
-      .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(midnight))
+      // .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(midnight))
       .orderBy('timestamp', 'asc')
       .get()
       .then(({ docs }) => {

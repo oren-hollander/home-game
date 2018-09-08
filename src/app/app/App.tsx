@@ -7,12 +7,14 @@ import { Switch, Route, RouteComponentProps } from 'react-router-dom'
 import { Home } from './Home'
 import { NewGame } from '../games/NewGame'
 import { Games } from '../games/Games'
+import { Game } from '../games/Game'
 import { AcceptFriendInvitation } from '../friends/AcceptFriendInvitation'
 import { InviteFriend } from '../friends/InviteFriend'
 import { AddAddress } from '../addresses/AddAddress'
 import { Addresses } from '../addresses/Addresses'
 import { EditAddress, EditAddressProps } from '../addresses/EditAddress'
 import { Friends } from '../friends/Friends'
+
 const NoMatch: SFC = () => <>404</>
 
 interface AppProps {
@@ -27,6 +29,7 @@ namespace UI {
       <Switch>
         <Route path='/' exact={true} component={Home}/>
         <Route path='/games/new' exact={true} component={NewGame} />
+        <Route path='/games/:gameId' exact={true} component={Game} />
         <Route path='/games' exact={true} component={Games} />
         <Route path='/friends/accept' exact={true} component={AcceptFriendInvitation} />
         <Route path='/friends/invite' exact={true} component={InviteFriend} />

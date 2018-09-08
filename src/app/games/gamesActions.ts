@@ -1,15 +1,31 @@
-import { Game, Invitation, InvitationResponse } from '../../db/types'
+import { Game, Invitation, InvitationResponse, Address } from '../../db/types'
 import { HomeGameThunkAction, HomeGameAsyncThunkAction } from '../state'
 import { getUser } from '../auth/authReducer'
 import { Unsubscribe } from '../../db/gamesDB'
+import * as firebase from 'firebase'
+import { showStatus, SuccessStatus } from '../status/statusActions';
+import { push } from 'connected-react-router'
 
 export const SET_GAMES = 'games/set'
 
 const setGames = (games: ReadonlyArray<Game>) => ({type: SET_GAMES as typeof SET_GAMES, games})
 export type SetGames = ReturnType<typeof setGames>
 
-export const createGame = (game: Game): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+export const createGame = (timestamp: firebase.firestore.Timestamp, address: Address, description: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+  const user = getUser(getState())
+
+  const game: Game = {
+    gameId: '',
+    hostId: user.userId,
+    hostName: user.name,
+    timestamp, 
+    address, 
+    description
+  }
+  
   await db.createGame(game)
+  dispatch(showStatus(SuccessStatus('Game created')))
+  dispatch(push('/games'))
 }
 
 export const invitePlayer = (invitation: Invitation, playerId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {

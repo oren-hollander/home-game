@@ -14,9 +14,10 @@ describe.skip('game effects', () => {
     await signInAsAdmin()
   })
  
-  test('createGameEffect', async () => {
+  test('createGame', async () => {
     const game: Game = {
-      hostId: 'host@homegame.app',
+      hostId: 'xyz',
+      hostName: 'Host',
       gameId: 'game',
       description: '5/5 NLH, 8 players max',
       timestamp: firebase.firestore.Timestamp.now(),
@@ -32,6 +33,6 @@ describe.skip('game effects', () => {
     const dispatch = jest.fn()
     const getState = jest.fn()
 
-    return createGame(game)(dispatch, getState, { db, auth: firebase.auth(), callbacks: CallbackStore()})
+    return createGame(game.timestamp, game.address, game.description)(dispatch, getState, { db, auth: firebase.auth(), callbacks: CallbackStore()})
   })
 })

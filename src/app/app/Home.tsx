@@ -1,11 +1,8 @@
 import * as React from 'react'
 import { Component } from 'react'
 import { Link } from 'react-router-dom'
-import { Toolbar } from '../../ui/Toolbar'
-import {
-  ListGroup, ListGroupItem,
-  Container, Row, Col,
-} from 'reactstrap'
+import { ListGroup, ListGroupItem } from 'reactstrap'
+import { Page } from '../../ui/Page'
 
 interface HomeState {
   navbarCollapsed: boolean
@@ -24,26 +21,19 @@ export class Home extends Component<{}, HomeState> {
 
   render() {
     return (
-      <>
-        <Toolbar path={[]}/>
-        <Container>
-          <Row>
-            <Col>
-              <ListGroup flush={true}>
-                <ListGroupItem>
-                  <Link to="/games">Games</Link>
-                </ListGroupItem>
-                <ListGroupItem>
-                  <Link to="/addresses">Addresses</Link>
-                </ListGroupItem>
-                <ListGroupItem>
-                  <Link to="/friends">Friends</Link>
-                </ListGroupItem>
-              </ListGroup>
-            </Col>
-          </Row>
-        </Container>
-      </>
+      <Page>
+        <ListGroup flush={true}>
+          <ListGroupItem>
+            <Link to="/games">Games</Link>
+          </ListGroupItem>
+          <ListGroupItem>
+            <Link to="/addresses">Addresses</Link>
+          </ListGroupItem>
+          <ListGroupItem>
+            <Link to="/friends">Friends</Link>
+          </ListGroupItem>
+        </ListGroup>
+      </Page>
     )
   } 
 }

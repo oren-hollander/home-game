@@ -29,6 +29,7 @@ describe('games database', () => {
     db.createGame({
       gameId: '',
       hostId: userId,
+      hostName: 'Host',
       address: {
         addressId: '',
         label: 'Home',

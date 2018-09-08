@@ -7,12 +7,8 @@ import { HomeGameThunkDispatch } from '../state'
 import { showStatus, ErrorStatus } from '../status/statusActions'
 import { RouteComponentProps } from 'react-router-dom'
 import { parse } from 'query-string'
-import {
-  Form, FormGroup, Button, Input, Label,
-  Jumbotron,
-  Container, Row, Col
-} from 'reactstrap'
-import { Status } from '../status/Status'
+import { Form, FormGroup, Button, Input, Label, Jumbotron } from 'reactstrap'
+import { Page } from '../../ui/Page'
 
 interface PasswordResetDispatchProps {
   sendPasswordResetEmail(email: string): void
@@ -54,28 +50,20 @@ namespace UI {
     }
 
     render() {
-      return <>
-        <Container style={{ paddingTop: '16px' }}>
-          <Row>
-            <Col>
-              <Jumbotron>
-                <Form color='primary'>
-                  <FormGroup>
-                    <Label for="email">Email</Label>
-                    <Input type="email" name="email" id="email" placeholder="email" defaultValue={this.state.email} onChange={this.emailChanged} />
-                  </FormGroup>
-                </Form>
-                <Button color="primary" onClick={this.sendPasswordResetEmail}>Send</Button>
-              </Jumbotron>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <Status />
-            </Col>
-          </Row>
-        </Container>
-        {/* <div>
+      return (
+        <Page toolbar={false}>
+          <Jumbotron>
+            <Form color='primary'>
+              <FormGroup>
+                <Label for="email">Email</Label>
+                <Input type="email" name="email" id="email" placeholder="email" defaultValue={this.state.email} onChange={this.emailChanged} />
+              </FormGroup>
+            </Form>
+            <Button color="primary" onClick={this.sendPasswordResetEmail}>Send</Button>
+          </Jumbotron>
+        </Page>
+
+    /* <div>
           <p>
             To verify your email, click on the 'Send' button.
           </p>
@@ -87,8 +75,8 @@ namespace UI {
           </p>
         </div>
         <input type="email" defaultValue={this.state.email} onChange={this.emailChanged} />
-        <button onClick={this.sendPasswordResetEmail}>Send</button> */}
-      </>
+        <button onClick={this.sendPasswordResetEmail}>Send</button> */
+      )
     }
   }
 }

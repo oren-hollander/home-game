@@ -1,24 +1,14 @@
 import * as React from 'react'
 import { Component } from 'react'
-import { Navbar, NavbarBrand, Nav, NavItem, NavLink, Collapse, NavbarToggler } from 'reactstrap'
+import { Navbar, NavbarBrand, Nav, NavItem, Collapse, NavbarToggler } from 'reactstrap'
 import { SignOut } from '../app/auth/SignOut'
-import { map } from 'lodash/fp'
 import { Link, Push } from '../ui/Link'
-
-interface Page {
-  title: string,
-  path: string
-}
-
-interface ToolbarProps {
-  path: ReadonlyArray<Page> 
-}
 
 interface ToolbarState {
   collapsed: boolean
 }
 
-export class Toolbar extends Component<ToolbarProps, ToolbarState> { 
+export class Toolbar extends Component<{}, ToolbarState> { 
   state: ToolbarState = {
     collapsed: true
   }
@@ -29,15 +19,15 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
     })
   }
 
-  navLink = (text: string) => (push: Push) => 
-    <NavLink onClick={push}>
-      {text}
-    </NavLink>
+  private navbarBrand = () => (push: Push) => 
+    <NavbarBrand href="#" color="light" onClick={push} className="mr-auto">
+      Home Game
+    </NavbarBrand>
 
   render() {
     return (
-      <Navbar color="secondary" dark={true} expand="sm">
-        <NavbarBrand href="#" className="mr-auto">Home Game</NavbarBrand>
+      <Navbar color="secondary" dark={true} expand="xxl">
+        <Link to="/" render={this.navbarBrand()} />
         <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
         <Collapse isOpen={!this.state.collapsed} navbar={true}>
           <Nav navbar={true}>
@@ -45,15 +35,6 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
               <SignOut />
             </NavItem>
           </Nav>
-          {
-            map(page => (
-              <Nav navbar={true} key={page.title}>
-                <NavItem>
-                  <Link to={page.path} render={this.navLink(page.title)}/>
-                </NavItem>
-              </Nav>
-            ), this.props.path)
-          }
         </Collapse>
       </Navbar>
     )

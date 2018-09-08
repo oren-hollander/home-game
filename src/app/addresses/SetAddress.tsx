@@ -3,13 +3,8 @@ import { defaultTo } from 'lodash/fp'
 import { ChangeEvent, SFC, Component } from 'react'
 import { Address } from '../../db/types'
 import { isEmpty, isEqual } from 'lodash/fp'
-import { Toolbar } from '../../ui/Toolbar'
-import { Status } from '../status/Status'
-
-import {
-  Form, FormGroup, Button, Input, Label,
-  Jumbotron
-} from 'reactstrap'
+import { Form, FormGroup, Button, Input, Label, Jumbotron } from 'reactstrap'
+import { Page } from '../../ui/Page'
 
 export interface SetAddressStateProps {
   buttonLabel: string
@@ -68,8 +63,7 @@ export class SetAddress extends Component<SetAddressProps, Address> {
       return 'Loading'
     }
     return (
-      <>
-        <Toolbar path={[{ title: 'Home', path: '/' }, {title: 'Addresses', path: '/addresses'}]} />
+      <Page>
         <Jumbotron>
           <Form color='primary'>
             <FormField id="label" label="Label" type="text" defaultValue={this.state.label} onChange={this.change('label')} />
@@ -77,11 +71,10 @@ export class SetAddress extends Component<SetAddressProps, Address> {
             <FormField id="street" label="Street" type="text" defaultValue={this.state.street} onChange={this.change('street')}/>
             <FormField id="city" label="City" type="text" defaultValue={this.state.city} onChange={this.change('city')}/>
             <FormField id="notes" label="Notes" type="textarea" defaultValue={defaultTo('', this.state.notes)} onChange={this.change('notes')}/>
-            <Button color="primary" onClick={this.setAddress}>{this.props.buttonLabel}</Button>{' '}
+            <Button color="primary" onClick={this.setAddress}>{this.props.buttonLabel}</Button>
           </Form>
         </Jumbotron>
-        <Status />
-      </>
+      </Page>
     )
   }
 }
