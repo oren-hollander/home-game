@@ -4,12 +4,15 @@ import { connect } from 'react-redux'
 import { State, HomeGameThunkDispatch, HomeGameAction } from '../app/state'
 import { ThunkAction } from 'redux-thunk';
 import { Services } from '../services/services'
+import { noop, constant, isUndefined } from 'lodash/fp'
 
-type LoadData = () => ThunkAction<Promise<void>, State, Services, HomeGameAction>
+type LoadData = (...args: any[]) => ThunkAction<Promise<void>, State, Services, HomeGameAction>
+type ClearData = () => ThunkAction<void, State, Services, HomeGameAction>
 
-export const load = <T extends any>(loadData: LoadData) => (Comp: ComponentType<T>): ComponentType<T> => {
+export const load = <T extends any>(loadData: LoadData, clear: ClearData = constant(noop), propName?: string) => (Comp: ComponentType<T>): ComponentType<T> => {
   interface LoadProps {
     load: () => void
+    clear: () => void
   }
 
   class Load extends Component<LoadProps> {
@@ -17,13 +20,18 @@ export const load = <T extends any>(loadData: LoadData) => (Comp: ComponentType<
       this.props.load()
     }
 
+    componentWillUnmount() {
+      this.props.clear()
+    }
+
     render() {
       return <Comp {...this.props}/>
     }
   }
 
-  const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): LoadProps => ({
-    load: () => dispatch(loadData())
+  const mapDispatchToProps = (dispatch: HomeGameThunkDispatch, ownProps: {}): LoadProps => ({
+    load: () => dispatch(loadData(isUndefined(propName) ? undefined : ownProps[propName])),
+    clear: () => dispatch(clear())
   })
 
   return connect(undefined, mapDispatchToProps)(Load) as {} as ComponentType<T>

@@ -14,7 +14,7 @@ const RESPONSES = 'responses'
 
 export type GamesEvent = (games: ReadonlyArray<Game>) => void
 
-export type GameEvent = (game: Game, invitations: ReadonlyArray<string>, responses: ReadonlyArray<InvitationResponse>) => void
+export type GameEvent = (game: Game, invitedPlayerIds: ReadonlyArray<User>, responses: ReadonlyArray<InvitationResponse>) => void
 
 export type Unsubscribe = () => void
 
@@ -170,12 +170,12 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
   
   const listenToGame = (userId: string, gameId: string, onGame: GameEvent): Unsubscribe => {
     let game: Game | undefined = undefined
-    let invitations: string[] | undefined = undefined
-    let responses: InvitationResponse[] | undefined = undefined
+    let invitedPlayers: ReadonlyArray<User> | undefined = undefined
+    let responses: ReadonlyArray<InvitationResponse> | undefined = undefined
 
     const notify = () => {
-      if (!isUndefined(game) && !isUndefined(invitations) && !isUndefined(responses)) {
-        onGame(game, invitations, responses)
+      if (!isUndefined(game) && !isUndefined(invitedPlayers) && !isUndefined(responses)) {
+        onGame(game, invitedPlayers, responses)
       }
     }
 
@@ -187,8 +187,9 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
       notify()  
     })
 
-    const unsubscribeInvitations = db.collection(USERS).doc(userId).collection(GAMES).doc(gameId).collection(INVITATIONS).onSnapshot(querySnapshot => {
-      invitations = map(({ id }) => id, querySnapshot.docs)
+    const unsubscribeInvitations = db.collection(USERS).doc(userId).collection(GAMES).doc(gameId).collection(INVITATIONS).onSnapshot(async querySnapshot => {
+      const invitatedPlayerIds = map(({ id }) => id, querySnapshot.docs)
+      invitedPlayers = compact(await Promise.all(map(getUser, invitatedPlayerIds)))
       notify()
     })
 

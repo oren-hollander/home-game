@@ -3,15 +3,17 @@ import { Component, ComponentType } from 'react'
 import { connect } from 'react-redux'
 import { State, HomeGameThunkDispatch, HomeGameAction } from '../app/state'
 import { Unsubscribe } from 'firebase'
-import { noop } from 'lodash/fp'
+import { noop, constant, isUndefined } from 'lodash/fp'
 import { ThunkAction } from 'redux-thunk'
 import { Services } from '../services/services'
 
-type ListenToData = () => ThunkAction<Unsubscribe, State, Services, HomeGameAction>
+type ListenToData = (...args: any[]) => ThunkAction<Unsubscribe, State, Services, HomeGameAction>
+type ClearData = () => ThunkAction<void, State, Services, HomeGameAction>
 
-export const listen = (listen: ListenToData) => (Comp: ComponentType) => {
+export const listen = (listen: ListenToData, clear: ClearData = constant(noop), propName?: string) => (Comp: ComponentType) => {
   interface ListenProps {
     listen: () => Unsubscribe
+    clear: () => void
   }
 
   class Listen extends Component<ListenProps> {
@@ -23,6 +25,7 @@ export const listen = (listen: ListenToData) => (Comp: ComponentType) => {
 
     componentWillUnmount() {
       this.unsubscribe()
+      this.props.clear()
     }
 
     render() {
@@ -30,8 +33,9 @@ export const listen = (listen: ListenToData) => (Comp: ComponentType) => {
     }
   }
 
-  const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): ListenProps => ({
-    listen: () => dispatch(listen())
+  const mapDispatchToProps = (dispatch: HomeGameThunkDispatch, ownProps: {}): ListenProps => ({
+    listen: () => dispatch(listen(isUndefined(propName) ? undefined : ownProps[propName])),
+    clear: () => dispatch(clear())
   })
 
   return connect(undefined, mapDispatchToProps)(Listen)

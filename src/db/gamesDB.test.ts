@@ -1,7 +1,7 @@
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import { GamesDatabase } from './gamesDB'
-import { Game, Invitation, InvitationResponse } from './types'
+import { Game, Invitation, InvitationResponse, User } from './types'
 import { Firestore, createUser, signInAsAdmin, deleteUser, testConfig, signInAsUser } from './firestore'
 import { Schema, deleteDocuments, getDocumentRefs } from './deleteDatabase'
 import { set, assign, omit, map, noop } from 'lodash/fp'
@@ -415,21 +415,21 @@ describe('games database', () => {
     
     interface GameEventData {
       game: Game
-      invitations: ReadonlyArray<string>
+      invitedPlayers: ReadonlyArray<User>
       responses: ReadonlyArray<InvitationResponse>
     }
 
     let unsubscribe: () => void = noop
 
     const promise = new Promise<GameEventData>(resolve => {
-      unsubscribe = db.listenToGame(hostId, game.gameId, (game, invitations, responses) => {
-        resolve({ game, invitations, responses })
+      unsubscribe = db.listenToGame(hostId, game.gameId, (game, invitedPlayers, responses) => {
+        resolve({ game, invitedPlayers, responses })
       })
     })
 
     const r = await promise
     expect(r.game.hostId).toEqual(hostId)
-    expect(r.invitations).toEqual([playerId])
+    expect(r.invitedPlayers).toEqual([player1])
     expect(r.responses).toEqual([])
     unsubscribe()
   })

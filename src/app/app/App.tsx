@@ -7,7 +7,7 @@ import { Switch, Route, RouteComponentProps } from 'react-router-dom'
 import { Home } from './Home'
 import { NewGame } from '../games/NewGame'
 import { Games } from '../games/Games'
-import { Game } from '../games/Game'
+import { GameView, GameViewProps } from '../games/GameView'
 import { AcceptFriendInvitation } from '../friends/AcceptFriendInvitation'
 import { InviteFriend } from '../friends/InviteFriend'
 import { AddAddress } from '../addresses/AddAddress'
@@ -23,13 +23,14 @@ interface AppProps {
 
 namespace UI {
   const EditAddressById: SFC<RouteComponentProps<EditAddressProps>> = ({ match }) => <EditAddress addressId={match.params.addressId}/>
+  const GameById: SFC<RouteComponentProps<GameViewProps>> = ({ match }) => <GameView gameId={match.params.gameId}/>
 
   export const App: SFC<AppProps> = ({ name }) => 
     <>
       <Switch>
         <Route path='/' exact={true} component={Home}/>
         <Route path='/games/new' exact={true} component={NewGame} />
-        <Route path='/games/:gameId' exact={true} component={Game} />
+        <Route path='/games/:gameId' exact={true} component={GameById} />
         <Route path='/games' exact={true} component={Games} />
         <Route path='/friends/accept' exact={true} component={AcceptFriendInvitation} />
         <Route path='/friends/invite' exact={true} component={InviteFriend} />
