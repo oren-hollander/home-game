@@ -3,7 +3,7 @@ import { Component, ComponentType } from 'react'
 import { connect } from 'react-redux'
 import { State, HomeGameThunkDispatch, HomeGameAction } from '../app/state'
 import { Unsubscribe } from 'firebase'
-import { noop, constant, isUndefined } from 'lodash/fp'
+import { noop, constant, isUndefined, omit } from 'lodash/fp'
 import { ThunkAction } from 'redux-thunk'
 import { Services } from '../services/services'
 
@@ -29,7 +29,7 @@ export const listen = (listen: ListenToData, clear: ClearData = constant(noop), 
     }
 
     render() {
-      return <Comp />
+      return <Comp {...omit(['listen', 'clear'], this.props)} />
     }
   }
 

@@ -8,19 +8,39 @@ import { compose } from 'recompose'
 import { State } from '../state'
 import { connect } from 'react-redux'
 import { Page } from '../../ui/Page'
-import { noop, constant } from 'lodash/fp'
+import { map, noop, constant, isUndefined } from 'lodash/fp'
 import { Jumbotron } from 'reactstrap'
-import { map } from 'lodash/fp'
 import { DateView } from '../../ui/DateView'
+import { getUser } from '../auth/authReducer'
+import { HostedGamePlayerLists, InvitedGamePlayerLists } from './PlayersLists'
+import { load } from '../../data/load'
+import { loadFriends } from '../friends/friendsActions'
+import { getFriends } from '../friends/friendsReducer'
 
 interface GameViewStateProps {
+  readonly userId: string
   readonly game?: Game
   readonly invitedPlayers: ReadonlyArray<User>
   readonly responses: ReadonlyArray<InvitationResponse>
+  readonly friends: ReadonlyArray<User>
 }
 
 namespace UI {
-  export const GameView: SFC<GameViewStateProps> = ({ game, invitedPlayers, responses }) => 
+  const Players: SFC<GameViewStateProps> = ({ userId, friends, game, invitedPlayers, responses }) => {
+    const invitedPlayerIds = map(user => user.userId, invitedPlayers)
+
+    if (isUndefined(game)) {
+      return null
+    }
+
+    if (userId === game.hostId) {
+      return <HostedGamePlayerLists friends={friends} invitedUserIds={invitedPlayerIds} responses={responses} /> 
+    }
+
+    return <InvitedGamePlayerLists invitedUsers={invitedPlayers} responses={responses} /> 
+  } 
+
+  export const GameView: SFC<GameViewStateProps> = ({ userId, friends, game, invitedPlayers, responses }) => 
     <Page>
       <Jumbotron>
         {
@@ -34,29 +54,36 @@ namespace UI {
               <p><DateView timestamp={game.timestamp}/></p> 
               <h5>Address</h5>
               <p>{game.address.houseNumber} {game.address.street}, {game.address.city} ({game.address.notes})</p>
-              <h5>Players</h5>
-              {map(player => player.name, invitedPlayers)}
+              { 
+                game && 
+                <Players game={game} userId={userId} friends={friends} invitedPlayers={invitedPlayers} responses={responses}/> 
+              }
             </>
         }
       </Jumbotron>
     </Page>
 }
 
-const mapStateToProps = (state: State) => {
-  const gameState = getGame(state)
-  if (gameState) {
-    return gameState
-  }
-  return {
-    invitedPlayerIds: [],
-    responses: []
-  }
-}
 export interface GameViewProps {
   gameId: string
 }
 
+const mapStateToProps = (state: State, ownProps: GameViewProps): GameViewStateProps => {
+  const gameState = getGame(state, ownProps)
+  const friends = getFriends(state)
+  const userId = getUser(state).userId
+
+  return {
+    userId,
+    game: gameState && gameState.game,
+    invitedPlayers: gameState ? gameState.invitedPlayers: [],
+    responses: gameState ? gameState.responses : [],
+    friends
+  }
+}
+
 export const GameView: ComponentType<GameViewProps> = compose(
+  load(loadFriends),
   listen(listenToGame, constant(noop), 'gameId'),
   connect(mapStateToProps)
 )(UI.GameView) as ComponentType<GameViewProps>

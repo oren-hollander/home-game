@@ -8,7 +8,11 @@ interface ToolbarState {
   collapsed: boolean
 }
 
-export class Toolbar extends Component<{}, ToolbarState> { 
+interface ToolbarProps {
+  name: string
+}
+
+export class Toolbar extends Component<ToolbarProps, ToolbarState> { 
   state: ToolbarState = {
     collapsed: true
   }
@@ -36,6 +40,7 @@ export class Toolbar extends Component<{}, ToolbarState> {
             </NavItem>
           </Nav>
         </Collapse>
+
       </Navbar>
     )
   }

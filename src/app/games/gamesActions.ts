@@ -15,11 +15,9 @@ export type SetGames = ReturnType<typeof setGames>
 
 const setGame = (game: Game, invitedPlayers: ReadonlyArray<User>, responses: ReadonlyArray<InvitationResponse>) =>
   ({ type: SET_GAME as typeof SET_GAME, game, invitedPlayers, responses })
-
 export type SetGame = ReturnType<typeof setGame>
 
-const clearGame = () => ({ type: CLEAR_GAME as typeof CLEAR_GAME})
-
+const clearGame = (gameId: string) => ({ type: CLEAR_GAME as typeof CLEAR_GAME, gameId })
 export type ClearGame = ReturnType<typeof clearGame>
 
 export const createGame = (timestamp: firebase.firestore.Timestamp, address: Address, description: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {

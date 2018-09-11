@@ -32,7 +32,7 @@ namespace UI {
                 </ListGroupItem>
               ), this.props.games)
             }
-            <ListGroupItem color="primary">
+            <ListGroupItem color="primary" key="new">
               <Link to="/games/new">Create new game</Link>
             </ListGroupItem>
           </ListGroup>

@@ -1,8 +1,9 @@
 import { Game, InvitationResponse, User } from '../../db/types'
 import { GamesAction, SET_GAMES, SET_GAME, CLEAR_GAME } from './gamesActions'
 import { State } from '../state'
-import { Selector } from 'reselect'
-import { set, unset } from 'lodash/fp'
+import { Selector, ParametricSelector } from 'reselect'
+import { set, values, unset, map, fromPairs, get } from 'lodash/fp'
+import { Dictionary } from 'lodash'
 
 export interface GameState {
   readonly game: Game
@@ -10,31 +11,35 @@ export interface GameState {
   readonly responses: ReadonlyArray<InvitationResponse>
 }
 
-export interface GamesState {
-  readonly games: ReadonlyArray<Game>
-  readonly game?: GameState 
-}
+export type GamesState = Dictionary<GameState>
 
-const initialGamesState: GamesState = {
-  games: []
-}
-
-export const gamesReducer = (games: GamesState = initialGamesState, action: GamesAction): GamesState => {
+export const gamesReducer = (games: GamesState = {}, action: GamesAction): GamesState => {
   switch (action.type) {
-    case SET_GAMES:
-      return set('games', action.games, games)
-    case SET_GAME:
-      return set('game', {
-        game: action.game, 
+    case SET_GAMES: {
+      return fromPairs(map(game => {
+        const gameState: GameState = {
+          game,
+          invitedPlayers: [],
+          responses: []
+        }
+        return [game.gameId, gameState]
+      }, action.games))
+    }
+    case SET_GAME: {
+      const gameState: GameState = {
+        game: action.game,
         invitedPlayers: action.invitedPlayers,
         responses: action.responses
-      }, games)
+      }
+      return set(action.game.gameId, gameState, games) as GamesState
+    }
     case CLEAR_GAME:
-      return unset('game', games)
+      return unset(action.gameId, games)
     default:
       return games
   }
 }
 
-export const getGames: Selector<State, ReadonlyArray<Game>> = (state: State) => state.games.games
-export const getGame: Selector<State, GameState> = (state: State) => state.games.game!
+export const getGames: Selector<State, ReadonlyArray<Game>> = state => map(gs => gs.game, values(state.games)) 
+
+export const getGame: ParametricSelector<State, { gameId: string }, GameState | undefined> = (state, { gameId }) => get(gameId, state)

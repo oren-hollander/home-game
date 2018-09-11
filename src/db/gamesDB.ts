@@ -1,6 +1,8 @@
 import * as firebase from 'firebase/app'
 import { Game, User, Address, Invitation, InvitationResponse } from './types'
 import { map, concat, compact, assign, omit, forEach, isUndefined } from 'lodash/fp'
+// import * as moment from 'moment'
+// import { Timestamp } from '../types'
 
 type Firestore = firebase.firestore.Firestore
 
@@ -14,7 +16,7 @@ const RESPONSES = 'responses'
 
 export type GamesEvent = (games: ReadonlyArray<Game>) => void
 
-export type GameEvent = (game: Game, invitedPlayerIds: ReadonlyArray<User>, responses: ReadonlyArray<InvitationResponse>) => void
+export type GameEvent = (game: Game, invitedPlayers: ReadonlyArray<User>, responses: ReadonlyArray<InvitationResponse>) => void
 
 export type Unsubscribe = () => void
 
@@ -144,11 +146,10 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
       onGames(concat(ownGames, invitationGames))
     }
 
-    const midnight = new Date()
-    midnight.setHours(0, 0, 0, 0)
+    // const midnight = moment().hour(0).minute(0).second(0).millisecond(0)
       
     db.collection(USERS).doc(userId).collection(GAMES)
-      // .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(midnight))
+      // .where('timestamp', '>=', Timestamp.fromDate(midnight.toDate()))
       .orderBy('timestamp', 'asc')
       .get()
       .then(({ docs }) => {
@@ -183,7 +184,7 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
       if(!snapshot.exists) {
         return
       }
-      game = snapshot.data()! as Game
+      game = assign({ gameId: snapshot.id }, snapshot.data()!) as Game
       notify()  
     })
 

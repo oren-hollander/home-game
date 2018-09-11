@@ -41,7 +41,7 @@ namespace UI {
           <Jumbotron>
             <Form color='primary'>
               <FormGroup>
-                <Label for="name">Email</Label>
+                <Label for="name">Name</Label>
                 <Input type="text" name="text" id="name" placeholder="name" onChange={this.updateField('name')} />
               </FormGroup>
               <FormGroup>
