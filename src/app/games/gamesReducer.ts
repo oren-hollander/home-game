@@ -42,4 +42,5 @@ export const gamesReducer = (games: GamesState = {}, action: GamesAction): Games
 
 export const getGames: Selector<State, ReadonlyArray<Game>> = state => map(gs => gs.game, values(state.games)) 
 
-export const getGame: ParametricSelector<State, { gameId: string }, GameState | undefined> = (state, { gameId }) => get(gameId, state)
+export const getGame: ParametricSelector<State, { gameId: string }, GameState | undefined> = (state, { gameId }) => 
+  get(['games', gameId], state)

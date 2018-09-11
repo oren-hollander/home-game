@@ -5,6 +5,7 @@ import { Unsubscribe } from '../../db/gamesDB'
 import * as firebase from 'firebase'
 import { showStatus, SuccessStatus } from '../status/statusActions'
 import { push } from 'connected-react-router'
+import { map } from 'lodash/fp'
 
 export const SET_GAMES = 'games/set-games'
 export const SET_GAME = 'games/set-game'
@@ -37,8 +38,8 @@ export const createGame = (timestamp: firebase.firestore.Timestamp, address: Add
   dispatch(push('/games'))
 }
 
-export const invitePlayer = (invitation: Invitation, playerId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
-  await db.inviteToGame(playerId, invitation)
+export const invitePlayers = (invitation: Invitation, playerIds: ReadonlyArray<string>): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+  await Promise.all(map(playerId => db.inviteToGame(playerId, invitation), playerIds))
 }
 
 export const respondToInvitation = (response: InvitationResponse): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
@@ -52,9 +53,8 @@ export const listenToGames = (): HomeGameThunkAction<Unsubscribe> => (dispatch, 
   })
 }
 
-export const listenToGame = (gameId: string): HomeGameThunkAction<Unsubscribe> => (dispatch, getState, { db }): Unsubscribe => {
-  const userId = getUser(getState()).userId
-  return db.listenToGame(userId, gameId, (game, invitatedPlayers, responses) => {
+export const listenToGame = ({hostId, gameId }: {hostId: string, gameId: string}): HomeGameThunkAction<Unsubscribe> => (dispatch, getState, { db }): Unsubscribe => {
+  return db.listenToGame(hostId, gameId, (game, invitatedPlayers, responses) => {
     dispatch(setGame(game, invitatedPlayers, responses))
   })
 }

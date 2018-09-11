@@ -1,9 +1,14 @@
 import * as React from 'react'
-import { SFC } from 'react'
-import { User, InvitationResponse, InvitationStatus } from '../../db/types'
-import { map, flow, filter, keys, keyBy, difference, isEmpty, get, groupBy, defaultTo } from 'lodash/fp'
+import { Dictionary } from 'lodash'
+import { SFC, Component, ComponentType } from 'react'
+import { User, InvitationResponse, InvitationStatus, Invitation, Game } from '../../db/types'
+import { map, flow, filter, keys, keyBy, difference, isEmpty, get, groupBy, defaultTo, fromPairs, some, eq, toPairs } from 'lodash/fp'
 import ListGroup from 'reactstrap/lib/ListGroup'
 import ListGroupItem from 'reactstrap/lib/ListGroupItem'
+import { Button } from 'reactstrap'
+import { connect } from 'react-redux';
+import { HomeGameThunkDispatch } from '../state';
+import { invitePlayers } from './gamesActions';
 
 type Users = ReadonlyArray<User>
 type UserIds = ReadonlyArray<string>
@@ -28,35 +33,18 @@ export const groupInvitedGamePlayersByInvitationStatus = (invitedUsers: Users, r
   const playerLists = groupBy(user => defaultTo('noResponse', get([user.userId, 'status'], responseMap)), invitedUsers) as {} as InvitedGamePlayerLists
 
   return playerLists
-  // const byStatus = (status: InvitationStatus) => (response: InvitationResponse): boolean => response.status === status
-  // const getPlayerId = (response: InvitationResponse): string => response.playerId
-  // const getUserId = (user: User): string => user.name
-
-  // const playerMap = keyBy(getUserId, invitedUsers)
-  // const getPlayer: (userId: string) => User = get(_, playerMap)
-
-  // const getUsersByStatus = (status: InvitationStatus): ReadonlyArray<User> =>
-  //   flow(
-  //     filter(byStatus(status)),
-  //     map(flow(getPlayerId, getPlayer)),
-  //   )(responses)
-
-  // const approved = getUsersByStatus('approved')
-  // const standBy = getUsersByStatus('standBy')
-  // const declined = getUsersByStatus('declined')
-
-  // const respondingUserIds = map(getPlayerId, responses)
-  // const noResponse = map(getPlayer, difference(keys(invitedUsers), respondingUserIds))
-
-  // return {
-  //   approved: playerLists['approved'],
-  //   standBy: playerLists['standBy'],
-  //   declined: playerLists['declined'],
-  //   noResponse: playerLists['no-reponse']
-  // }
 }
 
 export const groupHostedGamePlayersByInvitationStatus = (players: Users, invitedUserIds: UserIds, responses: ReadonlyArray<InvitationResponse>): HostedGamePlayerLists => {
+  if (isEmpty(players)) {
+    return {
+      approved: [],
+      standBy: [],
+      declined: [],
+      noResponse: [],
+      notInvited: []
+    }
+  }
   const byStatus = (status: InvitationStatus) => (response: InvitationResponse): boolean => response.status === status
   const getPlayerId = (response: InvitationResponse): string => response.playerId
   const getUserId = (user: User): string => user.userId
@@ -89,6 +77,7 @@ export const groupHostedGamePlayersByInvitationStatus = (players: Users, invited
 }
 
 interface HostedGamePlayerListsProps {
+  game: Game
   friends: ReadonlyArray<User>
   invitedUserIds: ReadonlyArray<string>
   responses: ReadonlyArray<InvitationResponse>
@@ -111,15 +100,91 @@ const PlayerList: SFC<PlayerListProps> = ({ users, label }) => {
     
     return (
       <>
-        <h4>{label}</h4>
+        <h5>{label}</h5>
         <ListGroup>
-          { map(user => <ListGroupItem>{user.name}</ListGroupItem> , users) }
+          { map(user => <ListGroupItem key={user.name}>{user.name}</ListGroupItem> , users) }
         </ListGroup>
       </>
     )
 }
 
-export const HostedGamePlayerLists: SFC<HostedGamePlayerListsProps> = ({ friends, invitedUserIds, responses }) => {
+type NotInvitedPlayerListStateProps = {
+  game: Game
+  users: ReadonlyArray<User>
+}
+
+type NotInvitedPlayerListDispatchProps = {
+  invitePlayers(userIds: ReadonlyArray<string>): void
+}
+
+type NotInvitedPlayerListProps = NotInvitedPlayerListStateProps & NotInvitedPlayerListDispatchProps 
+type NotInvitedPlayerListState = Dictionary<boolean>
+
+namespace UI {
+  export class NotInvitedPlayerList extends Component<NotInvitedPlayerListProps, NotInvitedPlayerListState> {
+    state: Dictionary<boolean> = flow(
+      map((user: User) => [user.userId, false]),
+      fromPairs
+    )(this.props.users)
+
+    toggleUser = (userId: string) => () => this.setState({ [userId]: !get(userId, this.state) })
+
+    getColor = (userId: string): string => this.state[userId] ? 'primary' : 'secondary'
+
+    inviteSelectedPlayers = () => {
+      const pairs = toPairs(this.state)
+      const invited = filter(([, invite]) => invite, pairs)
+      const friendIds = map(([userId]) => userId, invited)
+      this.props.invitePlayers(friendIds)
+    }
+
+    areAnySelected = () => some(eq(true), this.state)
+
+    render() {
+      if (isEmpty(this.props.users)) {
+        return null
+      }
+
+      return (
+        <>
+          <h5>Invite Friends</h5>
+          <ListGroup>
+            {
+              map(
+                user =>
+                  <ListGroupItem
+                    key={user.userId}
+                    color={this.getColor(user.userId)}
+                    onClick={this.toggleUser(user.userId)}>
+                    {
+                      user.name
+                    }
+                  </ListGroupItem>,
+                this.props.users
+              )
+            }
+          </ListGroup>
+          <p />
+          <Button color="primary" disabled={!this.areAnySelected()} onClick={this.inviteSelectedPlayers}>Invite Selected Players</Button>
+        </>
+      )
+    }
+  }
+}
+
+const mapDispatchToProps = (dispatch: HomeGameThunkDispatch, ownProps: NotInvitedPlayerListStateProps): NotInvitedPlayerListDispatchProps  => ({
+  invitePlayers(userIds: ReadonlyArray<string>) {
+    const invitation: Invitation = {
+      gameId: ownProps.game.gameId,
+      hostId: ownProps.game.hostId
+    }
+    dispatch(invitePlayers(invitation, userIds))
+  }
+})
+
+const NotInvitedPlayerList: ComponentType<NotInvitedPlayerListStateProps> = connect(undefined, mapDispatchToProps)(UI.NotInvitedPlayerList)
+
+export const HostedGamePlayerLists: SFC<HostedGamePlayerListsProps> = ({ game, friends, invitedUserIds, responses }) => {
   const playerLists = groupHostedGamePlayersByInvitationStatus(friends, invitedUserIds, responses)
   return (
     <>
@@ -127,7 +192,7 @@ export const HostedGamePlayerLists: SFC<HostedGamePlayerListsProps> = ({ friends
       <PlayerList label="Stand By" users={playerLists.standBy} />
       <PlayerList label="Declined" users={playerLists.declined} />
       <PlayerList label="Didn't respond" users={playerLists.noResponse} />
-      <PlayerList label="Not Invited" users={playerLists.notInvited} />
+      <NotInvitedPlayerList game={game} users={playerLists.notInvited} />
     </>
   )
 }
@@ -143,7 +208,3 @@ export const InvitedGamePlayerLists: SFC<OwnGamePlayerListsProps> = ({ invitedUs
     </>
   )
 }
-
-// {
-//   userId === game.hostId && <InviteToGame gameId={game.gameId} invitedPlayers={invitedPlayers} responses={responses} />
-// }

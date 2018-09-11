@@ -1,4 +1,4 @@
-import { groupHostedGamePlayersByInvitationStatus, groupInvitedGamePlayersByInvitationStatus, HostedGamePlayerLists, InvitedGamePlayerLists } from './PlayersLists'
+import { groupHostedGamePlayersByInvitationStatus, groupInvitedGamePlayersByInvitationStatus, HostedGamePlayerLists, InvitedGamePlayerLists } from './PlayerLists'
 import { User, InvitationStatus, InvitationResponse } from '../../db/types'
 import { Timestamp } from '../../types'
 import { map } from 'lodash/fp'

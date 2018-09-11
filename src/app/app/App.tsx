@@ -8,7 +8,6 @@ import { Home } from './Home'
 import { NewGame } from '../games/NewGame'
 import { Games } from '../games/Games'
 import { GameView, GameViewProps } from '../games/GameView'
-// import { InviteToGame } from '../games/InviteToGame'
 import { AcceptFriendInvitation } from '../friends/AcceptFriendInvitation'
 import { InviteFriend } from '../friends/InviteFriend'
 import { AddAddress } from '../addresses/AddAddress'
@@ -24,8 +23,7 @@ interface AppProps {
 
 namespace UI {
   const EditAddressById: SFC<RouteComponentProps<EditAddressProps>> = ({ match }) => <EditAddress addressId={match.params.addressId}/>
-  const GameById: SFC<RouteComponentProps<GameViewProps>> = ({ match }) => <GameView gameId={match.params.gameId} />
-  // const InviteToGameById: SFC<RouteComponentProps<GameViewProps>> = ({ match }) => <InviteToGame gameId={match.params.gameId} />
+  const GameById: SFC<RouteComponentProps<GameViewProps>> = ({ match }) => <GameView hostId={match.params.hostId} gameId={match.params.gameId} />
 
   export const App: SFC<AppProps> = ({ userId }) => 
     <>
@@ -33,7 +31,7 @@ namespace UI {
         <Route path='/' exact={true} component={Home}/>
         <Route path='/games/new' exact={true} component={NewGame} />
         {/* <Route path='/games/:gameId/invite' exact={true} component={InviteToGameById} /> */}
-        <Route path='/games/:gameId' exact={true} component={GameById} />
+        <Route path='/games/:hostId/:gameId' exact={true} component={GameById} />
         <Route path='/games' exact={true} component={Games} />
         <Route path='/friends/accept' exact={true} component={AcceptFriendInvitation} />
         <Route path='/friends/invite' exact={true} component={InviteFriend} />

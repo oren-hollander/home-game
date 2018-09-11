@@ -12,7 +12,7 @@ import { map, noop, constant, isUndefined } from 'lodash/fp'
 import { Jumbotron } from 'reactstrap'
 import { DateView } from '../../ui/DateView'
 import { getUser } from '../auth/authReducer'
-import { HostedGamePlayerLists, InvitedGamePlayerLists } from './PlayersLists'
+import { HostedGamePlayerLists, InvitedGamePlayerLists } from './PlayerLists'
 import { load } from '../../data/load'
 import { loadFriends } from '../friends/friendsActions'
 import { getFriends } from '../friends/friendsReducer'
@@ -34,7 +34,7 @@ namespace UI {
     }
 
     if (userId === game.hostId) {
-      return <HostedGamePlayerLists friends={friends} invitedUserIds={invitedPlayerIds} responses={responses} /> 
+      return <HostedGamePlayerLists game={game} friends={friends} invitedUserIds={invitedPlayerIds} responses={responses} /> 
     }
 
     return <InvitedGamePlayerLists invitedUsers={invitedPlayers} responses={responses} /> 
@@ -65,6 +65,7 @@ namespace UI {
 }
 
 export interface GameViewProps {
+  hostId: string
   gameId: string
 }
 
@@ -84,6 +85,6 @@ const mapStateToProps = (state: State, ownProps: GameViewProps): GameViewStatePr
 
 export const GameView: ComponentType<GameViewProps> = compose(
   load(loadFriends),
-  listen(listenToGame, constant(noop), 'gameId'),
+  listen(listenToGame, constant(noop), props => ({hostId: props.hostId, gameId: props.gameId})),
   connect(mapStateToProps)
 )(UI.GameView) as ComponentType<GameViewProps>

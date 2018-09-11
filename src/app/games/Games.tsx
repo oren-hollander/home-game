@@ -26,7 +26,7 @@ namespace UI {
             {
               map(game => (
                 <ListGroupItem key={game.gameId}>
-                  <Link to={`/games/${game.gameId}`}>
+                  <Link to={`/games/${game.hostId}/${game.gameId}`}>
                     {game.hostName}, <DateView timestamp={game.timestamp} />
                   </Link>
                 </ListGroupItem>
