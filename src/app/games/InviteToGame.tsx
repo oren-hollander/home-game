@@ -18,7 +18,7 @@ const responseText = (response: InvitationStatus | 'no-response'): 'Coming' | 'N
       return 'Coming'
     case 'declined':
       return 'Not Coming'
-    case 'stand-by':
+    case 'standBy':
       return 'Stand By'
     case 'no-response':
       return 'No Response'

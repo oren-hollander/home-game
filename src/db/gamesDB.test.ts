@@ -29,7 +29,7 @@ describe('games database', () => {
     db.createGame({
       gameId: '',
       hostId: userId,
-      hostName: 'Host',
+      hostName: host,
       address: {
         addressId: '',
         label: 'Home',
@@ -78,16 +78,16 @@ describe('games database', () => {
  
   test('should create a new user', async () => {
     const userId = await signInAsUser(host)
-    await db.createUser({ userId, name: 'Host' })
+    await db.createUser({ userId, name: host })
     const dbUser = await db.getUser(userId)
     expect(dbUser).not.toBeUndefined()
-    expect(dbUser!.name).toBe('Host')
+    expect(dbUser!.name).toBe(host)
     expect(dbUser!.userId).toBe(userId)
   })  
 
   test('should create Address', async () => {
     const userId = await signInAsUser(host)
-    await db.createUser({ userId, name: 'Host' })
+    await db.createUser({ userId, name: host })
     await db.createAddress(userId, {
       addressId: '',
       label: 'Home',
@@ -128,7 +128,7 @@ describe('games database', () => {
 
   test('should create friend invitation', async () => {
     const userId = await signInAsUser(host)
-    await db.createUser({ userId, name: 'Host' })
+    await db.createUser({ userId, name: host })
     const invitationId = await db.createFriendInvitation(userId)
 
     await signInAsAdmin()
@@ -139,11 +139,11 @@ describe('games database', () => {
 
   test('should accept friend invitation', async () => {
     const hostId = await signInAsUser(host)
-    await db.createUser({ userId: hostId, name: 'Host' })
+    await db.createUser({ userId: hostId, name: host })
     const invitationId = await db.createFriendInvitation(hostId)
 
     const player1Id = await signInAsUser(player1)
-    await db.createUser({ userId: player1Id, name: 'Player 1' })
+    await db.createUser({ userId: player1Id, name: player1 })
     await db.acceptFriendInvitation(player1Id, invitationId, hostId)
     
     await signInAsAdmin()
@@ -161,13 +161,13 @@ describe('games database', () => {
 
   test('should add friend', async () => {
     const hostId = await signInAsUser(host)
-    await db.createUser({ userId: hostId, name: 'Host' })
+    await db.createUser({ userId: hostId, name: host })
 
     const player1Id = await signInAsUser(player1)
-    await db.createUser({ userId: player1Id, name: 'Player 1' })
+    await db.createUser({ userId: player1Id, name: player1 })
 
     const player2Id = await signInAsUser(player2)
-    await db.createUser({ userId: player2Id, name: 'Player 2' })
+    await db.createUser({ userId: player2Id, name: player2 })
 
     await db.addFriend(player2Id, hostId)
     await db.addFriend(player2Id, player1Id)
@@ -177,24 +177,24 @@ describe('games database', () => {
     expect(friends).toEqual(expect.arrayContaining([
       {
         userId: hostId,
-        name: 'Host'
+        name: host
       },
       {
         userId: player1Id,
-        name: 'Player 1'
+        name: player1
       }
     ]))
   })
 
   test('should remove friend', async () => {
     const hostId = await signInAsUser(host)
-    await db.createUser({ userId: hostId, name: 'Host' })
+    await db.createUser({ userId: hostId, name: host })
 
     const player1Id = await signInAsUser(player1)
-    await db.createUser({ userId: player1Id, name: 'Player 1' })
+    await db.createUser({ userId: player1Id, name: player1 })
 
     const player2Id = await signInAsUser(player2)
-    await db.createUser({ userId: player2Id, name: 'Player 2' })
+    await db.createUser({ userId: player2Id, name: player2 })
 
     await db.addFriend(player2Id, hostId)
     await db.addFriend(player2Id, player1Id)
@@ -204,14 +204,14 @@ describe('games database', () => {
     expect(friends).toEqual([
       {
         userId: player1Id,
-        name: 'Player 1'
+        name: player1
       }
     ]) 
   })
 
   test('should create game', async () => {
     const hostId = await signInAsUser(host)
-    await db.createUser({ userId: hostId, name: 'Host' })
+    await db.createUser({ userId: hostId, name: host })
     
     const timestamp = firebase.firestore.Timestamp.now()
     const game = await createGame(hostId, timestamp)
@@ -226,7 +226,7 @@ describe('games database', () => {
 
   test('should update game without response invalidation', async () => {
     const hostId = await signInAsUser(host)
-    await db.createUser({ userId: hostId, name: 'Host' })
+    await db.createUser({ userId: hostId, name: host })
 
     const timestampBefore = firebase.firestore.Timestamp.now()
     
@@ -246,10 +246,10 @@ describe('games database', () => {
 
   test('invite to game', async () => {
     const player1Id = await signInAsUser(player1)
-    await db.createUser({ userId: player1Id, name: 'Player 1' })
+    await db.createUser({ userId: player1Id, name: player1 })
 
     const hostId = await signInAsUser(host)
-    await db.createUser({ userId: hostId, name: 'Host' })
+    await db.createUser({ userId: hostId, name: host })
 
     await db.addFriend(hostId, player1Id)
 
@@ -274,10 +274,10 @@ describe('games database', () => {
 
   test('shoud accept invitation', async () => {
     const player1Id = await signInAsUser(player1)
-    await db.createUser({ userId: player1Id, name: 'Player 1' })
+    await db.createUser({ userId: player1Id, name: player1 })
 
     const hostId = await signInAsUser(host)
-    await db.createUser({ userId: hostId, name: 'Host' })
+    await db.createUser({ userId: hostId, name: host })
 
     await db.addFriend(hostId, player1Id)
 
@@ -323,10 +323,10 @@ describe('games database', () => {
 
   test('whole flow', async () => {
     const player1Id = await signInAsUser(player1)
-    await db.createUser({ userId: player1Id, name: 'Player 1' })
+    await db.createUser({ userId: player1Id, name: player1 })
 
     const hostId = await signInAsUser(host)
-    await db.createUser({ userId: hostId, name: 'Host' })
+    await db.createUser({ userId: hostId, name: host })
 
     const timestampBefore = firebase.firestore.Timestamp.now()
     const game = await createGame(hostId, timestampBefore)
@@ -375,11 +375,11 @@ describe('games database', () => {
 
   test('listen to games', async () => {      
     const playerId = await signInAsUser(player1)
-    await db.createUser({ userId: playerId, name: 'Player 1' })
+    await db.createUser({ userId: playerId, name: player1 })
     const playerGame = await createGame(playerId, firebase.firestore.Timestamp.now())
 
     const hostId = await signInAsUser(host)
-    await db.createUser({ userId: hostId, name: 'Host' })
+    await db.createUser({ userId: hostId, name: host })
 
     const hostGame = await createGame(hostId, firebase.firestore.Timestamp.now())
 
@@ -404,13 +404,14 @@ describe('games database', () => {
 
   test('listen to game', async () => {
     const playerId = await signInAsUser(player1)
-    await db.createUser({ userId: playerId, name: 'Player 1' })
+    await db.createUser({ userId: playerId, name: player1 })
 
     const hostId = await signInAsUser(host)
-    await db.createUser({ userId: hostId, name: 'Host' })
+    await db.createUser({ userId: hostId, name: host })
 
     const game = await createGame(hostId, firebase.firestore.Timestamp.now())
     await db.inviteToGame(playerId, { hostId, gameId: game.gameId })
+   
     await signInAsAdmin()
     
     interface GameEventData {
@@ -421,16 +422,15 @@ describe('games database', () => {
 
     let unsubscribe: () => void = noop
 
-    const promise = new Promise<GameEventData>(resolve => {
+    const gameEventData = await new Promise<GameEventData>(resolve => {
       unsubscribe = db.listenToGame(hostId, game.gameId, (game, invitedPlayers, responses) => {
         resolve({ game, invitedPlayers, responses })
       })
     })
 
-    const r = await promise
-    expect(r.game.hostId).toEqual(hostId)
-    expect(r.invitedPlayers).toEqual([player1])
-    expect(r.responses).toEqual([])
+    expect(gameEventData.game.hostId).toEqual(hostId)
+    expect(gameEventData.invitedPlayers).toEqual([{ userId: playerId, name: player1 }])
+    expect(gameEventData.responses).toEqual([])
     unsubscribe()
   })
 })

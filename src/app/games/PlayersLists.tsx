@@ -25,8 +25,9 @@ export interface InvitedGamePlayerLists {
 
 export const groupInvitedGamePlayersByInvitationStatus = (invitedUsers: Users, responses: ReadonlyArray<InvitationResponse>): InvitedGamePlayerLists => {
   const responseMap = keyBy(response => response.playerId, responses)
-  const playerLists = groupBy(user => defaultTo('no-response', get(user.userId, responseMap)), invitedUsers)
+  const playerLists = groupBy(user => defaultTo('noResponse', get([user.userId, 'status'], responseMap)), invitedUsers) as {} as InvitedGamePlayerLists
 
+  return playerLists
   // const byStatus = (status: InvitationStatus) => (response: InvitationResponse): boolean => response.status === status
   // const getPlayerId = (response: InvitationResponse): string => response.playerId
   // const getUserId = (user: User): string => user.name
@@ -41,24 +42,24 @@ export const groupInvitedGamePlayersByInvitationStatus = (invitedUsers: Users, r
   //   )(responses)
 
   // const approved = getUsersByStatus('approved')
-  // const standBy = getUsersByStatus('stand-by')
+  // const standBy = getUsersByStatus('standBy')
   // const declined = getUsersByStatus('declined')
 
   // const respondingUserIds = map(getPlayerId, responses)
   // const noResponse = map(getPlayer, difference(keys(invitedUsers), respondingUserIds))
 
-  return {
-    approved: playerLists['approved'],
-    standBy: playerLists['stand-by'],
-    declined: playerLists['declined'],
-    noResponse: playerLists['no-reponse']
-  }
+  // return {
+  //   approved: playerLists['approved'],
+  //   standBy: playerLists['standBy'],
+  //   declined: playerLists['declined'],
+  //   noResponse: playerLists['no-reponse']
+  // }
 }
 
 export const groupHostedGamePlayersByInvitationStatus = (players: Users, invitedUserIds: UserIds, responses: ReadonlyArray<InvitationResponse>): HostedGamePlayerLists => {
   const byStatus = (status: InvitationStatus) => (response: InvitationResponse): boolean => response.status === status
   const getPlayerId = (response: InvitationResponse): string => response.playerId
-  const getUserId = (user: User): string => user.name
+  const getUserId = (user: User): string => user.userId
 
   const playerMap = keyBy(getUserId, players)
   const getPlayer = (userId: string): User => playerMap[userId]
@@ -70,7 +71,8 @@ export const groupHostedGamePlayersByInvitationStatus = (players: Users, invited
     )(responses)
 
   const approved = getUsersByStatus('approved')
-  const standBy = getUsersByStatus('stand-by')
+
+  const standBy = getUsersByStatus('standBy')
   const declined = getUsersByStatus('declined')
 
   const respondingUserIds = map(getPlayerId, responses)

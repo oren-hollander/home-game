@@ -40,9 +40,9 @@ describe('player lists', () => {
 
     let playerLists: HostedGamePlayerLists
 
-    const Player = (name: string): User => ({
-      userId: `id-${name}`,
-      name
+    const Player = (id: string): User => ({
+      userId: id,
+      name: `name-of-${id}`,
     })
 
     beforeEach(() => {
@@ -58,8 +58,8 @@ describe('player lists', () => {
           InvitationResponse(Approved2, 'approved'),
           InvitationResponse(Declined1, 'declined'),
           InvitationResponse(Declined2, 'declined'),
-          InvitationResponse(StandBy1, 'stand-by'),
-          InvitationResponse(StandBy2, 'stand-by'),
+          InvitationResponse(StandBy1, 'standBy'),
+          InvitationResponse(StandBy2, 'standBy'),
         ]
       )
     })
@@ -72,7 +72,7 @@ describe('player lists', () => {
       expect(playerLists.declined).toEqual([Player(Declined1), Player(Declined2)])
     })
 
-    test('should get the stand-by players', () => {
+    test('should get the standBy players', () => {
       expect(playerLists.standBy).toEqual([Player(StandBy1), Player(StandBy2)])
     })
 
@@ -117,9 +117,9 @@ describe('player lists', () => {
 
     let playerLists: InvitedGamePlayerLists
 
-    const Player = (name: string): User => ({
-      userId: `id-${name}`,
-      name
+    const Player = (id: string): User => ({
+      userId: id,
+      name: `name-of${id}`
     })
 
     beforeEach(() => {
@@ -132,8 +132,8 @@ describe('player lists', () => {
           InvitationResponse(Approved2, 'approved'),
           InvitationResponse(Declined1, 'declined'),
           InvitationResponse(Declined2, 'declined'),
-          InvitationResponse(StandBy1, 'stand-by'),
-          InvitationResponse(StandBy2, 'stand-by'),
+          InvitationResponse(StandBy1, 'standBy'),
+          InvitationResponse(StandBy2, 'standBy'),
         ]
       )
     })
@@ -146,7 +146,7 @@ describe('player lists', () => {
       expect(playerLists.declined).toEqual([Player(Declined1), Player(Declined2)])
     })
 
-    test('should get the stand-by players', () => {
+    test('should get the standBy players', () => {
       expect(playerLists.standBy).toEqual([Player(StandBy1), Player(StandBy2)])
     })
 
