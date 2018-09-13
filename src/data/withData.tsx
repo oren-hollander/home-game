@@ -1,9 +1,8 @@
 import * as React from 'react'
 import { Component, ComponentType } from 'react'
-// import { connect, MapDispatchToProps } from 'react-redux'
-// import { HomeGameThunkDispatch, State, HomeGameAction } from '../app/state'
-// import { ThunkAction } from 'redux-thunk'
-// import { Services } from '../services/services'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+import { Action } from 'redux'
+import { connect } from 'react-redux'
 
 export type EmptyDataResult = {
   type: 'empty'
@@ -18,28 +17,38 @@ export type DataResult<T> = {
   value: T
 }
 
+export type StaleDataResult<T> = {
+  type: 'stale'
+  value: T
+}
+
 export const DataResult = <T extends any>(value: T): DataResult<T> => ({ type: 'data', value })
 export const EmptyDataResult: EmptyDataResult = { type: 'empty' }
 export const PendingDataResult: PendingDataResult = { type: 'pending' }
 
-export type Result<T> = DataResult<T> | PendingDataResult | EmptyDataResult
+export type Result<T> = DataResult<T> | StaleDataResult<T> | PendingDataResult | EmptyDataResult
 
-export type LoadData<Param, Data> = (param: Param) => Promise<Result<Data>>
+export type LoadData<Param, Data, S, E, A extends Action> = (param: Param) => ThunkAction<Promise<Result<Data>>, S, E, A>
 
-export const withData = <Param, Data, Props, WrapperProps>(loadData: LoadData<Param, Data>, mapProps: (props: WrapperProps) => Param, mapResult: (result: Result<Data>) => Props, Comp: ComponentType<Props>): ComponentType<WrapperProps> => {
+export const withData = <Param, Data, Props, WrapperProps, S, E, A extends Action>(loadData: LoadData<Param, Data, S, E, A>, mapProps: (props: WrapperProps) => Param, mapResult: (result: Result<Data>) => Props, Comp: ComponentType<Props>): ComponentType<WrapperProps> => {
 
   type WithDataState = {
     result: Result<Data>
   }
 
-  class WithData extends Component<WrapperProps, WithDataState> {
+  type WithDataDispatchProps = {
+    loadData(param: Param): Promise<Result<Data>>
+  }
+
+  type WithDataProps = WrapperProps & WithDataDispatchProps
+  class WithData extends Component<WithDataProps, WithDataState> {
     state: WithDataState = {
       result: PendingDataResult
     }
 
     async componentDidMount() {
-      const param = mapProps(this.props)
-      const result = await loadData(param)
+      const param = mapProps(this.props as Readonly<WrapperProps>)
+      const result = await this.props.loadData(param)
       this.setState({ result })
     }
 
@@ -49,34 +58,12 @@ export const withData = <Param, Data, Props, WrapperProps>(loadData: LoadData<Pa
     }
   } 
 
-  return WithData
+  const mapDispatchToProps = (dispatch: ThunkDispatch<S, E, A>): WithDataDispatchProps => ({
+    async loadData(param: Param): Promise<Result<Data>> {
+      return dispatch(loadData(param))
+    }
+  })
+
+  const ConnectedWithData = connect(undefined, mapDispatchToProps)(WithData) as {} as ComponentType<WrapperProps>
+  return ConnectedWithData
 }
-
-
-// type LoadData<P, T> = (props: P) => ThunkAction<Promise<Result<T>>, State, Services, HomeGameAction> 
-
-// export const withData = <P, PP, D>(loader: DataLoader<P, D>) => (Comp: ComponentType<PP>): ComponentType<P> => {
-  
-//   type DispatchProps<P, T> = {
-//     loader: () => Promise<Result<T>>
-//   }
-
-//   class WithData extends Component<DispatchProps<P, T>> {
-//     async componentDidMount() {
-//       const result = await this.props.loader()
-//       switch(result.type) {
-//         case 'empty'
-//       }
-//     }
-//     render() {
-//       return <Comp {...this.props} />
-//     }
-//   }
-
-  
-//   const mapDispatchToProps: MapDispatchToProps<DispatchProps<P, T>, P> = (dispatch: HomeGameThunkDispatch, ownProps): DispatchProps<P, T> => ({
-//     loader: () => dispatch(loader(ownProps))
-//   })
-
-//   return connect(undefined, mapDispatchToProps)(WithData)
-// }
