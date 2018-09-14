@@ -17,21 +17,21 @@ interface FriendsProps {
 }
 
 namespace UI {
-  export const Friends: SFC<FriendsProps> = ({ friends }) =>
+  export const Friends: SFC<FriendsProps> = ({ friends }) => (
     <Page>
       <ListGroup>
-        {
-          map(friend => (
-            <ListGroupItem key={friend.userId}>
-              {friend.name}
-            </ListGroupItem>
-          ), friends)
-        }
+        {map(
+          friend => (
+            <ListGroupItem key={friend.userId}>{friend.name}</ListGroupItem>
+          ),
+          friends
+        )}
         <ListGroupItem color="primary">
           <Link to="/friends/invite">Invite a new friend</Link>
         </ListGroupItem>
       </ListGroup>
     </Page>
+  )
 }
 
 const mapStateToProps = (state: State): FriendsProps => ({

@@ -9,7 +9,9 @@ import { noop, constant, isUndefined, omit } from 'lodash/fp'
 type LoadData = (...args: any[]) => ThunkAction<Promise<void>, State, Services, HomeGameAction>
 type ClearData = () => ThunkAction<void, State, Services, HomeGameAction>
 
-export const load = <T extends any>(loadData: LoadData, clear: ClearData = constant(noop), propName?: string) => (Comp: ComponentType<T>): ComponentType<T> => {
+export const load = <T extends any>(loadData: LoadData, clear: ClearData = constant(noop), propName?: string) => (
+  Comp: ComponentType<T>
+): ComponentType<T> => {
   interface LoadProps {
     load: () => void
     clear: () => void
@@ -25,7 +27,7 @@ export const load = <T extends any>(loadData: LoadData, clear: ClearData = const
     }
 
     render() {
-      return <Comp {...omit(['load', 'clear'], this.props)}/>
+      return <Comp {...omit(['load', 'clear'], this.props)} />
     }
   }
 
@@ -34,5 +36,8 @@ export const load = <T extends any>(loadData: LoadData, clear: ClearData = const
     clear: () => dispatch(clear())
   })
 
-  return connect(undefined, mapDispatchToProps)(Load) as {} as ComponentType<T>
+  return (connect(
+    undefined,
+    mapDispatchToProps
+  )(Load) as {}) as ComponentType<T>
 }

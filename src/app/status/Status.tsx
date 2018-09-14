@@ -11,10 +11,10 @@ interface StatusProps {
 }
 
 const getAlertColor = (statusType: StatusType): string => {
-  switch(statusType) {
+  switch (statusType) {
     case 'error':
       return 'danger'
-    case 'success': 
+    case 'success':
       return 'success'
     case 'info':
       return 'info'
@@ -24,15 +24,11 @@ const getAlertColor = (statusType: StatusType): string => {
 }
 
 namespace UI {
-  export const Status: SFC<StatusProps> = ({ status }) => 
+  export const Status: SFC<StatusProps> = ({ status }) => (
     <Fade in={!isUndefined(status)}>
-      {
-        !isUndefined(status) && 
-        <Alert color={getAlertColor(status!.type)}>
-          { status!.text }
-        </Alert>
-      }
+      {!isUndefined(status) && <Alert color={getAlertColor(status!.type)}>{status!.text}</Alert>}
     </Fade>
+  )
 }
 
 const mapStateToProps: MapStateToProps<StatusProps, {}, State> = (state): StatusProps => ({

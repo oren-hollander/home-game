@@ -8,7 +8,7 @@ import { isEmpty, defaultTo, map, find, head, isUndefined } from 'lodash/fp'
 import { State, HomeGameThunkDispatch } from '../state'
 import { connect } from 'react-redux'
 import { compose } from 'recompose'
-import { AddressRequired} from './AddressRequired'
+import { AddressRequired } from './AddressRequired'
 import { Page } from '../../ui/Page'
 import { Form, FormGroup, Button, Input, Label, Jumbotron } from 'reactstrap'
 import { createGame } from '../games/gamesActions'
@@ -49,11 +49,20 @@ namespace UI {
     onChange: (event: ChangeEvent<HTMLInputElement>) => void
   }
 
-  const FormField: SFC<FormFieldProps> = ({ id, type, defaultValue, label, onChange }) =>
+  const FormField: SFC<FormFieldProps> = ({ id, type, defaultValue, label, onChange }) => (
     <FormGroup>
       <Label for={id}>{label}</Label>
-      <Input type={type} style={{ resize: 'none' }} name={id} id={id} placeholder={label} defaultValue={defaultValue} onChange={onChange} />
-    </FormGroup> 
+      <Input
+        type={type}
+        style={{ resize: 'none' }}
+        name={id}
+        id={id}
+        placeholder={label}
+        defaultValue={defaultValue}
+        onChange={onChange}
+      />
+    </FormGroup>
+  )
 
   export class NewGame extends Component<NewGameProps, NewGameState> {
     state: NewGameState = {}
@@ -73,55 +82,72 @@ namespace UI {
     }
 
     updateAddress = (e: ChangeEvent<HTMLSelectElement>) => {
-      this.setState({addressId: e.target.value})
+      this.setState({ addressId: e.target.value })
     }
 
-    updateStartTime = (dateTime: string | Moment ) => {
+    updateStartTime = (dateTime: string | Moment) => {
       if (isString(dateTime)) {
         this.setState({
           timestamp: undefined
         })
         this.props.showStatus(WarningStatus('Invalid date format'))
-      }
-      else {
+      } else {
         const moment = dateTime as Moment
         this.setState({
-            timestamp: Timestamp.fromDate(moment.toDate())
+          timestamp: Timestamp.fromDate(moment.toDate())
         })
       }
     }
 
-    getAddress = (): Address => find(address => address.addressId === this.state.addressId,  this.props.addresses)!
+    getAddress = (): Address => find(address => address.addressId === this.state.addressId, this.props.addresses)!
 
     createGame = () => {
-      if (isUndefined(this.state.addressId) || isUndefined(this.state.timestamp) || isUndefined(this.state.description)) {
+      if (
+        isUndefined(this.state.addressId) ||
+        isUndefined(this.state.timestamp) ||
+        isUndefined(this.state.description)
+      ) {
         this.props.showStatus(ErrorStatus('Fill all the details'))
-      }
-      else {
+      } else {
         this.props.createGame(this.state.timestamp!, this.getAddress(), this.state.description!)
       }
     }
 
     render() {
       if (isEmpty(this.props.addresses)) {
-        return <AddressRequired/>
+        return <AddressRequired />
       }
       return (
         <Page>
           <Jumbotron>
-            <Form color='primary'>
+            <Form color="primary">
               <FormGroup>
                 <Label for="startTime">Time</Label>
-                <DateTime id='startTime' onChange={this.updateStartTime}/>
-              </FormGroup> 
-              <FormField id="description" label="Description" type="textarea" defaultValue={defaultTo('', this.state.description)} onChange={this.setText('description')} />
+                <DateTime id="startTime" onChange={this.updateStartTime} />
+              </FormGroup>
+              <FormField
+                id="description"
+                label="Description"
+                type="textarea"
+                defaultValue={defaultTo('', this.state.description)}
+                onChange={this.setText('description')}
+              />
               <FormGroup>
                 <Label for="address">Address</Label>
                 <Input type="select" name="address" id="address" onChange={this.setText('addressId')}>
-                  {map(address => <option key={address.addressId} value={address.addressId}>{address.label}</option>, this.props.addresses) }
+                  {map(
+                    address => (
+                      <option key={address.addressId} value={address.addressId}>
+                        {address.label}
+                      </option>
+                    ),
+                    this.props.addresses
+                  )}
                 </Input>
-              </FormGroup> 
-              <Button color="primary" onClick={this.createGame}>Create</Button>
+              </FormGroup>
+              <Button color="primary" onClick={this.createGame}>
+                Create
+              </Button>
             </Form>
           </Jumbotron>
         </Page>
@@ -145,5 +171,8 @@ const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): NewGameDispatchPro
 
 export const NewGame = compose(
   load(loadAddresses),
-  connect(mapStateToProps, mapDispatchToProps)
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )
 )(UI.NewGame)

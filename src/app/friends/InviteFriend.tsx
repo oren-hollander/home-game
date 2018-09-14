@@ -35,32 +35,34 @@ namespace UI {
       this.setState({ invitationId })
     }
 
-    invitationUrl = () => `https://homegame.app/friends/accept?userId=${this.props.userId}&invitationId=${this.state.invitationId}`
-    
+    invitationUrl = () =>
+      `https://homegame.app/friends/accept?userId=${this.props.userId}&invitationId=${this.state.invitationId}`
+
     copyToClipboard = () => {
       this.props.copy(this.invitationUrl())
     }
 
     render() {
-      
       return (
         <Page>
           <Jumbotron>
-            {
-              isEmpty(this.state.invitationId)
-                ?
-                <>
-                  <p>Invite a friend.</p>
-                  <p>By clicking 'Create', you will get an invitation link.</p>
-                  <Button color="primary" onClick={this.createFriendInvitation}>Create Invitation</Button>
-                </>
-                :
-                <>
-                  <p>Send this invitation link to your friend:</p>
-                  <pre>{this.invitationUrl()}</pre>
-                  <Button color="primary" onClick={this.copyToClipboard}>Copy</Button>
-                </>
-            }
+            {isEmpty(this.state.invitationId) ? (
+              <>
+                <p>Invite a friend.</p>
+                <p>By clicking 'Create', you will get an invitation link.</p>
+                <Button color="primary" onClick={this.createFriendInvitation}>
+                  Create Invitation
+                </Button>
+              </>
+            ) : (
+              <>
+                <p>Send this invitation link to your friend:</p>
+                <pre>{this.invitationUrl()}</pre>
+                <Button color="primary" onClick={this.copyToClipboard}>
+                  Copy
+                </Button>
+              </>
+            )}
           </Jumbotron>
         </Page>
       )
@@ -74,11 +76,14 @@ const mapStateToProps = (state: State): InviteFriendStateProps => ({
 
 const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): InviteFriendDispatchProps => ({
   createFriendInvitation() {
-     return dispatch(createFriendInvitation())
+    return dispatch(createFriendInvitation())
   },
   copy(text: string) {
     dispatch(copyToClipboard(text))
   }
 })
 
-export const InviteFriend = connect(mapStateToProps, mapDispatchToProps)(UI.InviteFriend)
+export const InviteFriend = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(UI.InviteFriend)

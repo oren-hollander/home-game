@@ -35,5 +35,5 @@ export class Home extends Component<{}, HomeState> {
         </ListGroup>
       </Page>
     )
-  } 
+  }
 }

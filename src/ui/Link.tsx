@@ -20,9 +20,12 @@ namespace UI {
 }
 
 const mapDispatchToProps: MapDispatchToProps<LinkDispatchProps, {}> = dispatch => ({
-  push(to: string){
+  push(to: string) {
     dispatch(push(to))
   }
 })
 
-export const Link: ComponentType<LinkProps> = connect(undefined, mapDispatchToProps)(UI.Link)
+export const Link: ComponentType<LinkProps> = connect(
+  undefined,
+  mapDispatchToProps
+)(UI.Link)

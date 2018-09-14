@@ -10,7 +10,11 @@ import { Services } from '../services/services'
 type ListenToData = (...args: any[]) => ThunkAction<Unsubscribe, State, Services, HomeGameAction>
 type ClearData = () => ThunkAction<void, State, Services, HomeGameAction>
 
-export const listen = (listen: ListenToData, clear: ClearData = constant(noop), propsToParam: (arg: any) => any = constant({})) => (Comp: ComponentType) => {
+export const listen = (
+  listen: ListenToData,
+  clear: ClearData = constant(noop),
+  propsToParam: (arg: any) => any = constant({})
+) => (Comp: ComponentType) => {
   interface ListenProps {
     listen: () => Unsubscribe
     clear: () => void
@@ -38,5 +42,8 @@ export const listen = (listen: ListenToData, clear: ClearData = constant(noop), 
     clear: () => dispatch(clear())
   })
 
-  return connect(undefined, mapDispatchToProps)(Listen)
+  return connect(
+    undefined,
+    mapDispatchToProps
+  )(Listen)
 }

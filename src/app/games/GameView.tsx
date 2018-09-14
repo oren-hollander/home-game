@@ -34,34 +34,45 @@ namespace UI {
     }
 
     if (userId === game.hostId) {
-      return <HostedGamePlayerLists game={game} friends={friends} invitedUserIds={invitedPlayerIds} responses={responses} /> 
+      return (
+        <HostedGamePlayerLists game={game} friends={friends} invitedUserIds={invitedPlayerIds} responses={responses} />
+      )
     }
 
-    return <InvitedGamePlayerLists invitedUsers={invitedPlayers} responses={responses} /> 
-  } 
+    return <InvitedGamePlayerLists invitedUsers={invitedPlayers} responses={responses} />
+  }
 
-  export const GameView: SFC<GameViewStateProps> = ({ userId, friends, game, invitedPlayers, responses }) => 
+  export const GameView: SFC<GameViewStateProps> = ({ userId, friends, game, invitedPlayers, responses }) => (
     <Page>
       <Jumbotron>
-        {
-          !game 
-            ? 'Loading' 
-            : 
-            <>
-              <h5>Host</h5>
-              <p>{game.hostName}</p> 
-              <h5>Time</h5>
-              <p><DateView timestamp={game.timestamp}/></p> 
-              <h5>Address</h5>
-              <p>{game.address.houseNumber} {game.address.street}, {game.address.city} ({game.address.notes})</p>
-              { 
-                game && 
-                <Players game={game} userId={userId} friends={friends} invitedPlayers={invitedPlayers} responses={responses}/> 
-              }
-            </>
-        }
+        {!game ? (
+          'Loading'
+        ) : (
+          <>
+            <h5>Host</h5>
+            <p>{game.hostName}</p>
+            <h5>Time</h5>
+            <p>
+              <DateView timestamp={game.timestamp} />
+            </p>
+            <h5>Address</h5>
+            <p>
+              {game.address.houseNumber} {game.address.street}, {game.address.city} ({game.address.notes})
+            </p>
+            {game && (
+              <Players
+                game={game}
+                userId={userId}
+                friends={friends}
+                invitedPlayers={invitedPlayers}
+                responses={responses}
+              />
+            )}
+          </>
+        )}
       </Jumbotron>
     </Page>
+  )
 }
 
 export interface GameViewProps {
@@ -77,7 +88,7 @@ const mapStateToProps = (state: State, ownProps: GameViewProps): GameViewStatePr
   return {
     userId,
     game: gameState && gameState.game,
-    invitedPlayers: gameState ? gameState.invitedPlayers: [],
+    invitedPlayers: gameState ? gameState.invitedPlayers : [],
     responses: gameState ? gameState.responses : [],
     friends
   }
@@ -85,6 +96,6 @@ const mapStateToProps = (state: State, ownProps: GameViewProps): GameViewStatePr
 
 export const GameView: ComponentType<GameViewProps> = compose(
   load(loadFriends),
-  listen(listenToGame, constant(noop), props => ({hostId: props.hostId, gameId: props.gameId})),
+  listen(listenToGame, constant(noop), props => ({ hostId: props.hostId, gameId: props.gameId })),
   connect(mapStateToProps)
 )(UI.GameView) as ComponentType<GameViewProps>

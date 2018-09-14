@@ -7,7 +7,7 @@
     "build": "react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom --runInBand",
     "eject": "react-scripts-ts eject",
-    "prettier": "prettier --write \"src/**/*.ts\""
+    "prettier": "prettier --write \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "bootstrap": "^4.1.3",

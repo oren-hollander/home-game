@@ -13,17 +13,25 @@ export interface EditAddressProps {
   addressId: string
 }
 
-const mapDispatchToProps: MapDispatchToProps<SetAddressDispatchProps, {}> = (dispatch: HomeGameThunkDispatch): SetAddressDispatchProps => ({
+const mapDispatchToProps: MapDispatchToProps<SetAddressDispatchProps, {}> = (
+  dispatch: HomeGameThunkDispatch
+): SetAddressDispatchProps => ({
   showError: (error: string) => dispatch(showStatus(ErrorStatus(error))),
   setAddress: (address: Address) => dispatch(updateAddress(address))
 })
 
-const mapStateToProps: MapStateToProps<SetAddressStateProps, EditAddressProps, State> = (state: State, ownProps: EditAddressProps): SetAddressStateProps => ({
+const mapStateToProps: MapStateToProps<SetAddressStateProps, EditAddressProps, State> = (
+  state: State,
+  ownProps: EditAddressProps
+): SetAddressStateProps => ({
   address: getAddress(ownProps.addressId)(state),
   buttonLabel: 'Update'
 })
 
 export const EditAddress: ComponentType<EditAddressProps> = compose(
   load(loadAddresses),
-  connect(mapStateToProps, mapDispatchToProps)
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )
 )(SetAddress) as ComponentType<EditAddressProps>

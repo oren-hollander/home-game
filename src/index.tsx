@@ -35,18 +35,14 @@ const services: Services = {
 
 const store = createStore(
   connectRouter(history)(reducer),
-  applyMiddleware(
-    routerMiddleware(history),
-    thunk.default.withExtraArgument(services)
-  )
+  applyMiddleware(routerMiddleware(history), thunk.default.withExtraArgument(services))
 )
 
 const ts = now()
 firebase.auth().onAuthStateChanged(user => {
-  if(user){
+  if (user) {
     store.dispatch(userSignedIn(user))
-  }
-  else {
+  } else {
     store.dispatch(userSignedOut())
   }
   const ms = max([0, 1000 - (now() - ts)])!
@@ -67,16 +63,22 @@ const renderApp = () => {
   )
 }
 
-const Welcome = () => 
+const Welcome = () => (
   <div>
-    <img src={Logo} style={{
-      display: 'block',
-      marginLeft: 'auto',
-      marginRight: 'auto',
-      width: '50%'
-    }}/>
-    <h1 className="text-muted" style={{textAlign: 'center'}}>Loading...</h1>
+    <img
+      src={Logo}
+      style={{
+        display: 'block',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        width: '50%'
+      }}
+    />
+    <h1 className="text-muted" style={{ textAlign: 'center' }}>
+      Loading...
+    </h1>
   </div>
+)
 
 render(<Welcome />, document.getElementById('root') as HTMLElement)
 

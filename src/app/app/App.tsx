@@ -22,30 +22,35 @@ interface AppProps {
 }
 
 namespace UI {
-  const EditAddressById: SFC<RouteComponentProps<EditAddressProps>> = ({ match }) => <EditAddress addressId={match.params.addressId}/>
-  const GameById: SFC<RouteComponentProps<GameViewProps>> = ({ match }) => <GameView hostId={match.params.hostId} gameId={match.params.gameId} />
+  const EditAddressById: SFC<RouteComponentProps<EditAddressProps>> = ({ match }) => (
+    <EditAddress addressId={match.params.addressId} />
+  )
+  const GameById: SFC<RouteComponentProps<GameViewProps>> = ({ match }) => (
+    <GameView hostId={match.params.hostId} gameId={match.params.gameId} />
+  )
 
-  export const App: SFC<AppProps> = ({ userId }) => 
+  export const App: SFC<AppProps> = ({ userId }) => (
     <>
       <Switch>
-        <Route path='/' exact={true} component={Home}/>
-        <Route path='/games/new' exact={true} component={NewGame} />
+        <Route path="/" exact={true} component={Home} />
+        <Route path="/games/new" exact={true} component={NewGame} />
         {/* <Route path='/games/:gameId/invite' exact={true} component={InviteToGameById} /> */}
-        <Route path='/games/:hostId/:gameId' exact={true} component={GameById} />
-        <Route path='/games' exact={true} component={Games} />
-        <Route path='/friends/accept' exact={true} component={AcceptFriendInvitation} />
-        <Route path='/friends/invite' exact={true} component={InviteFriend} />
-        <Route path='/friends' exact={true} component={Friends} />
-        <Route path='/addresses/new' exact={true} component={AddAddress} />
-        <Route path='/addresses/:addressId' exact={true} component={EditAddressById} />
-        <Route path='/addresses' exact={true} component={Addresses} />        
+        <Route path="/games/:hostId/:gameId" exact={true} component={GameById} />
+        <Route path="/games" exact={true} component={Games} />
+        <Route path="/friends/accept" exact={true} component={AcceptFriendInvitation} />
+        <Route path="/friends/invite" exact={true} component={InviteFriend} />
+        <Route path="/friends" exact={true} component={Friends} />
+        <Route path="/addresses/new" exact={true} component={AddAddress} />
+        <Route path="/addresses/:addressId" exact={true} component={EditAddressById} />
+        <Route path="/addresses" exact={true} component={Addresses} />
         <Route component={NoMatch} />
-      </Switch> 
+      </Switch>
     </>
+  )
 }
 
 const mapStateToProps: MapStateToProps<AppProps, {}, State> = (state: State): AppProps => ({
-  userId: getUser(state).userId 
+  userId: getUser(state).userId
 })
 
 export const App = connect(mapStateToProps)(UI.App)

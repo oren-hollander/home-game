@@ -10,7 +10,7 @@ import { Signing } from './Signing'
 import { Route } from 'react-router-dom'
 
 interface AuthenticationProps {
-  signedIn: boolean,
+  signedIn: boolean
   verified: boolean
 }
 
@@ -19,12 +19,10 @@ namespace UI {
     if (signedIn) {
       if (verified) {
         return <Route component={App} />
-      }
-      else {
+      } else {
         return <EmailVerification />
       }
-    }
-    else {
+    } else {
       return <Signing />
     }
   }

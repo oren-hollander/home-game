@@ -9,7 +9,6 @@ interface DateProps {
   timestamp: Timestamp
 }
 
-const getTimestampData = (timestamp: Timestamp): string => 
-  moment(timestamp.toDate()).format('ddd, MMM Do, h:mm a')
+const getTimestampData = (timestamp: Timestamp): string => moment(timestamp.toDate()).format('ddd, MMM Do, h:mm a')
 
 export const DateView: SFC<DateProps> = ({ timestamp }) => <span>{getTimestampData(timestamp)}</span>

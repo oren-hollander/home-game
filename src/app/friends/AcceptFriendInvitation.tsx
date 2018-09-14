@@ -10,7 +10,7 @@ import { delay } from '../../util/delay'
 import { Page } from '../../ui/Page'
 import { Jumbotron } from 'reactstrap'
 
-interface AcceptFriendInvitationProps  {
+interface AcceptFriendInvitationProps {
   acceptFriendInvitation: (playerId: string, invitationId: string) => void
 }
 
@@ -20,8 +20,11 @@ namespace UI {
     valid: boolean
   }
 
-  export class AcceptFriendInvitation extends Component<RouteComponentProps<{}> & AcceptFriendInvitationProps, AcceptFriendInvitationState> {
-    state: AcceptFriendInvitationState = { 
+  export class AcceptFriendInvitation extends Component<
+    RouteComponentProps<{}> & AcceptFriendInvitationProps,
+    AcceptFriendInvitationState
+  > {
+    state: AcceptFriendInvitationState = {
       loaded: false,
       valid: false
     }
@@ -32,19 +35,18 @@ namespace UI {
       if (userId && invitationId) {
         await this.props.acceptFriendInvitation(userId, invitationId)
         this.setState({ loaded: true, valid: true })
-      }
-      else { 
+      } else {
         this.setState({ loaded: true, valid: false })
       }
     }
 
     private ConnectFriendStatus = () => {
       if (this.state.loaded) {
-        return this.state.valid
-          ?
+        return this.state.valid ? (
           <Alert color="success">Friend connected</Alert>
-          :
+        ) : (
           <Alert color="warning">Invalid invitation</Alert>
+        )
       }
 
       return null
@@ -55,7 +57,7 @@ namespace UI {
         <Page>
           <Jumbotron>
             Connecting friend
-          <this.ConnectFriendStatus />
+            <this.ConnectFriendStatus />
           </Jumbotron>
         </Page>
       )
@@ -69,4 +71,7 @@ const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): AcceptFriendInvita
   }
 })
 
-export const AcceptFriendInvitation = connect(undefined, mapDispatchToProps)(UI.AcceptFriendInvitation)
+export const AcceptFriendInvitation = connect(
+  undefined,
+  mapDispatchToProps
+)(UI.AcceptFriendInvitation)

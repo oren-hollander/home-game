@@ -22,15 +22,16 @@ namespace UI {
       return (
         <Page>
           <ListGroup>
-            {
-              map(address => (
+            {map(
+              address => (
                 <ListGroupItem key={address.addressId}>
                   <Link to={`/addresses/${address.addressId}`}>
                     {address.label} - {address.houseNumber} {address.street} {address.city}
                   </Link>
                 </ListGroupItem>
-              ), this.props.addresses)
-            }
+              ),
+              this.props.addresses
+            )}
             <ListGroupItem color="primary">
               <Link to="/addresses/new">Create new address</Link>
             </ListGroupItem>
@@ -42,7 +43,7 @@ namespace UI {
 }
 
 const mapStateToProps = (state: State): AddressesProps => ({
-   addresses: getAddresses(state)
+  addresses: getAddresses(state)
 })
 
 export const Addresses = compose(

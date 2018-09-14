@@ -3,7 +3,7 @@ import { ChangeEvent, Component } from 'react'
 import { connect, MapDispatchToProps } from 'react-redux'
 import { registerUser } from '../auth/authActions'
 import { ThunkDispatch } from 'redux-thunk'
-import { State, HomeGameAction} from '../state'
+import { State, HomeGameAction } from '../state'
 import { Services } from '../../services/services'
 import { Link } from 'react-router-dom'
 import { Page } from '../../ui/Page'
@@ -39,7 +39,7 @@ namespace UI {
       return (
         <Page toolbar={false}>
           <Jumbotron>
-            <Form color='primary'>
+            <Form color="primary">
               <FormGroup>
                 <Label for="name">Name</Label>
                 <Input type="text" name="text" id="name" placeholder="name" onChange={this.updateField('name')} />
@@ -50,12 +50,23 @@ namespace UI {
               </FormGroup>
               <FormGroup>
                 <Label for="password">Password</Label>
-                <Input type="password" name="password" id="password" placeholder="password" onChange={this.updateField('password')} />
+                <Input
+                  type="password"
+                  name="password"
+                  id="password"
+                  placeholder="password"
+                  onChange={this.updateField('password')}
+                />
               </FormGroup>
             </Form>
-            <Button color="primary" onClick={this.signUp}>Sign Up</Button>{' '}
-
-            <Link to="/"><Button outline={true} color="secondary">Sign In</Button></Link>
+            <Button color="primary" onClick={this.signUp}>
+              Sign Up
+            </Button>{' '}
+            <Link to="/">
+              <Button outline={true} color="secondary">
+                Sign In
+              </Button>
+            </Link>
           </Jumbotron>
         </Page>
       )
@@ -63,10 +74,15 @@ namespace UI {
   }
 }
 
-const mapDispatchToProps: MapDispatchToProps<SignUpProps, {}> = (dispatch: ThunkDispatch<State, Services, HomeGameAction>) => ({
+const mapDispatchToProps: MapDispatchToProps<SignUpProps, {}> = (
+  dispatch: ThunkDispatch<State, Services, HomeGameAction>
+) => ({
   signUp(email: string, name: string, password: string) {
     dispatch(registerUser(email, name, password))
   }
 })
 
-export const SignUp = connect(undefined, mapDispatchToProps)(UI.SignUp)
+export const SignUp = connect(
+  undefined,
+  mapDispatchToProps
+)(UI.SignUp)

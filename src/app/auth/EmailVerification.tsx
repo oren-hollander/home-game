@@ -14,32 +14,33 @@ interface EmailVerificationDispatchProps {
 }
 
 interface EmailVerificationStateProps {
-  name: string,
+  name: string
   email: string
 }
 
 type EmailVerificationProps = EmailVerificationStateProps & EmailVerificationDispatchProps
 
 namespace UI {
-  export const EmailVerification: SFC<EmailVerificationProps> = ({name, email, sendEmailVerification }) => 
+  export const EmailVerification: SFC<EmailVerificationProps> = ({ name, email, sendEmailVerification }) => (
     <Page>
       <Jumbotron>
         <p>
           {name}, the email you signed up with ({email}) is not yet verified.
         </p>
-        <p>
-          To verify your email address, click on the button below.
-        </p>
-        <p>
-          An email with a link will be sent to you. click on that link to veryfy your email address.
-        </p>
-        <Button color="primary" onClick={sendEmailVerification}>Send</Button>
+        <p>To verify your email address, click on the button below.</p>
+        <p>An email with a link will be sent to you. click on that link to veryfy your email address.</p>
+        <Button color="primary" onClick={sendEmailVerification}>
+          Send
+        </Button>
       </Jumbotron>
     </Page>
+  )
 }
 
-const mapDispatchToProps: MapDispatchToProps<EmailVerificationDispatchProps, {}> = (dispatch: HomeGameThunkDispatch): EmailVerificationDispatchProps => ({
-  sendEmailVerification(){
+const mapDispatchToProps: MapDispatchToProps<EmailVerificationDispatchProps, {}> = (
+  dispatch: HomeGameThunkDispatch
+): EmailVerificationDispatchProps => ({
+  sendEmailVerification() {
     dispatch(sendEmailVerification())
   },
   showError(error: string) {
@@ -52,4 +53,7 @@ const mapStateToProps: MapStateToProps<EmailVerificationStateProps, {}, State> =
   email: getUserEmail(state)
 })
 
-export const EmailVerification = connect(mapStateToProps, mapDispatchToProps)(UI.EmailVerification)
+export const EmailVerification = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(UI.EmailVerification)

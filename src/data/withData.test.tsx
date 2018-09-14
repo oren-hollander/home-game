@@ -8,7 +8,7 @@ import { createStore, applyMiddleware, Reducer } from 'redux'
 import { Provider } from 'react-redux'
 import * as thunk from 'redux-thunk'
 import { ParametricSelector } from 'reselect'
-import { produce } from 'immer';
+import { produce } from 'immer'
 
 describe('withData', () => {
   const firstRenderPromise = SettlingPromise<Result<number>>()

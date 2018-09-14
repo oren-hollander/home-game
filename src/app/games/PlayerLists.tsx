@@ -2,13 +2,28 @@ import * as React from 'react'
 import { Dictionary } from 'lodash'
 import { SFC, Component, ComponentType } from 'react'
 import { User, InvitationResponse, InvitationStatus, Invitation, Game } from '../../db/types'
-import { map, flow, filter, keys, keyBy, difference, isEmpty, get, groupBy, defaultTo, fromPairs, some, eq, toPairs } from 'lodash/fp'
+import {
+  map,
+  flow,
+  filter,
+  keys,
+  keyBy,
+  difference,
+  isEmpty,
+  get,
+  groupBy,
+  defaultTo,
+  fromPairs,
+  some,
+  eq,
+  toPairs
+} from 'lodash/fp'
 import ListGroup from 'reactstrap/lib/ListGroup'
 import ListGroupItem from 'reactstrap/lib/ListGroupItem'
 import { Button } from 'reactstrap'
-import { connect } from 'react-redux';
-import { HomeGameThunkDispatch } from '../state';
-import { invitePlayers } from './gamesActions';
+import { connect } from 'react-redux'
+import { HomeGameThunkDispatch } from '../state'
+import { invitePlayers } from './gamesActions'
 
 type Users = ReadonlyArray<User>
 type UserIds = ReadonlyArray<string>
@@ -28,14 +43,24 @@ export interface InvitedGamePlayerLists {
   noResponse: Users
 }
 
-export const groupInvitedGamePlayersByInvitationStatus = (invitedUsers: Users, responses: ReadonlyArray<InvitationResponse>): InvitedGamePlayerLists => {
+export const groupInvitedGamePlayersByInvitationStatus = (
+  invitedUsers: Users,
+  responses: ReadonlyArray<InvitationResponse>
+): InvitedGamePlayerLists => {
   const responseMap = keyBy(response => response.playerId, responses)
-  const playerLists = groupBy(user => defaultTo('noResponse', get([user.userId, 'status'], responseMap)), invitedUsers) as {} as InvitedGamePlayerLists
+  const playerLists = (groupBy(
+    user => defaultTo('noResponse', get([user.userId, 'status'], responseMap)),
+    invitedUsers
+  ) as {}) as InvitedGamePlayerLists
 
   return playerLists
 }
 
-export const groupHostedGamePlayersByInvitationStatus = (players: Users, invitedUserIds: UserIds, responses: ReadonlyArray<InvitationResponse>): HostedGamePlayerLists => {
+export const groupHostedGamePlayersByInvitationStatus = (
+  players: Users,
+  invitedUserIds: UserIds,
+  responses: ReadonlyArray<InvitationResponse>
+): HostedGamePlayerLists => {
   if (isEmpty(players)) {
     return {
       approved: [],
@@ -55,7 +80,12 @@ export const groupHostedGamePlayersByInvitationStatus = (players: Users, invited
   const getUsersByStatus = (status: InvitationStatus): ReadonlyArray<User> =>
     flow(
       filter(byStatus(status)),
-      map(flow(getPlayerId, getPlayer)),
+      map(
+        flow(
+          getPlayerId,
+          getPlayer
+        )
+      )
     )(responses)
 
   const approved = getUsersByStatus('approved')
@@ -94,18 +124,23 @@ type PlayerListProps = {
 }
 
 const PlayerList: SFC<PlayerListProps> = ({ users, label }) => {
-    if (isEmpty(users)) {
-      return null
-    }
-    
-    return (
-      <>
-        <h5>{label}</h5>
-        <ListGroup>
-          { map(user => <ListGroupItem key={user.name}>{user.name}</ListGroupItem> , users) }
-        </ListGroup>
-      </>
-    )
+  if (isEmpty(users)) {
+    return null
+  }
+
+  return (
+    <>
+      <h5>{label}</h5>
+      <ListGroup>
+        {map(
+          user => (
+            <ListGroupItem key={user.name}>{user.name}</ListGroupItem>
+          ),
+          users
+        )}
+      </ListGroup>
+    </>
+  )
 }
 
 type NotInvitedPlayerListStateProps = {
@@ -117,7 +152,7 @@ type NotInvitedPlayerListDispatchProps = {
   invitePlayers(userIds: ReadonlyArray<string>): void
 }
 
-type NotInvitedPlayerListProps = NotInvitedPlayerListStateProps & NotInvitedPlayerListDispatchProps 
+type NotInvitedPlayerListProps = NotInvitedPlayerListStateProps & NotInvitedPlayerListDispatchProps
 type NotInvitedPlayerListState = Dictionary<boolean>
 
 namespace UI {
@@ -129,7 +164,7 @@ namespace UI {
 
     toggleUser = (userId: string) => () => this.setState({ [userId]: !get(userId, this.state) })
 
-    getColor = (userId: string): string => this.state[userId] ? 'primary' : 'secondary'
+    getColor = (userId: string): string => (this.state[userId] ? 'primary' : 'secondary')
 
     inviteSelectedPlayers = () => {
       const pairs = toPairs(this.state)
@@ -149,30 +184,33 @@ namespace UI {
         <>
           <h5>Invite Friends</h5>
           <ListGroup>
-            {
-              map(
-                user =>
-                  <ListGroupItem
-                    key={user.userId}
-                    color={this.getColor(user.userId)}
-                    onClick={this.toggleUser(user.userId)}>
-                    {
-                      user.name
-                    }
-                  </ListGroupItem>,
-                this.props.users
-              )
-            }
+            {map(
+              user => (
+                <ListGroupItem
+                  key={user.userId}
+                  color={this.getColor(user.userId)}
+                  onClick={this.toggleUser(user.userId)}
+                >
+                  {user.name}
+                </ListGroupItem>
+              ),
+              this.props.users
+            )}
           </ListGroup>
           <p />
-          <Button color="primary" disabled={!this.areAnySelected()} onClick={this.inviteSelectedPlayers}>Invite Selected Players</Button>
+          <Button color="primary" disabled={!this.areAnySelected()} onClick={this.inviteSelectedPlayers}>
+            Invite Selected Players
+          </Button>
         </>
       )
     }
   }
 }
 
-const mapDispatchToProps = (dispatch: HomeGameThunkDispatch, ownProps: NotInvitedPlayerListStateProps): NotInvitedPlayerListDispatchProps  => ({
+const mapDispatchToProps = (
+  dispatch: HomeGameThunkDispatch,
+  ownProps: NotInvitedPlayerListStateProps
+): NotInvitedPlayerListDispatchProps => ({
   invitePlayers(userIds: ReadonlyArray<string>) {
     const invitation: Invitation = {
       gameId: ownProps.game.gameId,
@@ -182,9 +220,17 @@ const mapDispatchToProps = (dispatch: HomeGameThunkDispatch, ownProps: NotInvite
   }
 })
 
-const NotInvitedPlayerList: ComponentType<NotInvitedPlayerListStateProps> = connect(undefined, mapDispatchToProps)(UI.NotInvitedPlayerList)
+const NotInvitedPlayerList: ComponentType<NotInvitedPlayerListStateProps> = connect(
+  undefined,
+  mapDispatchToProps
+)(UI.NotInvitedPlayerList)
 
-export const HostedGamePlayerLists: SFC<HostedGamePlayerListsProps> = ({ game, friends, invitedUserIds, responses }) => {
+export const HostedGamePlayerLists: SFC<HostedGamePlayerListsProps> = ({
+  game,
+  friends,
+  invitedUserIds,
+  responses
+}) => {
   const playerLists = groupHostedGamePlayersByInvitationStatus(friends, invitedUserIds, responses)
   return (
     <>

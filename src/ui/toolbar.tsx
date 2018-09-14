@@ -12,7 +12,7 @@ interface ToolbarProps {
   name: string
 }
 
-export class Toolbar extends Component<ToolbarProps, ToolbarState> { 
+export class Toolbar extends Component<ToolbarProps, ToolbarState> {
   state: ToolbarState = {
     collapsed: true
   }
@@ -23,10 +23,11 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
     })
   }
 
-  private navbarBrand = () => (push: Push) => 
+  private navbarBrand = () => (push: Push) => (
     <NavbarBrand href="#" color="light" onClick={push} className="mr-auto">
       Home Game
     </NavbarBrand>
+  )
 
   render() {
     return (
@@ -40,7 +41,6 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
             </NavItem>
           </Nav>
         </Collapse>
-
       </Navbar>
     )
   }

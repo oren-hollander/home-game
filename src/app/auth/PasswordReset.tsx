@@ -20,11 +20,10 @@ interface PasswordResetState {
   email: string
 }
 
-type PasswordResetProps =  PasswordResetDispatchProps
+type PasswordResetProps = PasswordResetDispatchProps
 
 namespace UI {
   export class PasswordReset extends Component<RouteComponentProps<{}> & PasswordResetProps, PasswordResetState> {
-
     query = parse(this.props.location.search) as { email: string }
 
     state: PasswordResetState = {
@@ -43,8 +42,7 @@ namespace UI {
     sendPasswordResetEmail = (): void => {
       if (isEmpty(this.state.email)) {
         this.props.showError('Enter your email')
-      }
-      else {
+      } else {
         this.props.sendPasswordResetEmail(this.state.email)
       }
     }
@@ -53,17 +51,26 @@ namespace UI {
       return (
         <Page toolbar={false}>
           <Jumbotron>
-            <Form color='primary'>
+            <Form color="primary">
               <FormGroup>
                 <Label for="email">Email</Label>
-                <Input type="email" name="email" id="email" placeholder="email" defaultValue={this.state.email} onChange={this.emailChanged} />
+                <Input
+                  type="email"
+                  name="email"
+                  id="email"
+                  placeholder="email"
+                  defaultValue={this.state.email}
+                  onChange={this.emailChanged}
+                />
               </FormGroup>
             </Form>
-            <Button color="primary" onClick={this.sendPasswordResetEmail}>Send</Button>
+            <Button color="primary" onClick={this.sendPasswordResetEmail}>
+              Send
+            </Button>
           </Jumbotron>
         </Page>
 
-    /* <div>
+        /* <div>
           <p>
             To verify your email, click on the 'Send' button.
           </p>
@@ -81,7 +88,9 @@ namespace UI {
   }
 }
 
-const mapDispatchToProps: MapDispatchToProps<PasswordResetDispatchProps, {}> = (dispatch: HomeGameThunkDispatch): PasswordResetDispatchProps => ({
+const mapDispatchToProps: MapDispatchToProps<PasswordResetDispatchProps, {}> = (
+  dispatch: HomeGameThunkDispatch
+): PasswordResetDispatchProps => ({
   sendPasswordResetEmail(email: string) {
     dispatch(sendPasswordResetEmail(email))
   },
@@ -90,5 +99,7 @@ const mapDispatchToProps: MapDispatchToProps<PasswordResetDispatchProps, {}> = (
   }
 })
 
-
-export const PasswordReset = connect(undefined, mapDispatchToProps)(UI.PasswordReset)
+export const PasswordReset = connect(
+  undefined,
+  mapDispatchToProps
+)(UI.PasswordReset)

@@ -26,9 +26,11 @@ namespace UI {
 
     updateField = (key: keyof SignInState) => (e: ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
-      this.setState(state => merge(state, {
-        [key]: value
-      }))
+      this.setState(state =>
+        merge(state, {
+          [key]: value
+        })
+      )
     }
 
     signIn = () => {
@@ -39,17 +41,29 @@ namespace UI {
       return (
         <Page toolbar={false}>
           <Jumbotron>
-            <Form color='primary'>
+            <Form color="primary">
               <FormGroup>
                 <Label for="email">Email</Label>
                 <Input type="email" name="email" id="email" placeholder="email" onChange={this.updateField('email')} />
               </FormGroup>
               <FormGroup>
                 <Label for="password">Password</Label>
-                <Input type="password" name="password" id="password" placeholder="password" onChange={this.updateField('password')} />
+                <Input
+                  type="password"
+                  name="password"
+                  id="password"
+                  placeholder="password"
+                  onChange={this.updateField('password')}
+                />
               </FormGroup>
-              <Button color="primary" onClick={this.signIn}>Sign In</Button>{' '}
-              <Link to="/sign-up"><Button outline={true} color="secondary">Sign Up</Button></Link>
+              <Button color="primary" onClick={this.signIn}>
+                Sign In
+              </Button>{' '}
+              <Link to="/sign-up">
+                <Button outline={true} color="secondary">
+                  Sign Up
+                </Button>
+              </Link>
             </Form>
           </Jumbotron>
           Forgot your password? <Link to={`/reset-password?email=${this.state.email}`}>Reset Password</Link>
@@ -65,4 +79,7 @@ const mapDispatchToProps: MapDispatchToProps<SignInProps, {}> = (dispatch: HomeG
   }
 })
 
-export const SignIn = connect(undefined, mapDispatchToProps)(UI.SignIn)
+export const SignIn = connect(
+  undefined,
+  mapDispatchToProps
+)(UI.SignIn)

@@ -9,11 +9,18 @@ interface SignOutProps {
 }
 
 namespace UI {
-  export const SignOut = ({ signOut }: SignOutProps) => <Button color="light" outline={true} onClick={signOut}>Sign Out</Button>
+  export const SignOut = ({ signOut }: SignOutProps) => (
+    <Button color="light" outline={true} onClick={signOut}>
+      Sign Out
+    </Button>
+  )
 }
 
 const mapDispatchToProps: MapDispatchToProps<SignOutProps, {}> = (dispatch: HomeGameThunkDispatch) => ({
   signOut: () => dispatch(signOut())
 })
 
-export const SignOut = connect(undefined, mapDispatchToProps)(UI.SignOut)
+export const SignOut = connect(
+  undefined,
+  mapDispatchToProps
+)(UI.SignOut)

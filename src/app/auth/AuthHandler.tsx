@@ -12,11 +12,11 @@ namespace UI {
   }
 
   interface VerifyEmailDispatchProps {
-    verifyEmail: (oobCode: string) => void,
+    verifyEmail: (oobCode: string) => void
   }
 
   interface ResetPasswordDispatchProps {
-    resetPassword: (oobCode: string, password: string) => void,
+    resetPassword: (oobCode: string, password: string) => void
   }
 
   type VerifyEmailProps = StateProps & VerifyEmailDispatchProps
@@ -27,12 +27,14 @@ namespace UI {
       componentDidMount() {
         this.props.verifyEmail(this.props.oobCode)
       }
-      render(){
+      render() {
         return <div>Verifying email...</div>
       }
     }
 
-    export const mapDispatchToProps: MapDispatchToProps<VerifyEmailDispatchProps, {}> = (dispatch: HomeGameThunkDispatch): VerifyEmailDispatchProps => ({
+    export const mapDispatchToProps: MapDispatchToProps<VerifyEmailDispatchProps, {}> = (
+      dispatch: HomeGameThunkDispatch
+    ): VerifyEmailDispatchProps => ({
       verifyEmail(oobCode: string): void {
         dispatch(verifyEmail(oobCode))
       }
@@ -63,30 +65,35 @@ namespace UI {
             <label>
               New Password
               <input type="password" placeholder="password" onChange={this.updatePassword} />
-              <button onClick={this.resetPassword}>
-                Reset
-              </button>
+              <button onClick={this.resetPassword}>Reset</button>
             </label>
           </>
         )
       }
     }
 
-    export const mapDispatchToProps: MapDispatchToProps<ResetPasswordDispatchProps, {}> = (dispatch: HomeGameThunkDispatch): ResetPasswordDispatchProps => ({
+    export const mapDispatchToProps: MapDispatchToProps<ResetPasswordDispatchProps, {}> = (
+      dispatch: HomeGameThunkDispatch
+    ): ResetPasswordDispatchProps => ({
       resetPassword(oobCode: string, password: string): void {
         dispatch(resetPassword(oobCode, password))
       }
     })
   }
 
-  export const VerifyEmail: ComponentType<StateProps> = connect(undefined, VerifyEmailUI.mapDispatchToProps)(VerifyEmailUI.VerifyEmail)
-  export const ResetPassword: ComponentType<StateProps> = connect(undefined, ResetPasswordUI.mapDispatchToProps)(ResetPasswordUI.ResetPassword)
+  export const VerifyEmail: ComponentType<StateProps> = connect(
+    undefined,
+    VerifyEmailUI.mapDispatchToProps
+  )(VerifyEmailUI.VerifyEmail)
+  export const ResetPassword: ComponentType<StateProps> = connect(
+    undefined,
+    ResetPasswordUI.mapDispatchToProps
+  )(ResetPasswordUI.ResetPassword)
 }
 
 export const AuthHandler: SFC<RouteComponentProps<{}>> = ({ location: { search } }) => {
-
   const Handler: SFC = () => {
-    const query = parse(search) as { mode: string, oobCode: string }
+    const query = parse(search) as { mode: string; oobCode: string }
     switch (query.mode) {
       case 'verifyEmail':
         return <UI.VerifyEmail oobCode={query.oobCode} />
@@ -95,15 +102,15 @@ export const AuthHandler: SFC<RouteComponentProps<{}>> = ({ location: { search }
       default:
         return null
     }
-  } 
+  }
 
   return (
     // <Page>
-      // <Toolbar>
-        // <Link to="/">Home</Link>
-      // </Toolbar>
-      <Handler/>
-      // <Status/>
+    // <Toolbar>
+    // <Link to="/">Home</Link>
+    // </Toolbar>
+    <Handler />
+    // <Status/>
     // </Page>
   )
 }
