@@ -8,18 +8,22 @@ describe('mem db', () => {
   })
 
   test('set and get value', async () => {
-    const ref = memDB.collection('col1').doc('doc1').collection('col2').doc('doc2')
-    await ref.set({x: 42} as firebase.firestore.DocumentData)
+    const ref = memDB
+      .collection('col1')
+      .doc('doc1')
+      .collection('col2')
+      .doc('doc2')
+    await ref.set({ x: 42 } as firebase.firestore.DocumentData)
     const value = await ref.get()
-    expect(value).toEqual({x: 42})
+    expect(value).toEqual({ x: 42 })
   })
 
   test('should notify listeners with current snaphshot', done => {
     const ref = memDB.collection('col1').doc('doc1')
     ref.set({ x: 42 } as DocumentData)
     ref.onSnapshot(doc => {
-      expect(doc).toEqual({x: 42})
-      done() 
+      expect(doc).toEqual({ x: 42 })
+      done()
     })
   })
 
@@ -45,7 +49,7 @@ describe('mem db', () => {
 
     await doc1Ref.set({ x: 41 } as DocumentData)
     await doc2Ref.set({ x: 42 } as DocumentData)
-    
+
     const listener = jest.fn()
 
     colRef.onSnapshot(listener)

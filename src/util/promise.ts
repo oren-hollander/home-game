@@ -8,7 +8,6 @@ type Settling<T> = {
 type SettlingPromise<T> = Settling<T> & Promise<T>
 
 export const SettlingPromise = <T = any>(): SettlingPromise<T> => {
-  
   let resolvePromise: (value?: T | PromiseLike<T>) => void = noop
   let rejectPromise: (reason?: any) => void = noop
 

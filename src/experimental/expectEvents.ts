@@ -1,12 +1,11 @@
+type Expect = (...args: any[]) => void
 
-type Expect = (...args: any[]) => void 
-
-interface Expectation  {
+interface Expectation {
   key: string
   expectation: Expect
 }
 
-export const Expectation = (key: string, expectation: Expect): Expectation => ({key, expectation}) 
+export const Expectation = (key: string, expectation: Expect): Expectation => ({ key, expectation })
 
 interface ExpectationAPI {
   expect: (key: string, ...args: any[]) => void
@@ -14,7 +13,6 @@ interface ExpectationAPI {
 }
 
 export const defineExpectations: (...expectations: Expectation[]) => ExpectationAPI = (...expectations) => {
-
   let resolvePromise: () => void
   let rejectPromise: (error: any) => void
   let callCount = 0
@@ -23,23 +21,22 @@ export const defineExpectations: (...expectations: Expectation[]) => Expectation
     resolvePromise = resolve
     rejectPromise = reject
   }) as Promise<void> & ExpectationAPI
-  
+
   const expect = (key: string, ...args: any[]) => {
-    if(callCount >= expectations.length) {
+    if (callCount >= expectations.length) {
       rejectPromise(`Not expecting ${key}`)
-      return 
+      return
     }
 
     const expectation = expectations[callCount]
     if (key !== expectation.key) {
       rejectPromise(`expected ${expectation.key}, got ${key}`)
-      return 
+      return
     }
 
     try {
       expectation.expectation(...args)
-    }
-    catch (e) {
+    } catch (e) {
       rejectPromise(e)
       return
     }

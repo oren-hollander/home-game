@@ -11,4 +11,4 @@ export const copyToClipboard = (text: string) => (dispatch: HomeGameThunkDispatc
   document.execCommand('copy')
   document.body.removeChild(textarea)
   dispatch(showStatus(SuccessStatus('invitation url copied to clipboard')))
-} 
+}

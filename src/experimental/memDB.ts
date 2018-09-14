@@ -1,16 +1,30 @@
-import { last, size, map, isEmpty, has, concat, cloneDeep, without, init, forEach, filter, isUndefined, sortBy } from 'lodash/fp'
+import {
+  last,
+  size,
+  map,
+  isEmpty,
+  has,
+  concat,
+  cloneDeep,
+  without,
+  init,
+  forEach,
+  filter,
+  isUndefined,
+  sortBy
+} from 'lodash/fp'
 
 type Unsubscribe = () => void
 type DocumentCallback = (data: DocumentData) => void
 type CollectionCallback = (data: DocumentData[]) => void
 
-export type DocumentData = { [field: string]: any };
+export type DocumentData = { [field: string]: any }
 
 interface DocumentRef {
-  readonly id: string,
-  get(): Promise<DocumentData | undefined>,
-  set(data: DocumentData): Promise<void>,
-  delete(): Promise<void>,
+  readonly id: string
+  get(): Promise<DocumentData | undefined>
+  set(data: DocumentData): Promise<void>
+  delete(): Promise<void>
   collection(name: string): CollectionRef
   onSnapshot(callback: DocumentCallback): Unsubscribe
 }
@@ -37,7 +51,7 @@ export const MemDB: () => DB = () => {
 
   interface Document {
     collections: Collections
-    data: DocumentData | undefined,
+    data: DocumentData | undefined
     notifications: DocumentNotification[]
   }
 
@@ -54,7 +68,7 @@ export const MemDB: () => DB = () => {
     [key: string]: Collection
   }
 
-  let collections: Collections = {} 
+  let collections: Collections = {}
 
   const getCollection: (path: string[], collections: Collections) => Collection = (path, collections) => {
     if (size(path) < 1) {
@@ -150,7 +164,7 @@ export const MemDB: () => DB = () => {
       const col = getCollection(path, collections)
       col.notifications = concat([callback], col.notifications)
       notifyCollectionListeners(col)
-      return () => { 
+      return () => {
         const col = getCollection(path, collections)
         col.notifications = without([callback], col.notifications)
       }

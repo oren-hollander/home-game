@@ -23,4 +23,4 @@ describe('delete database', () => {
     const refs = await getDocumentRefs(firestore.collection.bind(firestore), schema)
     await deleteDocuments(firestore, refs)
   })
-}) 
+})

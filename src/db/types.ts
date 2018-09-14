@@ -2,7 +2,7 @@ import * as firebase from 'firebase/app'
 
 type Timestamp = firebase.firestore.Timestamp
 
-export interface Stakes { 
+export interface Stakes {
   readonly smallBlind: number
   readonly bigBlind: number
 }
@@ -27,7 +27,7 @@ export interface Invitation {
 export interface Game {
   readonly gameId: string
   readonly hostId: string
-  readonly hostName: string,
+  readonly hostName: string
   readonly address: Address
   readonly timestamp: Timestamp
   readonly description: string
@@ -45,4 +45,4 @@ export interface Address {
 export interface User {
   readonly userId: string
   readonly name: string
-} 
+}

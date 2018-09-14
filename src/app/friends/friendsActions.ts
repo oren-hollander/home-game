@@ -11,14 +11,17 @@ export const CONNECT_FRIENDS = 'friends/connect'
 export const setFriends = (friends: ReadonlyArray<User>) => ({ type: SET_FRIENDS as typeof SET_FRIENDS, friends })
 export type SetFriends = ReturnType<typeof setFriends>
 
-export type FriendsAction = SetFriends 
+export type FriendsAction = SetFriends
 
 export const createFriendInvitation = (): HomeGameAsyncThunkAction<string> => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).userId
   return await db.createFriendInvitation(userId)
 }
 
-export const acceptFriendInvitation = (friendId: string, invitationId: string): HomeGameAsyncThunkAction<void> => async (dispatch, getState, { db }) => {
+export const acceptFriendInvitation = (
+  friendId: string,
+  invitationId: string
+): HomeGameAsyncThunkAction<void> => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).userId
   return await db.acceptFriendInvitation(userId, invitationId, friendId)
 }

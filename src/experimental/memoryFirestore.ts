@@ -1,6 +1,6 @@
 import { app as firebaseApp, firestore } from 'firebase/app'
 import { forEach, initial, split, join, map, get, isEqual, update, chunk, fromPairs, merge } from 'lodash/fp'
-import { isUndefined } from 'util';
+import { isUndefined } from 'util'
 
 type App = firebaseApp.App
 type Firestore = firestore.Firestore
@@ -37,13 +37,13 @@ const app: App = {
 
 interface SetOp {
   op: 'set'
-  documentRef: DocumentReference,
-  data: DocumentData,
+  documentRef: DocumentReference
+  data: DocumentData
   options?: SetOptions
 }
 
 interface DeleteOp {
-  op: 'delete',
+  op: 'delete'
   documentRef: DocumentReference
 }
 
@@ -56,16 +56,16 @@ interface UpdateOp1 {
 interface UpdateOp2 {
   op: 'update2'
   documentRef: DocumentReference
-  field: string | FieldPath,
-  value: any,
+  field: string | FieldPath
+  value: any
   moreFieldsAndValues: any[]
 }
 
 type BatchOp = SetOp | DeleteOp | UpdateOp1 | UpdateOp2
 
 interface Observer<T> {
-  next?: (snapshot: DocumentSnapshot) => void;
-  error?: (error: FirestoreError) => void;
+  next?: (snapshot: DocumentSnapshot) => void
+  error?: (error: FirestoreError) => void
 }
 
 interface Document {
@@ -74,7 +74,7 @@ interface Document {
 }
 
 interface Collection {
-  readonly documents: {[id: string]: Document}
+  readonly documents: { [id: string]: Document }
   readonly observers: Observer<QuerySnapshot>
 }
 
@@ -82,13 +82,10 @@ interface Collections {
   readonly [path: string]: Collection
 }
 
-
 const Firestore: () => Firestore = () => {
-
   let collections: Collections = {}
 
   const WriteBatch: () => WriteBatch = () => {
-
     let ops: ReadonlyArray<BatchOp> = []
 
     const set = (documentRef: DocumentReference, data: DocumentData, options?: SetOptions) => {
@@ -148,7 +145,7 @@ const Firestore: () => Firestore = () => {
     isEqual(md: SnapshotMetadata) {
       return true
     }
-  } 
+  }
 
   const DocumentSnapshot: (ref: DocumentReference, data?: DocumentData) => DocumentSnapshot = (ref, data) => {
     return {
@@ -159,7 +156,7 @@ const Firestore: () => Firestore = () => {
       data(options?: SnapshotOptions) {
         return data
       },
-      get(fieldPath: string, options?: SnapshotOptions){
+      get(fieldPath: string, options?: SnapshotOptions) {
         return get(fieldPath, data)
       },
       isEqual(other: DocumentSnapshot) {
@@ -187,7 +184,7 @@ const Firestore: () => Firestore = () => {
         return CollectionReference(docRef, `${path}/${collectionPath}`)
       },
       delete: async () => {
-        collections = update([parent.path, 'documents', id, 'data'], () => undefined, collections) 
+        collections = update([parent.path, 'documents', id, 'data'], () => undefined, collections)
         notifyObservers()
       },
       async get(options?: GetOptions): Promise<DocumentSnapshot> {
@@ -200,10 +197,8 @@ const Firestore: () => Firestore = () => {
         notifyObservers()
       },
       update: async (...args: any[]) => {
-        const data = args.length === 1
-          ? args[0] as UpdateData
-          : fromPairs(chunk(2, args)) as UpdateData
-        
+        const data = args.length === 1 ? (args[0] as UpdateData) : (fromPairs(chunk(2, args)) as UpdateData)
+
         collections = update([parent.path, 'documents', id, 'data'], merge(data), collections)
         notifyObservers()
       }
@@ -236,10 +231,8 @@ const Firestore: () => Firestore = () => {
 
   const parent = (path: string): string | null => {
     const elements = split('/', path)
-    if (elements.length <= 1)
-      return null
-    else 
-      return join('/', initial(elements))
+    if (elements.length <= 1) return null
+    else return join('/', initial(elements))
   }
 
   const collection = (collectionPath: string) => {
@@ -247,15 +240,15 @@ const Firestore: () => Firestore = () => {
     return CollectionReference(parentDocumentPath ? doc(parentDocumentPath) : null, collectionPath)
   }
 
-  const doc = (documentPath: string): DocumentReference => DocumentReference(collection(parent(documentPath) as string), documentPath)
+  const doc = (documentPath: string): DocumentReference =>
+    DocumentReference(collection(parent(documentPath) as string), documentPath)
 
   const runTransaction = async <T>(updateFunction: (tx: Transaction) => Promise<T>) => {
-
     let ops: ReadonlyArray<BatchOp> = []
 
     const tx: Transaction = {
       get: async (documentRef: DocumentReference) => {
-        if(ops.length > 0) {
+        if (ops.length > 0) {
           throw new Error(`can't read after writes in a transaction`)
         }
         return documentRef.get()
@@ -265,7 +258,7 @@ const Firestore: () => Firestore = () => {
         return tx
       },
       set: (documentRef: DocumentReference, data: DocumentData, options?: SetOptions) => {
-        ops = [...ops, { op: 'set', documentRef, data, options } ]
+        ops = [...ops, { op: 'set', documentRef, data, options }]
         return tx
       },
       update: (documentRef: DocumentReference, ...args: any[]) => {
@@ -283,23 +276,23 @@ const Firestore: () => Firestore = () => {
     const result = await updateFunction(tx)
 
     const promises = map(op => {
-      switch(op.op) {
-        case 'set': 
+      switch (op.op) {
+        case 'set':
           return op.documentRef.set(op.data, op.options)
         case 'delete':
           return op.documentRef.delete()
-        case 'update1': 
+        case 'update1':
           return op.documentRef.update(op.data)
         case 'update2':
           return op.documentRef.update(op.field, op.value, op.moreFieldsAndValues)
       }
     }, ops)
-    
+
     await Promise.all(promises)
     return result
   }
 
-  const firestore: Firestore = {  
+  const firestore: Firestore = {
     app,
     batch: WriteBatch,
     collection,
@@ -312,7 +305,7 @@ const Firestore: () => Firestore = () => {
     INTERNAL: {
       delete: notImplemented
     }
-  } 
+  }
 
   return firestore
 }

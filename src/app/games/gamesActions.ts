@@ -14,35 +14,50 @@ export const CLEAR_GAME = 'games/clear-game'
 const setGames = (games: ReadonlyArray<Game>) => ({ type: SET_GAMES as typeof SET_GAMES, games })
 export type SetGames = ReturnType<typeof setGames>
 
-const setGame = (game: Game, invitedPlayers: ReadonlyArray<User>, responses: ReadonlyArray<InvitationResponse>) =>
-  ({ type: SET_GAME as typeof SET_GAME, game, invitedPlayers, responses })
+const setGame = (game: Game, invitedPlayers: ReadonlyArray<User>, responses: ReadonlyArray<InvitationResponse>) => ({
+  type: SET_GAME as typeof SET_GAME,
+  game,
+  invitedPlayers,
+  responses
+})
 export type SetGame = ReturnType<typeof setGame>
 
 const clearGame = (gameId: string) => ({ type: CLEAR_GAME as typeof CLEAR_GAME, gameId })
 export type ClearGame = ReturnType<typeof clearGame>
 
-export const createGame = (timestamp: firebase.firestore.Timestamp, address: Address, description: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+export const createGame = (
+  timestamp: firebase.firestore.Timestamp,
+  address: Address,
+  description: string
+): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
   const user = getUser(getState())
 
   const game: Game = {
     gameId: '',
     hostId: user.userId,
     hostName: user.name,
-    timestamp, 
-    address, 
+    timestamp,
+    address,
     description
   }
-  
+
   await db.createGame(game)
   dispatch(showStatus(SuccessStatus('Game created')))
   dispatch(push('/games'))
 }
 
-export const invitePlayers = (invitation: Invitation, playerIds: ReadonlyArray<string>): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+export const invitePlayers = (
+  invitation: Invitation,
+  playerIds: ReadonlyArray<string>
+): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
   await Promise.all(map(playerId => db.inviteToGame(playerId, invitation), playerIds))
 }
 
-export const respondToInvitation = (response: InvitationResponse): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+export const respondToInvitation = (response: InvitationResponse): HomeGameAsyncThunkAction => async (
+  dispatch,
+  getState,
+  { db }
+) => {
   await db.respondToGameInvitation(response)
 }
 
@@ -53,7 +68,13 @@ export const listenToGames = (): HomeGameThunkAction<Unsubscribe> => (dispatch, 
   })
 }
 
-export const listenToGame = ({hostId, gameId }: {hostId: string, gameId: string}): HomeGameThunkAction<Unsubscribe> => (dispatch, getState, { db }): Unsubscribe => {
+export const listenToGame = ({
+  hostId,
+  gameId
+}: {
+  hostId: string
+  gameId: string
+}): HomeGameThunkAction<Unsubscribe> => (dispatch, getState, { db }): Unsubscribe => {
   return db.listenToGame(hostId, gameId, (game, invitatedPlayers, responses) => {
     dispatch(setGame(game, invitatedPlayers, responses))
   })

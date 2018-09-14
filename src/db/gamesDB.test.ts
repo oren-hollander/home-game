@@ -23,9 +23,9 @@ type Firestore = firebase.firestore.Firestore
 
 describe('games database', () => {
   let firestore: firebase.firestore.Firestore
-  let db: GamesDatabase 
+  let db: GamesDatabase
 
-  const createGame = async (userId: string, timestamp: firebase.firestore.Timestamp): Promise<Game> => 
+  const createGame = async (userId: string, timestamp: firebase.firestore.Timestamp): Promise<Game> =>
     db.createGame({
       gameId: '',
       hostId: userId,
@@ -47,9 +47,11 @@ describe('games database', () => {
     await deleteDocuments(firestore, refs)
   }
 
-  const host = 'host', player1 = 'player-1', player2 = 'player-2'
+  const host = 'host',
+    player1 = 'player-1',
+    player2 = 'player-2'
   const userNames = [host, player1, player2]
-  
+
   const createUsers = async () => {
     await createUser(host)
     await createUser(player1)
@@ -72,10 +74,10 @@ describe('games database', () => {
   })
 
   afterAll(async () => {
-    await deleteDatabase() 
+    await deleteDatabase()
     await deleteUsers()
   })
- 
+
   test('should create a new user', async () => {
     const userId = await signInAsUser(host)
     await db.createUser({ userId, name: host })
@@ -83,7 +85,7 @@ describe('games database', () => {
     expect(dbUser).not.toBeUndefined()
     expect(dbUser!.name).toBe(host)
     expect(dbUser!.userId).toBe(userId)
-  })  
+  })
 
   test('should create Address', async () => {
     const userId = await signInAsUser(host)
@@ -107,24 +109,26 @@ describe('games database', () => {
 
     const addresses = await db.getAddresses(userId)
     expect(addresses.length).toBe(2)
-    expect(addresses).toEqual(expect.arrayContaining([
-      {
-        addressId: expect.any(String),
-        label: 'Work',
-        city: 'NY',
-        houseNumber: '200',
-        street: '5th',
-        notes: 'Code: 1234'
-      },
-      {
-        addressId: expect.any(String),
-        label: 'Home',
-        city: 'NY',
-        houseNumber: '1A',
-        street: 'Main'
-      }
-    ]))
-  }) 
+    expect(addresses).toEqual(
+      expect.arrayContaining([
+        {
+          addressId: expect.any(String),
+          label: 'Work',
+          city: 'NY',
+          houseNumber: '200',
+          street: '5th',
+          notes: 'Code: 1234'
+        },
+        {
+          addressId: expect.any(String),
+          label: 'Home',
+          city: 'NY',
+          houseNumber: '1A',
+          street: 'Main'
+        }
+      ])
+    )
+  })
 
   test('should create friend invitation', async () => {
     const userId = await signInAsUser(host)
@@ -133,7 +137,12 @@ describe('games database', () => {
 
     await signInAsAdmin()
 
-    const invitationSnapshot = await firestore.collection('users').doc(userId).collection('friendInvitations').doc(invitationId).get()
+    const invitationSnapshot = await firestore
+      .collection('users')
+      .doc(userId)
+      .collection('friendInvitations')
+      .doc(invitationId)
+      .get()
     expect(invitationSnapshot.exists).toBe(true)
   })
 
@@ -145,19 +154,34 @@ describe('games database', () => {
     const player1Id = await signInAsUser(player1)
     await db.createUser({ userId: player1Id, name: player1 })
     await db.acceptFriendInvitation(player1Id, invitationId, hostId)
-    
+
     await signInAsAdmin()
 
     const [invitationSnapshot, user1HasUser2, user2HasUser1] = await Promise.all([
-      firestore.collection('users').doc(hostId).collection('friendInvitations').doc(invitationId).get(),
-      firestore.collection('users').doc(hostId).collection('friends').doc(player1Id).get(),
-      firestore.collection('users').doc(player1Id).collection('friends').doc(hostId).get()
+      firestore
+        .collection('users')
+        .doc(hostId)
+        .collection('friendInvitations')
+        .doc(invitationId)
+        .get(),
+      firestore
+        .collection('users')
+        .doc(hostId)
+        .collection('friends')
+        .doc(player1Id)
+        .get(),
+      firestore
+        .collection('users')
+        .doc(player1Id)
+        .collection('friends')
+        .doc(hostId)
+        .get()
     ])
 
     expect(invitationSnapshot.exists).toBe(false)
     expect(user1HasUser2.exists).toBe(true)
     expect(user2HasUser1.exists).toBe(true)
-  }) 
+  })
 
   test('should add friend', async () => {
     const hostId = await signInAsUser(host)
@@ -174,16 +198,18 @@ describe('games database', () => {
 
     const friends = await db.getFriends(player2Id)
     expect(friends.length).toBe(2)
-    expect(friends).toEqual(expect.arrayContaining([
-      {
-        userId: hostId,
-        name: host
-      },
-      {
-        userId: player1Id,
-        name: player1
-      }
-    ]))
+    expect(friends).toEqual(
+      expect.arrayContaining([
+        {
+          userId: hostId,
+          name: host
+        },
+        {
+          userId: player1Id,
+          name: player1
+        }
+      ])
+    )
   })
 
   test('should remove friend', async () => {
@@ -206,20 +232,25 @@ describe('games database', () => {
         userId: player1Id,
         name: player1
       }
-    ]) 
+    ])
   })
 
   test('should create game', async () => {
     const hostId = await signInAsUser(host)
     await db.createUser({ userId: hostId, name: host })
-    
+
     const timestamp = firebase.firestore.Timestamp.now()
     const game = await createGame(hostId, timestamp)
 
     await signInAsAdmin()
 
-    const gameSnapshot = await firestore.collection('users').doc(hostId).collection('games').doc(game.gameId).get()
-    
+    const gameSnapshot = await firestore
+      .collection('users')
+      .doc(hostId)
+      .collection('games')
+      .doc(game.gameId)
+      .get()
+
     expect(gameSnapshot.exists).toBe(true)
     expect(gameSnapshot.data()).toEqual(omit(['gameId'], game))
   })
@@ -229,17 +260,22 @@ describe('games database', () => {
     await db.createUser({ userId: hostId, name: host })
 
     const timestampBefore = firebase.firestore.Timestamp.now()
-    
-    const game = await createGame(hostId, timestampBefore) 
+
+    const game = await createGame(hostId, timestampBefore)
 
     const timestampAfter = firebase.firestore.Timestamp.now()
     const updatedGame = set('timestamp', timestampAfter, game)
-    
+
     await db.updateGame(updatedGame)
 
     await signInAsAdmin()
 
-    const gameSnapshot = await firestore.collection('users').doc(hostId).collection('games').doc(game.gameId).get()
+    const gameSnapshot = await firestore
+      .collection('users')
+      .doc(hostId)
+      .collection('games')
+      .doc(game.gameId)
+      .get()
     expect(gameSnapshot.exists).toBe(true)
     expect(gameSnapshot.data()).toEqual(assign({ timestamp: timestampAfter }, omit(['gameId'], updatedGame)))
   })
@@ -264,13 +300,24 @@ describe('games database', () => {
 
     await signInAsAdmin()
 
-    const snapshot = await firestore.collection('users').doc(hostId).collection('games').doc(game.gameId).collection('invitations').doc(player1Id).get()
+    const snapshot = await firestore
+      .collection('users')
+      .doc(hostId)
+      .collection('games')
+      .doc(game.gameId)
+      .collection('invitations')
+      .doc(player1Id)
+      .get()
     expect(snapshot.exists).toBe(true)
-    
-    const querySnapshot = await firestore.collection('users').doc(player1Id).collection('invitations').get()
+
+    const querySnapshot = await firestore
+      .collection('users')
+      .doc(player1Id)
+      .collection('invitations')
+      .get()
     expect(querySnapshot.docs.length).toBe(1)
-    expect(querySnapshot.docs[0].data()).toEqual(invitation) 
-  }) 
+    expect(querySnapshot.docs[0].data()).toEqual(invitation)
+  })
 
   test('shoud accept invitation', async () => {
     const player1Id = await signInAsUser(player1)
@@ -307,18 +354,26 @@ describe('games database', () => {
 
     await signInAsAdmin()
 
-    const snapshot = await firestore.collection('users').doc(hostId).collection('games').doc(game.gameId).collection('responses').get()
+    const snapshot = await firestore
+      .collection('users')
+      .doc(hostId)
+      .collection('games')
+      .doc(game.gameId)
+      .collection('responses')
+      .get()
     expect(snapshot.docs.length).toBe(1)
 
     const docs = map(snapshot => snapshot.data(), snapshot.docs)
 
-    expect(docs).toEqual(expect.arrayContaining([
-      {
-        status: 'approved',
-        timestamp, 
-        valid: true
-      }
-    ]))
+    expect(docs).toEqual(
+      expect.arrayContaining([
+        {
+          status: 'approved',
+          timestamp,
+          valid: true
+        }
+      ])
+    )
   })
 
   test('whole flow', async () => {
@@ -357,23 +412,42 @@ describe('games database', () => {
 
     await signInAsAdmin()
 
-    const gameSnapshot = await firestore.collection('users').doc(hostId).collection('games').doc(game.gameId).get()
-    expect(gameSnapshot.exists).toBe(true) 
+    const gameSnapshot = await firestore
+      .collection('users')
+      .doc(hostId)
+      .collection('games')
+      .doc(game.gameId)
+      .get()
+    expect(gameSnapshot.exists).toBe(true)
     expect(gameSnapshot.data()!.timestamp).toEqual(timestampAfter)
-    
-    const invalidResponse = await firestore.collection('users').doc(hostId).collection('games').doc(game.gameId).collection('responses').doc(player1Id).get()
-    expect(invalidResponse.get('valid')).toEqual(false) 
+
+    const invalidResponse = await firestore
+      .collection('users')
+      .doc(hostId)
+      .collection('games')
+      .doc(game.gameId)
+      .collection('responses')
+      .doc(player1Id)
+      .get()
+    expect(invalidResponse.get('valid')).toEqual(false)
 
     await signInAsUser(player1)
     await db.validateResponse(player1Id, hostId, game.gameId)
 
     await signInAsAdmin()
 
-    const validResponse = await firestore.collection('users').doc(hostId).collection('games').doc(game.gameId).collection('responses').doc(player1Id).get()
-    expect(validResponse.get('valid')).toEqual(true) 
+    const validResponse = await firestore
+      .collection('users')
+      .doc(hostId)
+      .collection('games')
+      .doc(game.gameId)
+      .collection('responses')
+      .doc(player1Id)
+      .get()
+    expect(validResponse.get('valid')).toEqual(true)
   })
 
-  test('listen to games', async () => {      
+  test('listen to games', async () => {
     const playerId = await signInAsUser(player1)
     await db.createUser({ userId: playerId, name: player1 })
     const playerGame = await createGame(playerId, firebase.firestore.Timestamp.now())
@@ -387,20 +461,17 @@ describe('games database', () => {
     let unsubscribe: () => void = noop
     const promise = new Promise<ReadonlyArray<Game>>(resolve => {
       unsubscribe = db.listenToGames(playerId, games => {
-        resolve(games) 
+        resolve(games)
       })
     })
 
-    await db.inviteToGame(playerId, { gameId: hostGame.gameId, hostId })   
+    await db.inviteToGame(playerId, { gameId: hostGame.gameId, hostId })
 
     const games = await promise
-    expect(games.length).toBe(2) 
-    expect(games).toEqual(expect.arrayContaining([
-      playerGame, 
-      hostGame
-    ])) 
+    expect(games.length).toBe(2)
+    expect(games).toEqual(expect.arrayContaining([playerGame, hostGame]))
     unsubscribe()
-  }) 
+  })
 
   test('listen to game', async () => {
     const playerId = await signInAsUser(player1)
@@ -411,9 +482,9 @@ describe('games database', () => {
 
     const game = await createGame(hostId, firebase.firestore.Timestamp.now())
     await db.inviteToGame(playerId, { hostId, gameId: game.gameId })
-   
+
     await signInAsAdmin()
-    
+
     interface GameEventData {
       game: Game
       invitedPlayers: ReadonlyArray<User>

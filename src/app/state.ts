@@ -14,7 +14,7 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Services } from '../services/services'
 import { AddressesAction } from './addresses/addressesActions'
 import { UsersAction } from './users/usersActions'
-import { RouterAction } from 'connected-react-router';
+import { RouterAction } from 'connected-react-router'
 import { USER_SIGNED_OUT } from './auth/authActions'
 
 export type HomeGameAsyncThunkAction<T = void> = ThunkAction<Promise<T>, State, Services, HomeGameAction>
@@ -22,14 +22,21 @@ export type HomeGameThunkAction<T = void> = ThunkAction<T, State, Services, Home
 export type HomeGameThunkDispatch = ThunkDispatch<State, Services, HomeGameAction>
 
 export interface State {
-  auth: AuthState,
-  friends: FriendsState,
-  games: GamesState,
-  addresses: ReadonlyArray<Address>,
+  auth: AuthState
+  friends: FriendsState
+  games: GamesState
+  addresses: ReadonlyArray<Address>
   status: StatusState
 }
 
-export type HomeGameAction = AuthAction | GamesAction | FriendsAction | StatusAction | AddressesAction | UsersAction | RouterAction
+export type HomeGameAction =
+  | AuthAction
+  | GamesAction
+  | FriendsAction
+  | StatusAction
+  | AddressesAction
+  | UsersAction
+  | RouterAction
 
 const signOutReducer = (reducer: Reducer<State, HomeGameAction>): Reducer<State, HomeGameAction> => (state, action) => {
   switch (action.type) {
@@ -40,10 +47,12 @@ const signOutReducer = (reducer: Reducer<State, HomeGameAction>): Reducer<State,
   }
 }
 
-export const reducer: Reducer<State, HomeGameAction> = signOutReducer(combineReducers({
-  auth: authReducer,
-  friends: friendsReducer,
-  games: gamesReducer,
-  addresses: addressesReducer,
-  status: statusReducer
-}))
+export const reducer: Reducer<State, HomeGameAction> = signOutReducer(
+  combineReducers({
+    auth: authReducer,
+    friends: friendsReducer,
+    games: gamesReducer,
+    addresses: addressesReducer,
+    status: statusReducer
+  })
+)

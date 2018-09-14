@@ -4,16 +4,16 @@ import { createGame } from './gamesActions'
 import { Game } from '../../db/types'
 import { CallbackStore } from '../../services/callbackStore'
 import { Firestore, signInAsAdmin, testConfig } from '../../db/firestore'
-import { GamesDatabase } from '../../db/gamesDB';
+import { GamesDatabase } from '../../db/gamesDB'
 
 describe.skip('game effects', () => {
-  let db: GamesDatabase 
+  let db: GamesDatabase
 
   beforeAll(async () => {
     db = GamesDatabase(Firestore(testConfig))
     await signInAsAdmin()
   })
- 
+
   test('createGame', async () => {
     const game: Game = {
       hostId: 'xyz',
@@ -33,6 +33,10 @@ describe.skip('game effects', () => {
     const dispatch = jest.fn()
     const getState = jest.fn()
 
-    return createGame(game.timestamp, game.address, game.description)(dispatch, getState, { db, auth: firebase.auth(), callbacks: CallbackStore()})
+    return createGame(game.timestamp, game.address, game.description)(dispatch, getState, {
+      db,
+      auth: firebase.auth(),
+      callbacks: CallbackStore()
+    })
   })
 })

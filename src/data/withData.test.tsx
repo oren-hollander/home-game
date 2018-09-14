@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { SFC, ComponentType } from 'react' 
+import { SFC, ComponentType } from 'react'
 import { withData, LoadData, Result, DataResult, PendingDataResult } from './withData'
 import { toNumber } from 'lodash/fp'
 import { SettlingPromise, promiseChain } from '../util/promise'
@@ -7,8 +7,8 @@ import { render } from '../util/render'
 import { createStore, applyMiddleware, Reducer } from 'redux'
 import { Provider } from 'react-redux'
 import * as thunk from 'redux-thunk'
-import { Selector, ParametricSelector } from 'reselect'
-import { produce } from 'immer'
+import { ParametricSelector } from 'reselect'
+import { produce } from 'immer';
 
 describe('withData', () => {
   const firstRenderPromise = SettlingPromise<Result<number>>()
@@ -34,25 +34,27 @@ describe('withData', () => {
 
   const reducer: Reducer<State, Action> = (state = {}, action) => {
     switch (action.type) {
-      case 'set-action': 
+      case 'set-action':
         return produce(state, draft => {
           draft[action.key] = action.value
-        }) 
-      case 'unset-number': 
+        })
+      case 'unset-number':
         return produce(state, draft => {
-          delete draft[action.key] 
-        }) 
-      default: 
+          delete draft[action.key]
+        })
+      default:
         return state
     }
   }
-  
-  const loadData: LoadData<string, number, State, {}, Action> = (param: string) => async (): Promise<Result<number>> => {
+
+  const loadData: LoadData<string, number, State, {}, Action> = (param: string) => async (): Promise<
+    Result<number>
+  > => {
     console.log('load data thunk action')
     return DataResult(toNumber(param))
   }
 
-  const selectData: ParametricSelector<State, CompWithDataProps, number> = (state, {name}) => state[name]
+  const selectData: ParametricSelector<State, CompWithDataProps, number> = (state, { name }) => state[name]
 
   type CompProps = {
     num: Result<number>
@@ -78,7 +80,12 @@ describe('withData', () => {
 
     const div = document.createElement('div')
     const store = createStore(() => ({}), applyMiddleware(thunk.default))
-    await render(<Provider store={store}><CompWithData name="a" /></Provider>, div)
+    await render(
+      <Provider store={store}>
+        <CompWithData name="a" />
+      </Provider>,
+      div
+    )
     expect(await firstRenderPromise).toEqual(PendingDataResult)
     expect(await secondRenderPromise).toEqual(DataResult(1))
   })

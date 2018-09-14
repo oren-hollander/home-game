@@ -9,12 +9,12 @@ test.skip('Collection', async () => {
   }
 
   const config = {
-    apiKey: "AIzaSyCL0jL94GPb7HvZxUgZdnpqqyx5liMeY3A",
-    authDomain: "fire-base-test-4304c.firebaseapp.com",
-    databaseURL: "https://fire-base-test-4304c.firebaseio.com",
-    projectId: "fire-base-test-4304c",
-    storageBucket: "fire-base-test-4304c.appspot.com",
-    messagingSenderId: "223479729697"
+    apiKey: 'AIzaSyCL0jL94GPb7HvZxUgZdnpqqyx5liMeY3A',
+    authDomain: 'fire-base-test-4304c.firebaseapp.com',
+    databaseURL: 'https://fire-base-test-4304c.firebaseio.com',
+    projectId: 'fire-base-test-4304c',
+    storageBucket: 'fire-base-test-4304c.appspot.com',
+    messagingSenderId: '223479729697'
   }
 
   firebase.initializeApp(config)
@@ -24,9 +24,9 @@ test.skip('Collection', async () => {
     timestampsInSnapshots: true
   }
 
-  firestore.settings(settings);
+  firestore.settings(settings)
   const col: Collection<Game> = Collection(firestore.collection('games'))
-  const id = await col.add({x: 42})
+  const id = await col.add({ x: 42 })
   const game = await col.get(id)
   console.log(game)
 })

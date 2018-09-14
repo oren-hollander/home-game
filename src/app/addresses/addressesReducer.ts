@@ -6,10 +6,10 @@ import { State } from '../state'
 import { isEmpty, find } from 'lodash/fp'
 
 export const addressesReducer: Reducer<ReadonlyArray<Address>, AddressesAction> = (addresses = [], action) => {
-  switch(action.type) {
-    case SET_ADDRESSES: 
+  switch (action.type) {
+    case SET_ADDRESSES:
       return action.addresses
-    default: 
+    default:
       return addresses
   }
 }

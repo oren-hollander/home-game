@@ -16,14 +16,16 @@ export type GamesState = Dictionary<GameState>
 export const gamesReducer = (games: GamesState = {}, action: GamesAction): GamesState => {
   switch (action.type) {
     case SET_GAMES: {
-      return fromPairs(map(game => {
-        const gameState: GameState = {
-          game,
-          invitedPlayers: [],
-          responses: []
-        }
-        return [game.gameId, gameState]
-      }, action.games))
+      return fromPairs(
+        map(game => {
+          const gameState: GameState = {
+            game,
+            invitedPlayers: [],
+            responses: []
+          }
+          return [game.gameId, gameState]
+        }, action.games)
+      )
     }
     case SET_GAME: {
       const gameState: GameState = {
@@ -40,7 +42,7 @@ export const gamesReducer = (games: GamesState = {}, action: GamesAction): Games
   }
 }
 
-export const getGames: Selector<State, ReadonlyArray<Game>> = state => map(gs => gs.game, values(state.games)) 
+export const getGames: Selector<State, ReadonlyArray<Game>> = state => map(gs => gs.game, values(state.games))
 
-export const getGame: ParametricSelector<State, { gameId: string }, GameState | undefined> = (state, { gameId }) => 
+export const getGame: ParametricSelector<State, { gameId: string }, GameState | undefined> = (state, { gameId }) =>
   get(['games', gameId], state)

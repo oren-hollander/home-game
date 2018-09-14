@@ -22,7 +22,7 @@
 //     db.collection('users').doc('user').set(user)
 //     return userId
 //   }
-  
+
 //   const getUser = async (userId: string) => {
 //     const user = (await db.collection('users').doc(userId).get())! as User
 //     return user
@@ -31,11 +31,11 @@
 //   const createAddress = async (userId: string, address: Address) => {
 //     db.collection('users').doc(userId).collection('addresses').doc(address.addressId).set(address)
 //   }
-  
+
 //   const getAddresses = async (userId: string) => {
-//     const docs = await db.collection('users').doc(userId).collection('addresses').get() 
-//     return docs as Address[] 
-//   } 
+//     const docs = await db.collection('users').doc(userId).collection('addresses').get()
+//     return docs as Address[]
+//   }
 
 //   const connectFriend = async (userId: string, friendUserId: string) => {
 //     db.collection('users').doc(userId).collection('friends').doc(friendUserId).set({})
@@ -80,7 +80,7 @@
 
 //     db.collection('users').doc(hostId).collection('games').doc(gameId).collection('responses').doc(userId).set(response)
 //   }
-  
+
 //   const listenToGames =  (userId: string, onGames: GamesEvent) => {
 //     let ownGames: Game[] = []
 //     let invitationGames: Game[] = []

@@ -19,9 +19,9 @@ export const statusReducer: Reducer<StatusState, StatusAction> = (status = initi
   switch (action.type) {
     case ENQUEUE_STATUS:
       return concat(status, [action.status])
-    case DEQUEUE_STATUS: 
+    case DEQUEUE_STATUS:
       return tail(status)
-    default: 
+    default:
       return status
   }
 }

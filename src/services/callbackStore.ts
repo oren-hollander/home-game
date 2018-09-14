@@ -16,13 +16,13 @@ export const CallbackStore: () => CallbackStore = () => {
   let callbacks: Callbacks = {}
 
   const add = (name: string, callback: Callback) => {
-    callbacks = assign({[name]: callback}, callbacks)
+    callbacks = assign({ [name]: callback }, callbacks)
   }
 
   const get = (name: string) => callbacks[name]
 
   const remove = (name: string) => {
-    callbacks = omit([name], callbacks) 
+    callbacks = omit([name], callbacks)
   }
 
   const callAndRemove = (name: string, ...args: any[]) => callbacks[name](...args)

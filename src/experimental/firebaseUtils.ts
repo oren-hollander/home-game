@@ -15,7 +15,7 @@ export interface BatchedCollection<T extends object> {
   commit(): Promise<void>
 }
 
-export interface TransactiveCollection<T extends object>  {
+export interface TransactiveCollection<T extends object> {
   get(id: string): Promise<T | undefined>
   set(doc: T): Promise<void>
   update(id: string, update: UpdateData): Promise<void>
@@ -27,12 +27,16 @@ export interface Collection<T extends object> extends TransactiveCollection<T> {
   transactive(transaction: Transaction): TransactiveCollection<T>
   batched(batch: WriteBatch): BatchedCollection<T>
   subCollection<S extends object>(docId: string, collectionId: string): Collection<S>
-  query(): Promise<(T)[]>,
+  query(): Promise<(T)[]>
   listen(onDocuments: (docs: T[]) => void): () => void
   listenToDoc(docId: string, onDocument: (doc: T) => void): () => void
 }
 
-function BatchedCollection<T extends object>(batch: WriteBatch, collectionRef: CollectionReference, idKey: string): BatchedCollection<T> {
+function BatchedCollection<T extends object>(
+  batch: WriteBatch,
+  collectionRef: CollectionReference,
+  idKey: string
+): BatchedCollection<T> {
   function setDocument(doc: T): void {
     batch.set(collectionRef.doc(doc[idKey]), omit(idKey, doc))
   }
@@ -44,7 +48,7 @@ function BatchedCollection<T extends object>(batch: WriteBatch, collectionRef: C
   function updateDocument(id: string, update: UpdateData): void {
     batch.update(collectionRef.doc(id), update)
   }
-  
+
   function commit(): Promise<void> {
     return batch.commit()
   }
@@ -57,9 +61,13 @@ function BatchedCollection<T extends object>(batch: WriteBatch, collectionRef: C
   }
 }
 
-const dataToDoc = <T>(id: string, idKey: string, data: DocumentData): T  => <T>set(idKey, id, data)
+const dataToDoc = <T>(id: string, idKey: string, data: DocumentData): T => <T>set(idKey, id, data)
 
-function TransactiveCollection<T extends object>(transaction: Transaction, collectionRef: CollectionReference, idKey: string): TransactiveCollection<T> {
+function TransactiveCollection<T extends object>(
+  transaction: Transaction,
+  collectionRef: CollectionReference,
+  idKey: string
+): TransactiveCollection<T> {
   async function getDocument(id: string): Promise<T | undefined> {
     const snapshot = await transaction.get(collectionRef.doc(id))
     if (snapshot.exists) {
@@ -75,7 +83,7 @@ function TransactiveCollection<T extends object>(transaction: Transaction, colle
 
   async function deleteDocument(id: string): Promise<void> {
     await transaction.delete(collectionRef.doc(id))
-    return 
+    return
   }
 
   async function updateDocument(id: string, update: UpdateData): Promise<void> {
@@ -87,14 +95,13 @@ function TransactiveCollection<T extends object>(transaction: Transaction, colle
     get: getDocument,
     set: setDocument,
     delete: deleteDocument,
-    update: updateDocument,
+    update: updateDocument
   }
 }
 
 export function Collection<T extends object>(collectionRef: CollectionReference, idKey: string = 'id'): Collection<T> {
-
   async function addDocument(doc: T): Promise<string> {
-    if(doc[idKey]) {
+    if (doc[idKey]) {
       await setDocument(doc)
       return doc[idKey]
     } else {
@@ -104,7 +111,7 @@ export function Collection<T extends object>(collectionRef: CollectionReference,
 
   async function getDocument(id: string): Promise<T | undefined> {
     const snapshot = await collectionRef.doc(id).get()
-    if(snapshot.exists){
+    if (snapshot.exists) {
       return dataToDoc(id, idKey, snapshot.data()!)
     }
     return undefined
@@ -154,7 +161,7 @@ export function Collection<T extends object>(collectionRef: CollectionReference,
   }
 
   return {
-    add: addDocument, 
+    add: addDocument,
     get: getDocument,
     set: setDocument,
     delete: deleteDocument,
@@ -166,4 +173,4 @@ export function Collection<T extends object>(collectionRef: CollectionReference,
     listen,
     listenToDoc
   }
-} 
+}

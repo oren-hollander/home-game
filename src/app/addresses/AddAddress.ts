@@ -23,4 +23,7 @@ const mapStateToProps = (state: State): SetAddressStateProps => ({
   buttonLabel: 'Create'
 })
 
-export const AddAddress = connect(mapStateToProps, mapDispatchToProps)(SetAddress)
+export const AddAddress = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(SetAddress)

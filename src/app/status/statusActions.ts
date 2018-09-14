@@ -16,21 +16,21 @@ export type StatusAction = EnqueueStatus | DequeueStatus
 export const ErrorStatus = (text: string): StatusMessage => ({
   type: 'error',
   text
-}) 
+})
 
 export const SuccessStatus = (text: string): StatusMessage => ({
   type: 'success',
   text
-}) 
+})
 
 export const WarningStatus = (text: string): StatusMessage => ({
   type: 'warning',
   text
-}) 
+})
 export const InfoStatus = (text: string): StatusMessage => ({
   type: 'info',
   text
-}) 
+})
 
 const hideStatus = (): HomeGameAsyncThunkAction => async (dispatch, getState) => {
   dispatch(dequeueStatus())
@@ -48,4 +48,3 @@ export const showStatus = (status: StatusMessage): HomeGameAsyncThunkAction => a
     dispatch(hideStatus())
   }
 }
-

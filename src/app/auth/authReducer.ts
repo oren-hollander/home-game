@@ -5,7 +5,7 @@ import { State } from '../state'
 import { User } from '../../db/types'
 
 export interface AuthState {
-  userId: string 
+  userId: string
   signedIn: boolean
   emailVerified: boolean
   name: string
@@ -21,23 +21,23 @@ const defaultAuthState: AuthState = {
 }
 
 export const reducer: Reducer<AuthState> = (state: AuthState = defaultAuthState, action: AuthAction): AuthState => {
-  switch(action.type){
+  switch (action.type) {
     case EMAIL_VERIFIED:
-      return {...state, emailVerified: true}
+      return { ...state, emailVerified: true }
     case USER_SIGNED_IN:
       return {
         ...state,
-        signedIn: true, 
-        userId: action.user.uid, 
-        emailVerified: action.user.emailVerified, 
+        signedIn: true,
+        userId: action.user.uid,
+        emailVerified: action.user.emailVerified,
         name: action.user.displayName!,
         email: action.user.email!
       }
     case USER_SIGNED_OUT:
       return {
         ...state,
-        signedIn: false, 
-        userId: '', 
+        signedIn: false,
+        userId: '',
         emailVerified: false,
         name: '',
         email: ''
