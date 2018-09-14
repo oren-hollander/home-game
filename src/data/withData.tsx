@@ -3,6 +3,7 @@ import { Component, ComponentType } from 'react'
 import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 import { connect } from 'react-redux'
+import { ParametricSelector } from 'reselect'
 
 export type EmptyDataResult = {
   type: 'empty'
@@ -30,7 +31,7 @@ export type Result<T> = DataResult<T> | StaleDataResult<T> | PendingDataResult |
 
 export type LoadData<Param, Data, S, E, A extends Action> = (param: Param) => ThunkAction<Promise<Result<Data>>, S, E, A>
 
-export const withData = <Param, Data, Props, WrapperProps, S, E, A extends Action>(loadData: LoadData<Param, Data, S, E, A>, mapProps: (props: WrapperProps) => Param, mapResult: (result: Result<Data>) => Props, Comp: ComponentType<Props>): ComponentType<WrapperProps> => {
+export const withData = <Param, Data, Props, WrapperProps, S, E, A extends Action>(loadData: LoadData<Param, Data, S, E, A>, selectData: ParametricSelector<S, WrapperProps, Data>, mapProps: (props: WrapperProps) => Param, mapResult: (result: Result<Data>) => Props, Comp: ComponentType<Props>): ComponentType<WrapperProps> => {
 
   type WithDataState = {
     result: Result<Data>
@@ -40,7 +41,12 @@ export const withData = <Param, Data, Props, WrapperProps, S, E, A extends Actio
     loadData(param: Param): Promise<Result<Data>>
   }
 
-  type WithDataProps = WrapperProps & WithDataDispatchProps
+  type WithDataStateProps = {
+    data: Result<Data>
+  }
+
+  type WithDataProps = WithDataStateProps & WithDataDispatchProps & WrapperProps
+
   class WithData extends Component<WithDataProps, WithDataState> {
     state: WithDataState = {
       result: PendingDataResult
@@ -64,6 +70,9 @@ export const withData = <Param, Data, Props, WrapperProps, S, E, A extends Actio
     }
   })
 
-  const ConnectedWithData = connect(undefined, mapDispatchToProps)(WithData) as {} as ComponentType<WrapperProps>
-  return ConnectedWithData
+  const mapStateToProps = (state: S, ownProps: WrapperProps): WithDataStateProps => ({
+    data: DataResult(selectData(state, ownProps))
+  })
+
+  return connect<WithDataStateProps, WithDataDispatchProps, WrapperProps>(mapStateToProps, mapDispatchToProps)(WithData) 
 }
