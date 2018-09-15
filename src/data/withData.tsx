@@ -4,85 +4,132 @@ import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 import { connect } from 'react-redux'
 import { ParametricSelector } from 'reselect'
+import { Maybe } from '../util/maybe'
 
-export type EmptyDataResult = {
-  type: 'empty'
+export type FreshData<T> = {
+  type: 'fresh'
+  value: Maybe<T>
 }
 
-export type PendingDataResult = {
-  type: 'pending'
-}
-
-export type DataResult<T> = {
-  type: 'data'
-  value: T
-}
-
-export type StaleDataResult<T> = {
+export type StaleData<T> = {
   type: 'stale'
-  value: T
+  value: Maybe<T>
 }
 
-export const DataResult = <T extends any>(value: T): DataResult<T> => ({ type: 'data', value })
-export const EmptyDataResult: EmptyDataResult = { type: 'empty' }
-export const PendingDataResult: PendingDataResult = { type: 'pending' }
+export const FreshData = <T extends any>(value: Maybe<T>): FreshData<T> => ({ type: 'fresh', value })
+export const StaleData = <T extends any>(value: Maybe<T>): StaleData<T> => ({ type: 'stale', value })
 
-export type Result<T> = DataResult<T> | StaleDataResult<T> | PendingDataResult | EmptyDataResult
+export type Result<T> = FreshData<Maybe<T>> | StaleData<Maybe<T>>
 
-export type LoadData<Param, Data, S, E, A extends Action> = (
-  param: Param
-) => ThunkAction<Promise<Result<Data>>, S, E, A>
+export type LoadData<Param, Data, S, E, A extends Action> = (param: Param) => ThunkAction<Promise<Maybe<Data>>, S, E, A>
 
-export const withData = <Param, Data, Props, WrapperProps, S, E, A extends Action>(
+export type StoreData<Data, A extends Action> = (data: Maybe<Data>) => A
+
+export const withData = <Param, Data, CompProps, ConnectorOwnProps, S, E, A extends Action>(
   loadData: LoadData<Param, Data, S, E, A>,
-  selectData: ParametricSelector<S, WrapperProps, Data>,
-  mapProps: (props: WrapperProps) => Param,
-  mapResult: (result: Result<Data>) => Props,
-  Comp: ComponentType<Props>
-): ComponentType<WrapperProps> => {
-  type WithDataState = {
-    result: Result<Data>
+  storeData: StoreData<Maybe<Data>, A>,
+  selectData: ParametricSelector<S, ConnectorOwnProps, Maybe<Data>>,
+  mapPropsToParam: (props: Readonly<ConnectorOwnProps>) => Param,
+  mapResultToProps: (result: Result<Maybe<Data>>) => CompProps,
+  Comp: ComponentType<CompProps>
+): ComponentType<ConnectorOwnProps> => {
+  type StateProps = {
+    data: Maybe<Data>
   }
 
-  type WithDataDispatchProps = {
-    loadData(param: Param): Promise<Result<Data>>
+  type DispatchProps = {
+    loadData(param: Param): Promise<Maybe<Data>>
+    storeData(data: Maybe<Data>): void
   }
 
-  type WithDataStateProps = {
-    data: Result<Data>
-  }
-
-  type WithDataProps = WithDataStateProps & WithDataDispatchProps & WrapperProps
-
-  class WithData extends Component<WithDataProps, WithDataState> {
-    state: WithDataState = {
-      result: PendingDataResult
-    }
+  class WithData extends Component<StateProps & DispatchProps & ConnectorOwnProps> {
+    mounted: boolean = false
 
     async componentDidMount() {
-      const param = mapProps(this.props as Readonly<WrapperProps>)
-      const result = await this.props.loadData(param)
-      this.setState({ result })
+      this.mounted = true
+      const param = mapPropsToParam(this.props)
+      const data = await this.props.loadData(param)
+      this.props.storeData(data)
     }
 
+    getResultData = (): Result<Maybe<Data>> => (this.mounted ? FreshData(this.props.data) : StaleData(this.props.data))
+
     render() {
-      const props: Props = mapResult(this.state.result)
+      const result = this.getResultData()
+      const props: CompProps = mapResultToProps(result)
       return <Comp {...this.props} {...props} />
     }
   }
 
-  const mapDispatchToProps = (dispatch: ThunkDispatch<S, E, A>): WithDataDispatchProps => ({
-    async loadData(param: Param): Promise<Result<Data>> {
+  const mapDispatchToProps = (dispatch: ThunkDispatch<S, E, A>): DispatchProps => ({
+    async loadData(param: Param): Promise<Maybe<Data>> {
       return dispatch(loadData(param))
+    },
+    storeData(data: Maybe<Data>): void {
+      dispatch(storeData(data))
     }
   })
 
-  const mapStateToProps = (state: S, ownProps: WrapperProps): WithDataStateProps => ({
-    data: DataResult(selectData(state, ownProps))
+  const mapStateToProps = (state: S, ownProps: ConnectorOwnProps): StateProps => ({
+    data: selectData(state, ownProps)
   })
 
-  return connect<WithDataStateProps, WithDataDispatchProps, WrapperProps>(
+  type Connector = ComponentType<ConnectorOwnProps>
+
+  const Connector: Connector = connect<StateProps, DispatchProps, ConnectorOwnProps, S>(
     mapStateToProps,
     mapDispatchToProps
-  )(WithData)
+  )(WithData as any)
+
+  return Connector
 }
+
+// namespace test {
+//   type CompProps = {
+//     a: string
+//     b: number
+//     f(): void
+//   }
+
+//   type Comp = SFC<CompProps>
+
+//   const Comp: Comp = ({ a, b, f }) => (
+//     <div onClick={f}>
+//       {a} {b}
+//     </div>
+//   )
+
+//   /////////////////////////
+
+//   type CompStateProps = {
+//     a: string
+//   }
+
+//   type CompDispatchProps = {
+//     f(): void
+//   }
+
+//   type CompOwnProps = {
+//     b: number
+//   }
+
+//   type ConnectorOwnProps = {
+//     id: string
+//   }
+
+//   type Connector = ComponentType<ConnectorOwnProps & CompOwnProps>
+//   type State = {}
+
+//   const mstp = (state: State, ownProps: ConnectorOwnProps): CompStateProps => ({ a: 'a' })
+//   const mdtp = (dispatch: ThunkDispatch<State, {}, Action>, ownProps: ConnectorOwnProps): CompDispatchProps => ({
+//     f: () => null
+//   })
+
+//   const Connector: Connector = connect<CompStateProps, CompDispatchProps, ConnectorOwnProps, State>(
+//     mstp,
+//     mdtp
+//   )(Comp)
+
+//   const x = <Connector id="a" b={1} />
+//   console.log(x)
+// }

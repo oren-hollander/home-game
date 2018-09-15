@@ -1,35 +1,44 @@
-import { noop } from 'lodash/fp'
+import { head, tail, noop } from 'lodash/fp'
 
 type Settling<T> = {
   resolve(value?: T | PromiseLike<T>): void
   reject(reason?: any): void
 }
 
-type SettlingPromise<T> = Settling<T> & Promise<T>
+export type SettlingPromise<T> = Settling<T> & Promise<T>
 
 export const SettlingPromise = <T = any>(): SettlingPromise<T> => {
   let resolvePromise: (value?: T | PromiseLike<T>) => void = noop
   let rejectPromise: (reason?: any) => void = noop
 
-  const promise = new Promise<T>((resolve, reject) => {
+  const settlingPromise = new Promise<T>((resolve, reject) => {
     resolvePromise = resolve
     rejectPromise = reject
   }) as SettlingPromise<T>
 
-  promise.resolve = resolvePromise
-  promise.reject = rejectPromise
+  settlingPromise.resolve = resolvePromise
+  settlingPromise.reject = rejectPromise
 
-  return promise
+  return settlingPromise
 }
 
-export const promiseChain = <T>(...promises: Settling<T>[]): Settling<T> => {
-  let index = 0
+export type PromiseChain<T> = {
+  resolveNext(value?: T | PromiseLike<T>): void
+  rejectNext(reason?: any): void
+}
+
+export const promiseChain = <T>(...promises: Settling<T>[]): PromiseChain<T> => {
+  let nextPromises = promises
   return {
-    resolve(value?: T | PromiseLike<T>) {
-      promises[index++].resolve(value)
+    resolveNext(value?: T | PromiseLike<T>) {
+      const nextPromise = head(nextPromises)
+      nextPromise && nextPromise.resolve(value)
+      nextPromises = tail(nextPromises)
     },
-    reject(reason?: any) {
-      promises[index++].reject(reason)
+    rejectNext(reason?: any) {
+      const nextPromise = head(nextPromises)
+      nextPromise && nextPromise.reject(reason)
+      nextPromises = tail(nextPromises)
     }
   }
 }
