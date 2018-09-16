@@ -33,57 +33,58 @@ export const withData = <Param, Data, CompProps, ConnectorOwnProps, S, E, A exte
   mapResultToProps: (result: Result<Maybe<Data>>) => CompProps,
   Comp: ComponentType<CompProps>
 ): ComponentType<ConnectorOwnProps> => {
-  type StateProps = {
-    data: Maybe<Data>
-  }
+  
 
   type DispatchProps = {
     loadData(param: Param): Promise<Maybe<Data>>
     storeData(data: Maybe<Data>): void
+    getData(): Maybe<Data>
   }
 
-  class WithData extends Component<StateProps & DispatchProps & ConnectorOwnProps> {
-    mounted: boolean = false
+  type WithDataState = {
+    dataState: 'stale' | 'fresh'
+  }
+
+  class WithData extends Component<DispatchProps & ConnectorOwnProps, WithDataState> {
+    state: WithDataState = {
+      dataState: 'stale'
+    }
 
     async componentDidMount() {
-      console.log('mounted')
-      this.mounted = true
       const param = mapPropsToParam(this.props)
       const data = await this.props.loadData(param)
-      console.log('data', data)
       this.props.storeData(data)
+      this.setState({
+        dataState: 'fresh'
+      })
     }
 
-    getResultData = (): Result<Maybe<Data>> => {
-      return (this.mounted ? FreshData(this.props.data) : StaleData(this.props.data))
-    }
     render() {
-      console.log('render')
-      const result = this.getResultData()
+      const data = this.props.getData()
+      const result = this.state.dataState === 'stale' ? StaleData(data) : FreshData(data)
       const props: CompProps = mapResultToProps(result)
       return <Comp {...this.props} {...props} />
     }
   }
 
-  const mapDispatchToProps = (dispatch: ThunkDispatch<S, E, A>): DispatchProps => ({
+  const mapDispatchToProps = (dispatch: ThunkDispatch<S, E, A>, ownProps: ConnectorOwnProps): DispatchProps => ({
     async loadData(param: Param): Promise<Maybe<Data>> {
       return dispatch(loadData(param))
     },
     storeData(data: Maybe<Data>): void {
       dispatch(storeData(data))
+    },
+    getData(): Maybe<Data> {
+      return dispatch((_dispatch, getState) => { 
+        return selectData(getState(), ownProps)
+      }) 
     }
   })
 
-  const mapStateToProps = (state: S, ownProps: ConnectorOwnProps): StateProps => ({
-    data: selectData(state, ownProps)
-  })
-
-  type Connector = ComponentType<ConnectorOwnProps>
-
-  const Connector: Connector = connect<StateProps, DispatchProps, ConnectorOwnProps, S>(
-    mapStateToProps,
+  const Connector: ComponentType<ConnectorOwnProps> = connect<never, DispatchProps, ConnectorOwnProps, S>(
+    undefined,
     mapDispatchToProps
-  )(WithData as any)
+  )(WithData as ComponentType<DispatchProps>)
 
   return Connector
 }

@@ -27,7 +27,8 @@ describe('withData', () => {
 
   const entityDB = (): EntityDB => {
     const entities: Dictionary<Entity> = {
-      a: Entity('a')
+      a: Entity('a'),
+      b: Entity('b')
     }
 
     const getEntity = (id: string): Maybe<Entity> => has(id, entities) ? Just(entities[id]) : Nothing
@@ -65,13 +66,7 @@ describe('withData', () => {
   const reducer: Reducer<State, Action> = (state = initialState, action) => {
     switch (action.type) {
       case 'set-entity':
-        // console.log('reducer', action)
-        // const newState = produce(state, draft => {
-        //   draft.entity = action.entity
-        // })
-        // console.log('new state', state, newState)
-        // return newState
-        return {...state, entity: Nothing}
+        return {...state, entity: action.entity}
       case 'remove-entity':
         return produce(state, draft => {
           draft.entity = Nothing
@@ -87,11 +82,7 @@ describe('withData', () => {
     { entityDB }
   ): Promise<Maybe<Entity>> => entityDB.getEntity(id)
 
-  const selectEntity: ParametricSelector<State, never, Maybe<Entity>> = state => {
-    const x = has('entity', state) ? state.entity : Nothing
-    console.log('selector', x)
-    return x
-  } 
+  const selectEntity: ParametricSelector<State, never, Maybe<Entity>> = state => has('entity', state) ? state.entity : Nothing
 
   type EntityViewProps = {
     entity: Result<Maybe<Entity>>
@@ -150,22 +141,34 @@ describe('withData', () => {
     store.dispatch(setEntity(Just(Entity('a'))))
     await render(
       <Provider store={store}>
-        <EntityConnector id="a" />
-      </Provider>,
-      div
-    )
-    expect(await firstRenderPromise).toEqual(StaleData(Just(Entity('a'))))
-    expect(await secondRenderPromise).toEqual(FreshData(Just(Entity('a'))))
-  })
-
-  test.only('render with empty store and missing data', async () => {
-    await render(
-      <Provider store={store}>
         <EntityConnector id="b" />
       </Provider>,
       div
     )
-    // expect(await firstRenderPromise).toEqual(StaleData(Nothing))
-    // expect(await secondRenderPromise).toEqual(FreshData(Nothing))
+    expect(await firstRenderPromise).toEqual(StaleData(Just(Entity('a'))))
+    expect(await secondRenderPromise).toEqual(FreshData(Just(Entity('b'))))
+  })
+
+  test('render with empty store and missing data', async () => {
+    await render(
+      <Provider store={store}>
+        <EntityConnector id="c" />
+      </Provider>,
+      div
+    )
+    expect(await firstRenderPromise).toEqual(StaleData(Nothing))
+    expect(await secondRenderPromise).toEqual(FreshData(Nothing))
+  })
+
+  test('render with non empty store and missing data', async () => {
+    store.dispatch(setEntity(Just(Entity('a'))))
+    await render(
+      <Provider store={store}>
+        <EntityConnector id="c" />
+      </Provider>,
+      div
+    )
+    expect(await firstRenderPromise).toEqual(StaleData(Just(Entity('a'))))
+    expect(await secondRenderPromise).toEqual(FreshData(Nothing))
   })
 })
