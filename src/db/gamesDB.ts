@@ -1,8 +1,6 @@
 import * as firebase from 'firebase/app'
 import { Game, User, Address, Invitation, InvitationResponse } from './types'
 import { map, concat, compact, assign, omit, forEach, isUndefined } from 'lodash/fp'
-// import * as moment from 'moment'
-// import { Timestamp } from '../types'
 
 type Firestore = firebase.firestore.Firestore
 
@@ -253,8 +251,6 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
     const notify = () => {
       onGames(concat(ownGames, invitationGames))
     }
-
-    // const midnight = moment().hour(0).minute(0).second(0).millisecond(0)
 
     db.collection(USERS)
       .doc(userId)

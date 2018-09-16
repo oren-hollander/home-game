@@ -8,18 +8,18 @@ import { Maybe } from '../util/maybe'
 
 export type FreshData<T> = {
   type: 'fresh'
-  value: Maybe<T>
+  value: T
 }
 
 export type StaleData<T> = {
   type: 'stale'
-  value: Maybe<T>
+  value: T
 }
 
-export const FreshData = <T extends any>(value: Maybe<T>): FreshData<T> => ({ type: 'fresh', value })
-export const StaleData = <T extends any>(value: Maybe<T>): StaleData<T> => ({ type: 'stale', value })
+export const FreshData = <T extends any>(value: T): FreshData<T> => ({ type: 'fresh', value })
+export const StaleData = <T extends any>(value: T): StaleData<T> => ({ type: 'stale', value })
 
-export type Result<T> = FreshData<Maybe<T>> | StaleData<Maybe<T>>
+export type Result<T> = FreshData<T> | StaleData<T>
 
 export type LoadData<Param, Data, S, E, A extends Action> = (param: Param) => ThunkAction<Promise<Maybe<Data>>, S, E, A>
 
@@ -27,7 +27,7 @@ export type StoreData<Data, A extends Action> = (data: Maybe<Data>) => A
 
 export const withData = <Param, Data, CompProps, ConnectorOwnProps, S, E, A extends Action>(
   loadData: LoadData<Param, Data, S, E, A>,
-  storeData: StoreData<Maybe<Data>, A>,
+  storeData: StoreData<Data, A>,
   selectData: ParametricSelector<S, ConnectorOwnProps, Maybe<Data>>,
   mapPropsToParam: (props: Readonly<ConnectorOwnProps>) => Param,
   mapResultToProps: (result: Result<Maybe<Data>>) => CompProps,
@@ -46,15 +46,19 @@ export const withData = <Param, Data, CompProps, ConnectorOwnProps, S, E, A exte
     mounted: boolean = false
 
     async componentDidMount() {
+      console.log('mounted')
       this.mounted = true
       const param = mapPropsToParam(this.props)
       const data = await this.props.loadData(param)
+      console.log('data', data)
       this.props.storeData(data)
     }
 
-    getResultData = (): Result<Maybe<Data>> => (this.mounted ? FreshData(this.props.data) : StaleData(this.props.data))
-
+    getResultData = (): Result<Maybe<Data>> => {
+      return (this.mounted ? FreshData(this.props.data) : StaleData(this.props.data))
+    }
     render() {
+      console.log('render')
       const result = this.getResultData()
       const props: CompProps = mapResultToProps(result)
       return <Comp {...this.props} {...props} />
@@ -83,53 +87,3 @@ export const withData = <Param, Data, CompProps, ConnectorOwnProps, S, E, A exte
 
   return Connector
 }
-
-// namespace test {
-//   type CompProps = {
-//     a: string
-//     b: number
-//     f(): void
-//   }
-
-//   type Comp = SFC<CompProps>
-
-//   const Comp: Comp = ({ a, b, f }) => (
-//     <div onClick={f}>
-//       {a} {b}
-//     </div>
-//   )
-
-//   /////////////////////////
-
-//   type CompStateProps = {
-//     a: string
-//   }
-
-//   type CompDispatchProps = {
-//     f(): void
-//   }
-
-//   type CompOwnProps = {
-//     b: number
-//   }
-
-//   type ConnectorOwnProps = {
-//     id: string
-//   }
-
-//   type Connector = ComponentType<ConnectorOwnProps & CompOwnProps>
-//   type State = {}
-
-//   const mstp = (state: State, ownProps: ConnectorOwnProps): CompStateProps => ({ a: 'a' })
-//   const mdtp = (dispatch: ThunkDispatch<State, {}, Action>, ownProps: ConnectorOwnProps): CompDispatchProps => ({
-//     f: () => null
-//   })
-
-//   const Connector: Connector = connect<CompStateProps, CompDispatchProps, ConnectorOwnProps, State>(
-//     mstp,
-//     mdtp
-//   )(Comp)
-
-//   const x = <Connector id="a" b={1} />
-//   console.log(x)
-// }

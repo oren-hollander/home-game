@@ -12,6 +12,7 @@
   "dependencies": {
     "bootstrap": "^4.1.3",
     "connected-react-router": "^4.3.0",
+    "date-fns": "^1.29.0",
     "firebase": "^5.5.0",
     "immer": "^1.6.0",
     "lodash": "^4.17.11",
@@ -30,6 +31,7 @@
     "reselect": "^3.0.1"
   },
   "devDependencies": {
+    "@types/date-fns": "^2.6.0",
     "@types/enzyme": "^3.1.13",
     "@types/enzyme-adapter-react-16": "^1.0.3",
     "@types/jest": "^23.3.2",
