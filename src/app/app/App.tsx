@@ -11,7 +11,7 @@ import { GameView, GameViewProps } from '../games/GameView'
 import { AcceptFriendInvitation } from '../friends/AcceptFriendInvitation'
 import { InviteFriend } from '../friends/InviteFriend'
 import { AddAddress } from '../addresses/AddAddress'
-import { Addresses } from '../addresses/Addresses'
+import { AddressesLoader } from '../addresses/AddressesLoader'
 import { EditAddress, EditAddressProps } from '../addresses/EditAddress'
 import { Friends } from '../friends/Friends'
 
@@ -42,7 +42,7 @@ namespace UI {
         <Route path="/friends" exact={true} component={Friends} />
         <Route path="/addresses/new" exact={true} component={AddAddress} />
         <Route path="/addresses/:addressId" exact={true} component={EditAddressById} />
-        <Route path="/addresses" exact={true} component={Addresses} />
+        <Route path="/addresses" exact={true} component={AddressesLoader} />
         <Route component={NoMatch} />
       </Switch>
     </>

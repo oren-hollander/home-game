@@ -28,6 +28,7 @@ export interface GamesDatabase {
 
   createAddress(userId: string, address: Address): Promise<void>
   getAddresses(userId: string): Promise<ReadonlyArray<Address>>
+  getAddress(userId: string, addressId: string): Promise<Address>
   updateAddress(userId: string, address: Address): Promise<void>
   removeAddress(userId: string, addressId: string): Promise<void>
 
@@ -83,6 +84,17 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
       .collection(ADDRESSES)
       .get()
     return map(snapshot => assign({ addressId: snapshot.id }, snapshot.data()) as Address, addressesSnapshot.docs)
+  }
+
+  const getAddress = async (userId: string, addressId: string): Promise<Address> => {
+    const addressSnapshot = await db
+      .collection(USERS)
+      .doc(userId)
+      .collection(ADDRESSES)
+      .doc(addressId)
+      .get()
+    
+    return assign({ addressId: addressSnapshot.id }, addressSnapshot.data()) as Address
   }
 
   const updateAddress = async (userId: string, address: Address): Promise<void> =>
@@ -352,6 +364,7 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
 
     createAddress,
     getAddresses,
+    getAddress,
     updateAddress,
     removeAddress,
 

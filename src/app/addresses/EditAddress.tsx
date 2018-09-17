@@ -1,7 +1,7 @@
 import { ComponentType } from 'react'
 import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux'
 import { Address } from '../../db/types'
-import { updateAddress, loadAddresses } from './addressesActions'
+import { updateAddress, loadAddresses, markStale } from './addressesActions'
 import { HomeGameThunkDispatch, State } from '../state'
 import { showStatus, ErrorStatus } from '../status/statusActions'
 import { SetAddress, SetAddressDispatchProps, SetAddressStateProps } from './SetAddress'
@@ -29,7 +29,7 @@ const mapStateToProps: MapStateToProps<SetAddressStateProps, EditAddressProps, S
 })
 
 export const EditAddress: ComponentType<EditAddressProps> = compose(
-  load(loadAddresses),
+  load(loadAddresses, markStale),
   connect(
     mapStateToProps,
     mapDispatchToProps

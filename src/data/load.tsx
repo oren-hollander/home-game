@@ -4,12 +4,12 @@ import { connect } from 'react-redux'
 import { State, HomeGameThunkDispatch, HomeGameAction } from '../app/state'
 import { ThunkAction } from 'redux-thunk'
 import { Services } from '../services/services'
-import { noop, constant, isUndefined, omit } from 'lodash/fp'
+import { isUndefined, omit } from 'lodash/fp'
 
 type LoadData = (...args: any[]) => ThunkAction<Promise<void>, State, Services, HomeGameAction>
-type ClearData = () => ThunkAction<void, State, Services, HomeGameAction>
+type ClearData = () => HomeGameAction
 
-export const load = <T extends any>(loadData: LoadData, clear: ClearData = constant(noop), propName?: string) => (
+export const load = <T extends any>(loadData: LoadData, clear?: ClearData, propName?: string) => (
   Comp: ComponentType<T>
 ): ComponentType<T> => {
   interface LoadProps {
@@ -33,7 +33,7 @@ export const load = <T extends any>(loadData: LoadData, clear: ClearData = const
 
   const mapDispatchToProps = (dispatch: HomeGameThunkDispatch, ownProps: {}): LoadProps => ({
     load: () => dispatch(loadData(isUndefined(propName) ? undefined : ownProps[propName])),
-    clear: () => dispatch(clear())
+    clear: () => clear && dispatch(clear())
   })
 
   return (connect(

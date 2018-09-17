@@ -7,7 +7,7 @@ import { gamesReducer, GamesState } from './games/gamesReducer'
 import { GamesAction } from './games/gamesActions'
 import { FriendsAction } from './friends/friendsActions'
 import { StatusAction } from './status/statusActions'
-import { Address } from '../db/types'
+import { AddressesState } from './addresses/addressesReducer'
 import { addressesReducer } from './addresses/addressesReducer'
 import { statusReducer, StatusState } from './status/statusReducer'
 import { ThunkAction, ThunkDispatch } from 'redux-thunk'
@@ -25,7 +25,7 @@ export interface State {
   auth: AuthState
   friends: FriendsState
   games: GamesState
-  addresses: ReadonlyArray<Address>
+  addresses: AddressesState
   status: StatusState
 }
 
