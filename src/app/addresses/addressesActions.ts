@@ -4,6 +4,8 @@ import { getUser } from '../auth/authReducer'
 import { push } from 'connected-react-router'
 import { SuccessStatus, showStatus } from '../status/statusActions'
 import { delay } from '../../util/delay'
+import { Unsubscribe } from '../../data/dataLoader';
+import { noop } from 'lodash/fp'
 
 export const SET_ADDRESSES = 'addresses/set-addresses'
 export const SET_ADDRESS = 'addresses/set-address'
@@ -54,16 +56,18 @@ export const removeAddress = (addressId: string): HomeGameAsyncThunkAction => as
   await dispatch(loadAddresses())
 }
 
-export const loadAddresses = (): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+export const loadAddresses = (): HomeGameAsyncThunkAction<Unsubscribe> => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).userId
   const addresses = await db.getAddresses(userId)
   await delay(3000)
 
   dispatch(setAddresses(addresses))
+  return noop
 }
 
-export const loadAddress = (addressId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+export const loadAddress = (addressId: string): HomeGameAsyncThunkAction<Unsubscribe> => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).userId
   const address = await db.getAddress(userId, addressId)
   dispatch(setAddress(address))
+  return noop
 }

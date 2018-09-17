@@ -1,16 +1,14 @@
 import * as React from 'react'
 import { SFC } from 'react'
-import { DataStatus } from '../data/dataStatus'
 import { Alert, Fade } from 'reactstrap'
 
 interface LoadingProps {
-  dataStatus: DataStatus
+  fresh: boolean
 }
 
-export const Loading: SFC<LoadingProps> = ({ dataStatus }) => {
-  if (dataStatus === 'fresh') {
-    return null
-  }
-
-  return <Fade><Alert color="info">Loading</Alert></Fade>
-}
+export const Loading: SFC<LoadingProps> = ({ fresh }) =>
+  fresh ? null : (
+    <Fade>
+      <Alert color="info">Loading</Alert>
+    </Fade>
+  )

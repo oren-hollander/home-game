@@ -1,7 +1,7 @@
 import { Reducer } from 'redux'
 import { Address } from '../../db/types'
 import { SET_ADDRESSES, SET_ADDRESS, MARK_STALE, MARK_FRESH, AddressesAction } from './addressesActions'
-import { Selector } from 'reselect'
+import { Selector, ParametricSelector } from 'reselect'
 import { State } from '../state'
 import { flow, isEmpty, find, reject, concat } from 'lodash/fp'
 import { DataStatus } from '../../data/dataStatus'
@@ -42,7 +42,7 @@ export const addressesReducer: Reducer<AddressesState, AddressesAction> = (addre
 export const getAddresses: Selector<State, ReadonlyArray<Address>> = state => state.addresses.addresses
 export const getDataStatus: Selector<State, DataStatus> = state => state.addresses.status
 
-export const getAddress = (addressId: string): Selector<State, Address | undefined> => state =>
+export const getAddress: ParametricSelector<State, string, Address | undefined> = (state, addressId) =>
   find(address => address.addressId === addressId, state.addresses.addresses)
 
 export const hasAddresses: Selector<State, boolean> = state => !isEmpty(state.addresses)

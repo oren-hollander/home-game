@@ -5,17 +5,16 @@ import { Link } from 'react-router-dom'
 import { map } from 'lodash/fp'
 import { Page } from '../../ui/Page'
 import { ListGroup, ListGroupItem } from 'reactstrap'
-import { DataStatus } from '../../data/dataStatus'
 import { Loading } from '../../ui/Loading'
 
 interface AddressesProps {
   addresses: ReadonlyArray<Address>
-  dataStatus: DataStatus
+  fresh: boolean
 }
 
-export const Addresses: SFC<AddressesProps> = ({ addresses, dataStatus }) => (
+export const Addresses: SFC<AddressesProps> = ({ addresses, fresh }) => (
   <Page>
-    <Loading dataStatus={dataStatus} />
+    <Loading fresh={fresh} />
     <ListGroup>
       {map(
         address => (

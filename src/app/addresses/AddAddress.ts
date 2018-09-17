@@ -3,7 +3,10 @@ import { Address } from '../../db/types'
 import { addAddress } from './addressesActions'
 import { HomeGameThunkDispatch, State } from '../state'
 import { showStatus, ErrorStatus } from '../status/statusActions'
-import { SetAddress, SetAddressDispatchProps, SetAddressStateProps } from './SetAddress'
+import { SetAddress, SetAddressProps } from './SetAddress'
+
+type SetAddressDispatchProps = Pick<SetAddressProps, 'showError' | 'setAddress'>
+type SetAddressStateProps = Pick<SetAddressProps, 'address' | 'buttonLabel'>
 
 const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): SetAddressDispatchProps => ({
   showError: (error: string) => dispatch(showStatus(ErrorStatus(error))),
