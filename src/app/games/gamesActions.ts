@@ -1,11 +1,12 @@
 import { Game, Invitation, InvitationResponse, Address, User } from '../../db/types'
-import { HomeGameThunkAction, HomeGameAsyncThunkAction } from '../state'
+import { HomeGameAsyncThunkAction } from '../state'
 import { getUser } from '../auth/authReducer'
 import { Unsubscribe } from '../../db/gamesDB'
 import * as firebase from 'firebase'
 import { showStatus, SuccessStatus } from '../status/statusActions'
 import { push } from 'connected-react-router'
-import { map } from 'lodash/fp'
+import { map, forEach } from 'lodash/fp'
+import { loadFriends } from '../friends/friendsActions';
 
 export const SET_GAMES = 'games/set-games'
 export const SET_GAME = 'games/set-game'
@@ -49,35 +50,49 @@ export const createGame = (
 export const invitePlayers = (
   invitation: Invitation,
   playerIds: ReadonlyArray<string>
-): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+): HomeGameAsyncThunkAction => async (_dispatch, _getState, { db }) => {
   await Promise.all(map(playerId => db.inviteToGame(playerId, invitation), playerIds))
 }
 
 export const respondToInvitation = (response: InvitationResponse): HomeGameAsyncThunkAction => async (
-  dispatch,
-  getState,
+  _dispatch,
+  _getState,
   { db }
 ) => {
   await db.respondToGameInvitation(response)
 }
 
-export const listenToGames = (): HomeGameThunkAction<Unsubscribe> => (dispatch, getState, { db }): Unsubscribe => {
-  const userId = getUser(getState()).userId
-  return db.listenToGames(userId, games => {
-    dispatch(setGames(games))
+export const listenToGames = (): HomeGameAsyncThunkAction<Unsubscribe> => async (dispatch, getState, { db }) =>
+  new Promise<Unsubscribe>(resolve => {
+    const userId = getUser(getState()).userId
+    const unsubscribe = db.listenToGames(userId, games => {
+      dispatch(setGames(games))
+      resolve(unsubscribe)
+    })
   })
-}
 
-export const listenToGame = ({
-  hostId,
-  gameId
-}: {
+export const listenToGame = (hostId: string, gameId: string): HomeGameAsyncThunkAction<Unsubscribe> => async (dispatch, _getState, { db }) =>
+  new Promise<Unsubscribe>(resolve => {
+    const unsubscribe = db.listenToGame(hostId, gameId, (game, invitatedPlayers, responses) => {
+      dispatch(setGame(game, invitatedPlayers, responses))
+      resolve(unsubscribe)
+    })
+  })
+
+export interface GameId {
   hostId: string
   gameId: string
-}): HomeGameThunkAction<Unsubscribe> => (dispatch, getState, { db }): Unsubscribe => {
-  return db.listenToGame(hostId, gameId, (game, invitatedPlayers, responses) => {
-    dispatch(setGame(game, invitatedPlayers, responses))
-  })
+}
+
+export const listenToGameAndFriends = (gameId: GameId): HomeGameAsyncThunkAction<Unsubscribe> => async dispatch => {
+  const unsubscribeGame = dispatch(listenToGame(gameId.hostId, gameId.gameId))
+  const unsubscribeFriends = dispatch(loadFriends())
+  
+  const unsubscribes = await Promise.all([unsubscribeGame, unsubscribeFriends])
+  
+  return () => {
+    forEach(unsubscribe => unsubscribe(), unsubscribes)
+  }
 }
 
 export type GamesAction = SetGames | SetGame | ClearGame

@@ -18,8 +18,8 @@ export type Unsubscribe = () => void
 export const dataLoader = <T, P, OwnProps>(
   propsToParam: (props: OwnProps) => P,
   loadData: (param: P) => ThunkAction<Promise<Unsubscribe>, State, Services, HomeGameAction>,
-  markStale: () => HomeGameAction,
-  markFresh: () => HomeGameAction,
+  markStale: HomeGameAction,
+  markFresh: HomeGameAction,
   getData: ParametricSelector<State, P, T>,
   getDataStatus: ParametricSelector<State, P, DataStatus>,
 ) => (Comp: ComponentType<CompProps<T>>): ComponentType<OwnProps> => {
@@ -37,7 +37,7 @@ export const dataLoader = <T, P, OwnProps>(
 
     async componentDidMount() {
       this.mounted = true
-      await this.props.loadData()
+      this.unsubscribe = await this.props.loadData()
       if (this.mounted) {
         this.props.markFresh()
       }
@@ -50,6 +50,7 @@ export const dataLoader = <T, P, OwnProps>(
     }
 
     render() {
+      debugger
       return <Comp data={this.props.data} dataStatus={this.props.dataStatus} />
     }
   }
@@ -70,10 +71,10 @@ export const dataLoader = <T, P, OwnProps>(
       return dispatch(loadData(propsToParam(ownProps)))
     },
     markStale() {
-      dispatch(markStale())
+      dispatch(markStale)
     },
     markFresh() {
-      dispatch(markFresh())
+      dispatch(markFresh)
     }
   })
 

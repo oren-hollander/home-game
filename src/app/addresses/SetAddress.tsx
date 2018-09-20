@@ -61,9 +61,6 @@ export class SetAddress extends Component<SetAddressProps, Address> {
   }
 
   render() {
-    if (!this.props.address) {
-      return 'Loading'
-    }
     return (
       <Page>
         <Loading fresh={this.props.fresh} />

@@ -48,7 +48,7 @@ export interface GamesDatabase {
   inviteToGame(playerId: string, invitation: Invitation): Promise<void>
   respondToGameInvitation(response: InvitationResponse): Promise<void>
 
-  listenToGames(userId: string, onGames: GamesEvent): Unsubscribe
+    listenToGames(userId: string, onGames: GamesEvent): Unsubscribe
 
   listenToGame(userId: string, gameId: string, onGame: GameEvent): Unsubscribe
 }

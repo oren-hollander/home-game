@@ -1,6 +1,8 @@
 import { HomeGameAsyncThunkAction } from '../state'
 import { getUser } from '../auth/authReducer'
 import { User } from '../../db/types'
+import { Unsubscribe } from '../../data/dataLoader'
+import { noop } from 'lodash/fp'
 
 export const ADD_FRIEND = 'friends/add'
 export const REMOVE_FRIEND = 'friends/remove'
@@ -38,10 +40,11 @@ export const removeFriend = (friendId: string): HomeGameAsyncThunkAction => asyn
   await dispatch(loadFriends())
 }
 
-export const loadFriends = (): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
+export const loadFriends = (): HomeGameAsyncThunkAction<Unsubscribe> => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).userId
   const friends = await db.getFriends(userId)
   dispatch(setFriends(friends))
+  return noop
 }
 
 export const connectFriends = (friendId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {

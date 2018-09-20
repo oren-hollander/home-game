@@ -9,8 +9,6 @@ import { noop } from 'lodash/fp'
 
 export const SET_ADDRESSES = 'addresses/set-addresses'
 export const SET_ADDRESS = 'addresses/set-address'
-export const MARK_STALE = 'addresses/mark-stale'
-export const MARK_FRESH = 'addresses/mark-fresh'
 
 export const setAddresses = (addresses: ReadonlyArray<Address>) => ({
   type: SET_ADDRESSES as typeof SET_ADDRESSES,
@@ -24,17 +22,7 @@ export const setAddress = (address: Address) => ({
 })
 export type SetAddress = ReturnType<typeof setAddress>
 
-export const markStale = () => ({
-  type: MARK_STALE as typeof MARK_STALE
-})
-export type MarkStale = ReturnType<typeof markStale>
-
-export const markFresh = () => ({
-  type: MARK_FRESH as typeof MARK_FRESH
-})
-export type MarkFresh = ReturnType<typeof markFresh>
-
-export type AddressesAction = SetAddresses | SetAddress | MarkStale | MarkFresh
+export type AddressesAction = SetAddresses | SetAddress 
 
 export const addAddress = (address: Address): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
   const userId = getUser(getState()).userId

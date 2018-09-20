@@ -4,6 +4,7 @@ import { State } from '../state'
 import { Selector, ParametricSelector } from 'reselect'
 import { set, values, unset, map, fromPairs, get } from 'lodash/fp'
 import { Dictionary } from 'lodash'
+import { getFriends } from '../friends/friendsReducer'
 
 export interface GameState {
   readonly game: Game
@@ -46,3 +47,17 @@ export const getGames: Selector<State, ReadonlyArray<Game>> = state => map(gs =>
 
 export const getGame: ParametricSelector<State, { gameId: string }, GameState | undefined> = (state, { gameId }) =>
   get(['games', gameId], state)
+
+export interface GameAndFriends {
+  game: GameState
+  friends: ReadonlyArray<User>
+}
+
+export const getGameAndFriends: ParametricSelector<State, { gameId: string }, GameAndFriends | undefined> = (
+  state,
+  { gameId }
+) => {
+  const game = getGame(state, { gameId })
+  const friends = getFriends(state)
+  return game && ({ game, friends })
+}

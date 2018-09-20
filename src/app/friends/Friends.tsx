@@ -2,23 +2,26 @@ import * as React from 'react'
 import { SFC } from 'react'
 import { User } from '../../db/types'
 import { Link } from 'react-router-dom'
-import { map } from 'lodash/fp'
-import { connect } from 'react-redux'
-import { compose } from 'recompose'
-import { load } from '../../data/load'
-import { State } from '../state'
+import { map, noop } from 'lodash/fp'
 import { ListGroup, ListGroupItem } from 'reactstrap'
 import { loadFriends } from './friendsActions'
 import { getFriends } from './friendsReducer'
 import { Page } from '../../ui/Page'
+import { CompProps, dataLoader } from '../../data/dataLoader'
+import { Loading } from '../../ui/Loading'
+import { markStale, markFresh } from '../dataStatus/dataStatusActions'
+import { getDataStatus } from '../dataStatus/dataStatusReducer'
+import { compose, mapProps } from 'recompose'
 
 interface FriendsProps {
   friends: ReadonlyArray<User>
+  fresh: boolean
 }
 
 namespace UI {
-  export const Friends: SFC<FriendsProps> = ({ friends }) => (
+  export const Friends: SFC<FriendsProps> = ({ friends, fresh }) => (
     <Page>
+      <Loading fresh={fresh} />
       <ListGroup>
         {map(
           friend => (
@@ -34,11 +37,12 @@ namespace UI {
   )
 }
 
-const mapStateToProps = (state: State): FriendsProps => ({
-  friends: getFriends(state)
-})
+const mapFriendsProps = mapProps<FriendsProps, CompProps<ReadonlyArray<User>>>(({ data, dataStatus }) => ({
+  friends: data,
+  fresh: dataStatus === 'fresh'
+}))
 
 export const Friends = compose(
-  load(loadFriends),
-  connect(mapStateToProps)
+  dataLoader(noop, loadFriends, markStale('friends'), markFresh('friends'), getFriends, getDataStatus('friends')),
+  mapFriendsProps
 )(UI.Friends)

@@ -1,32 +1,28 @@
 import * as React from 'react'
 import { SFC, ComponentType } from 'react'
 import { Game, InvitationResponse, User } from '../../db/types'
-import { listenToGame } from './gamesActions'
-import { getGame } from './gamesReducer'
-import { listen } from '../../data/listen'
-import { compose } from 'recompose'
-import { State } from '../state'
-import { connect } from 'react-redux'
+import { listenToGameAndFriends, GameId } from './gamesActions'
+import { getGameAndFriends, GameAndFriends } from './gamesReducer'
 import { Page } from '../../ui/Page'
-import { map, noop, constant, isUndefined } from 'lodash/fp'
+import { identity, map, isUndefined } from 'lodash/fp'
 import { Jumbotron } from 'reactstrap'
 import { DateView } from '../../ui/DateView'
-import { getUser } from '../auth/authReducer'
 import { HostedGamePlayerLists, InvitedGamePlayerLists } from './PlayerLists'
-import { load } from '../../data/load'
-import { loadFriends } from '../friends/friendsActions'
-import { getFriends } from '../friends/friendsReducer'
-
-interface GameViewStateProps {
-  readonly userId: string
-  readonly game?: Game
-  readonly invitedPlayers: ReadonlyArray<User>
-  readonly responses: ReadonlyArray<InvitationResponse>
-  readonly friends: ReadonlyArray<User>
-}
+import { dataLoader, CompProps } from '../../data/dataLoader'
+import { markStale, markFresh } from '../dataStatus/dataStatusActions'
+import { getDataStatus } from '../dataStatus/dataStatusReducer'
+import { Loading } from '../../ui/Loading'
 
 namespace UI {
-  const Players: SFC<GameViewStateProps> = ({ userId, friends, game, invitedPlayers, responses }) => {
+  interface GameViewProps {
+    readonly fresh: boolean
+    readonly userId: string
+    readonly game?: Game
+    readonly invitedPlayers: ReadonlyArray<User>
+    readonly responses: ReadonlyArray<InvitationResponse>
+    readonly friends: ReadonlyArray<User>
+  }
+  const Players: SFC<GameViewProps> = ({ userId, friends, game, invitedPlayers, responses }) => {
     const invitedPlayerIds = map(user => user.userId, invitedPlayers)
 
     if (isUndefined(game)) {
@@ -42,12 +38,11 @@ namespace UI {
     return <InvitedGamePlayerLists invitedUsers={invitedPlayers} responses={responses} />
   }
 
-  export const GameView: SFC<GameViewStateProps> = ({ userId, friends, game, invitedPlayers, responses }) => (
+  export const GameView: SFC<GameViewProps> = ({ userId, friends, game, invitedPlayers, responses, fresh }) => (
     <Page>
       <Jumbotron>
-        {!game ? (
-          'Loading'
-        ) : (
+        <Loading fresh={fresh} />
+        {game && (
           <>
             <h5>Host</h5>
             <p>{game.hostName}</p>
@@ -61,6 +56,7 @@ namespace UI {
             </p>
             {game && (
               <Players
+                fresh={fresh}
                 game={game}
                 userId={userId}
                 friends={friends}
@@ -75,27 +71,48 @@ namespace UI {
   )
 }
 
-export interface GameViewProps {
-  hostId: string
-  gameId: string
-}
+// export type GameViewProps = GameId
 
-const mapStateToProps = (state: State, ownProps: GameViewProps): GameViewStateProps => {
-  const gameState = getGame(state, ownProps)
-  const friends = getFriends(state)
-  const userId = getUser(state).userId
+// const mapStateToProps = (state: State, ownProps: GameViewProps): GameViewStateProps => {
+//   const gameState = getGame(state, ownProps)
+//   const friends = getFriends(state)
+//   const userId = getUser(state).userId
 
-  return {
-    userId,
-    game: gameState && gameState.game,
-    invitedPlayers: gameState ? gameState.invitedPlayers : [],
-    responses: gameState ? gameState.responses : [],
-    friends
+//   return {
+//     userId,
+//     game: gameState && gameState.game,
+//     invitedPlayers: gameState ? gameState.invitedPlayers : [],
+//     responses: gameState ? gameState.responses : [],
+//     friends
+//   }
+// }
+
+const GameViewAdapter: SFC<CompProps<GameAndFriends | undefined>> = ({ data, dataStatus }) => {
+  if (!data) {
+    return null
   }
+
+  return (
+    <UI.GameView
+      fresh={dataStatus === 'fresh'}
+      userId=""
+      invitedPlayers={data.game.invitedPlayers}
+      responses={data.game.responses}
+      friends={data.friends}
+      game={data.game.game}
+    />
+  )
 }
 
-export const GameView: ComponentType<GameViewProps> = compose(
-  load(loadFriends),
-  listen(listenToGame, constant(noop), props => ({ hostId: props.hostId, gameId: props.gameId })),
-  connect(mapStateToProps)
-)(UI.GameView) as ComponentType<GameViewProps>
+export type GameViewProps = GameId
+
+const mapProps: (props: GameViewProps) => GameViewProps = identity
+
+export const GameView: ComponentType<GameId> = dataLoader(
+  mapProps,
+  listenToGameAndFriends,
+  markStale('games'),
+  markFresh('games'),
+  getGameAndFriends,
+  getDataStatus('games')
+)(GameViewAdapter)
