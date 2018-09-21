@@ -1,12 +1,10 @@
 import { Game, Invitation, InvitationResponse, Address, User } from '../../db/types'
 import { HomeGameAsyncThunkAction } from '../state'
 import { getUser } from '../auth/authReducer'
-import { Unsubscribe } from '../../db/gamesDB'
 import * as firebase from 'firebase'
 import { showStatus, SuccessStatus } from '../status/statusActions'
 import { push } from 'connected-react-router'
-import { map, forEach } from 'lodash/fp'
-import { loadFriends } from '../friends/friendsActions';
+import { map } from 'lodash/fp'
 
 export const SET_GAMES = 'games/set-games'
 export const SET_GAME = 'games/set-game'
@@ -62,37 +60,37 @@ export const respondToInvitation = (response: InvitationResponse): HomeGameAsync
   await db.respondToGameInvitation(response)
 }
 
-export const listenToGames = (): HomeGameAsyncThunkAction<Unsubscribe> => async (dispatch, getState, { db }) =>
-  new Promise<Unsubscribe>(resolve => {
-    const userId = getUser(getState()).userId
-    const unsubscribe = db.listenToGames(userId, games => {
-      dispatch(setGames(games))
-      resolve(unsubscribe)
-    })
-  })
+// export const listenToGames = (): HomeGameAsyncThunkAction<Unsubscribe> => async (dispatch, getState, { db }) =>
+//   new Promise<Unsubscribe>(resolve => {
+//     const userId = getUser(getState()).userId
+//     // const unsubscribe = db.listenToGames(userId, games => {
+//     //   dispatch(setGames(games))
+//     //   resolve(unsubscribe)
+//     // })
+//   })
 
-export const listenToGame = (hostId: string, gameId: string): HomeGameAsyncThunkAction<Unsubscribe> => async (dispatch, _getState, { db }) =>
-  new Promise<Unsubscribe>(resolve => {
-    const unsubscribe = db.listenToGame(hostId, gameId, (game, invitatedPlayers, responses) => {
-      dispatch(setGame(game, invitatedPlayers, responses))
-      resolve(unsubscribe)
-    })
-  })
+// export const listenToGame = (hostId: string, gameId: string): HomeGameAsyncThunkAction<Unsubscribe> => async (dispatch, _getState, { db }) =>
+//   new Promise<Unsubscribe>(resolve => {
+//     const unsubscribe = db.listenToGame(hostId, gameId, (game, invitatedPlayers, responses) => {
+//       dispatch(setGame(game, invitatedPlayers, responses))
+//       resolve(unsubscribe)
+//     })
+//   })
 
 export interface GameId {
   hostId: string
   gameId: string
 }
 
-export const listenToGameAndFriends = (gameId: GameId): HomeGameAsyncThunkAction<Unsubscribe> => async dispatch => {
-  const unsubscribeGame = dispatch(listenToGame(gameId.hostId, gameId.gameId))
-  const unsubscribeFriends = dispatch(loadFriends())
+// export const listenToGameAndFriends = (gameId: GameId): HomeGameAsyncThunkAction<Unsubscribe> => async dispatch => {
+//   const unsubscribeGame = dispatch(listenToGame(gameId.hostId, gameId.gameId))
+//   const unsubscribeFriends = dispatch(loadFriends())
   
-  const unsubscribes = await Promise.all([unsubscribeGame, unsubscribeFriends])
+//   const unsubscribes = await Promise.all([unsubscribeGame, unsubscribeFriends])
   
-  return () => {
-    forEach(unsubscribe => unsubscribe(), unsubscribes)
-  }
-}
+//   return () => {
+//     forEach(unsubscribe => unsubscribe(), unsubscribes)
+//   }
+// }
 
 export type GamesAction = SetGames | SetGame | ClearGame

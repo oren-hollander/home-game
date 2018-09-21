@@ -1,8 +1,6 @@
 import * as React from 'react'
 import { ChangeEvent, Component, SFC } from 'react'
 import { Address } from '../../db/types'
-// import { load } from '../../data/load'
-// import { loadAddresses } from '../addresses/addressesActions'
 import { getAddresses } from '../addresses/addressesReducer'
 import { isEmpty, defaultTo, map, find, head, isUndefined } from 'lodash/fp'
 import { State, HomeGameThunkDispatch } from '../state'

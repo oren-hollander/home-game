@@ -5,10 +5,8 @@ import { Address } from '../../db/types'
 import { isEmpty, isEqual } from 'lodash/fp'
 import { Form, FormGroup, Button, Input, Label, Jumbotron } from 'reactstrap'
 import { Page } from '../../ui/Page'
-import { Loading } from '../../ui/Loading';
 
 export interface SetAddressProps {
-  fresh: boolean
   buttonLabel: string
   address?: Address
   setAddress: (address: Address) => void
@@ -63,7 +61,6 @@ export class SetAddress extends Component<SetAddressProps, Address> {
   render() {
     return (
       <Page>
-        <Loading fresh={this.props.fresh} />
         <Jumbotron>
           <Form color="primary">
             <FormField

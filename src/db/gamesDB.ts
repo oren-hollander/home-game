@@ -1,6 +1,6 @@
 import * as firebase from 'firebase/app'
 import { Game, User, Address, Invitation, InvitationResponse } from './types'
-import { map, concat, compact, assign, omit, forEach, isUndefined } from 'lodash/fp'
+import { map, assign, omit, forEach } from 'lodash/fp'
 
 type Firestore = firebase.firestore.Firestore
 
@@ -12,13 +12,14 @@ const GAMES = 'games'
 const INVITATIONS = 'invitations'
 const RESPONSES = 'responses'
 
-export type GamesEvent = (games: ReadonlyArray<Game>) => void
+type DataEvent<T> = (data: T) => void 
 
-export type GameEvent = (
-  game: Game,
-  invitedPlayers: ReadonlyArray<User>,
-  responses: ReadonlyArray<InvitationResponse>
-) => void
+export type GamesEvent = DataEvent<ReadonlyArray<Game>>
+export type GameEvent = DataEvent<Game | undefined>
+export type AddressesEvent = DataEvent<ReadonlyArray<Address>>
+export type UsersEvent = DataEvent<ReadonlyArray<User>>
+export type InvitationsEvent = DataEvent<ReadonlyArray<Invitation>>
+export type ResponsesEvent = DataEvent<ReadonlyArray<InvitationResponse>>
 
 export type Unsubscribe = () => void
 
@@ -27,17 +28,16 @@ export interface GamesDatabase {
   getUser(userId: string): Promise<User | undefined>
 
   createAddress(userId: string, address: Address): Promise<void>
-  getAddresses(userId: string): Promise<ReadonlyArray<Address>>
-  getAddress(userId: string, addressId: string): Promise<Address>
   updateAddress(userId: string, address: Address): Promise<void>
   removeAddress(userId: string, addressId: string): Promise<void>
+  getAddresses(userId: string): Promise<ReadonlyArray<Address>>
 
   createFriendInvitation(userId: string): Promise<string>
   acceptFriendInvitation(userId: string, invitationId: string, friendUserId: string): Promise<void>
 
   addFriend(userId: string, friendUserId: string): Promise<void>
   removeFriend(userId: string, friendUserId: string): Promise<void>
-  getFriends(userId: string): Promise<ReadonlyArray<User>>
+  getFriendIds(userId: string): Promise<ReadonlyArray<string>>
 
   createGame(game: Game): Promise<Game>
   updateGame(game: Game): Promise<void>
@@ -48,9 +48,11 @@ export interface GamesDatabase {
   inviteToGame(playerId: string, invitation: Invitation): Promise<void>
   respondToGameInvitation(response: InvitationResponse): Promise<void>
 
-    listenToGames(userId: string, onGames: GamesEvent): Unsubscribe
-
-  listenToGame(userId: string, gameId: string, onGame: GameEvent): Unsubscribe
+  getOwnGames(userId: string): Promise<ReadonlyArray<Game>>
+  getGame(userId: string, gameId: string): Promise<Game | undefined>
+  getIncomingInvitations(userId: string): Promise<ReadonlyArray<Invitation>>
+  getGameInvitedPlayerIds(userId: string, gameId: string): Promise<ReadonlyArray<string>>
+  getGameInvitationResponse(userId: string, gameId: string): Promise<ReadonlyArray<InvitationResponse>>
 }
 
 export const GamesDatabase = (db: Firestore): GamesDatabase => {
@@ -78,23 +80,9 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
   }
 
   const getAddresses = async (userId: string): Promise<ReadonlyArray<Address>> => {
-    const addressesSnapshot = await db
-      .collection(USERS)
-      .doc(userId)
-      .collection(ADDRESSES)
-      .get()
-    return map(snapshot => assign({ addressId: snapshot.id }, snapshot.data()) as Address, addressesSnapshot.docs)
-  }
-
-  const getAddress = async (userId: string, addressId: string): Promise<Address> => {
-    const addressSnapshot = await db
-      .collection(USERS)
-      .doc(userId)
-      .collection(ADDRESSES)
-      .doc(addressId)
-      .get()
-    
-    return assign({ addressId: addressSnapshot.id }, addressSnapshot.data()) as Address
+    const querySnapshot = await db.collection(USERS).doc(userId).collection(ADDRESSES).get()
+    const addresses = map(snapshot => assign({ addressId: snapshot.id }, snapshot.data()) as Address, querySnapshot.docs)
+    return addresses
   }
 
   const updateAddress = async (userId: string, address: Address): Promise<void> =>
@@ -166,15 +154,10 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
       .doc(friendUserId)
       .delete()
 
-  const getFriends = async (userId: string): Promise<User[]> => {
-    const snapshot = await db
-      .collection(USERS)
-      .doc(userId)
-      .collection(FRIENDS)
-      .get()
-    const userIds = map(snapshot => snapshot.id, snapshot.docs)
-    const users = await Promise.all(map(getUser, userIds))
-    return compact(users)
+  const getFriendIds = async (userId: string): Promise<ReadonlyArray<string>> => {
+    const querySnapshot = await db.collection(USERS).doc(userId).collection(FRIENDS).get() 
+    const userIds = map(snapshot => snapshot.id, querySnapshot.docs)
+    return userIds
   }
 
   const createGame = async (game: Game): Promise<Game> => {
@@ -256,124 +239,55 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
       .doc(userId)
       .update({ valid: true })
 
-  const listenToGames = (userId: string, onGames: GamesEvent): Unsubscribe => {
-    let ownGames: Game[] = []
-    let invitationGames: Game[] = []
-
-    const notify = () => {
-      onGames(concat(ownGames, invitationGames))
+  const getOwnGames = async (userId: string): Promise<ReadonlyArray<Game>> => {
+    const querySnapshot = await db.collection(USERS).doc(userId).collection(GAMES).get()
+    const games = map(snapshot => assign({ gameId: snapshot.id }, snapshot.data()) as Game, querySnapshot.docs)
+    return games
+  }
+  
+  const getGame = async (userId: string, gameId: string): Promise<Game | undefined> => {
+    const documentSnapshot = await db.collection(USERS).doc(userId).collection(GAMES).doc(gameId).get()
+    const data = documentSnapshot.data()
+    if (data) {
+      return assign({ gameId: documentSnapshot.id }, data) as Game
     }
-
-    db.collection(USERS)
-      .doc(userId)
-      .collection(GAMES)
-      // .where('timestamp', '>=', Timestamp.fromDate(midnight.toDate()))
-      .orderBy('timestamp', 'asc')
-      .get()
-      .then(({ docs }) => {
-        ownGames = map(snapshot => assign({ gameId: snapshot.id }, snapshot.data()) as Game, docs)
-      })
-
-    return db
-      .collection(USERS)
-      .doc(userId)
-      .collection(INVITATIONS)
-      .onSnapshot(async snapshot => {
-        const invitations: Invitation[] = map(
-          snapshot => ({
-            hostId: snapshot.get('hostId'),
-            gameId: snapshot.get('gameId')
-          }),
-          snapshot.docs
-        )
-
-        const gameSnapshots = await Promise.all(
-          map(
-            ({ hostId, gameId }) =>
-              db
-                .collection(USERS)
-                .doc(hostId)
-                .collection(GAMES)
-                .doc(gameId)
-                .get(),
-            invitations
-          )
-        )
-        invitationGames = map(snapshot => assign({ gameId: snapshot.id }, snapshot.data()) as Game, gameSnapshots)
-        notify()
-      })
+    return undefined
   }
 
-  const listenToGame = (userId: string, gameId: string, onGame: GameEvent): Unsubscribe => {
-    let game: Game | undefined = undefined
-    let invitedPlayers: ReadonlyArray<User> | undefined = undefined
-    let responses: ReadonlyArray<InvitationResponse> | undefined = undefined
-
-    const notify = () => {
-      if (!isUndefined(game) && !isUndefined(invitedPlayers) && !isUndefined(responses)) {
-        onGame(game, invitedPlayers, responses)
-      }
-    }
-
-    const unsubscribeGame = db
-      .collection(USERS)
-      .doc(userId)
-      .collection(GAMES)
-      .doc(gameId)
-      .onSnapshot(snapshot => {
-        if (!snapshot.exists) {
-          return
-        }
-        game = assign({ gameId: snapshot.id }, snapshot.data()!) as Game
-        notify()
-      })
-
-    const unsubscribeInvitations = db
-      .collection(USERS)
-      .doc(userId)
-      .collection(GAMES)
-      .doc(gameId)
-      .collection(INVITATIONS)
-      .onSnapshot(async querySnapshot => {
-        const invitatedPlayerIds = map(({ id }) => id, querySnapshot.docs)
-        invitedPlayers = compact(await Promise.all(map(getUser, invitatedPlayerIds)))
-        notify()
-      })
-
-    const unsubscribeResponses = db
-      .collection(USERS)
-      .doc(userId)
-      .collection(GAMES)
-      .doc(gameId)
-      .collection(RESPONSES)
-      .onSnapshot(querySnapshot => {
-        responses = map(docSnapshot => docSnapshot.data() as InvitationResponse, querySnapshot.docs)
-        notify()
-      })
-
-    return () => {
-      unsubscribeGame()
-      unsubscribeInvitations()
-      unsubscribeResponses()
-    }
+  const getIncomingInvitations = async (userId: string): Promise<ReadonlyArray<Invitation>> => {
+    const querySnapshot = await db.collection(USERS).doc(userId).collection(INVITATIONS).get()
+    const invitations = map(snapshot => snapshot.data() as Invitation, querySnapshot.docs)
+    return invitations
   }
+
+  const getGameInvitedPlayerIds = async (userId: string, gameId: string): Promise<ReadonlyArray<string>> => {
+    const querySnapshot = await db.collection(USERS).doc(userId).collection(GAMES).doc(gameId).collection(INVITATIONS).get()
+    const userIds = map(snapshot => snapshot.id, querySnapshot.docs)
+    return userIds
+  }
+
+  const getGameInvitationResponse = async (userId: string, gameId: string): Promise<ReadonlyArray<InvitationResponse>> => {
+    const querySnapshot = await db.collection(USERS).doc(userId).collection(GAMES).doc(gameId).collection(RESPONSES).get()
+    const responses = map(snapshot => assign({hostId: userId, gameId, playerId: snapshot.id}, snapshot.data()) as InvitationResponse, querySnapshot.docs)
+    return responses
+  }
+
 
   return {
     createUser,
     getUser,
 
     createAddress,
-    getAddresses,
-    getAddress,
     updateAddress,
     removeAddress,
+    getAddresses,
 
     createFriendInvitation,
     acceptFriendInvitation,
 
     addFriend,
     removeFriend,
-    getFriends,
+    getFriendIds,
 
     createGame,
     updateGame,
@@ -383,7 +297,11 @@ export const GamesDatabase = (db: Firestore): GamesDatabase => {
 
     inviteToGame,
     respondToGameInvitation,
-    listenToGames,
-    listenToGame
+    
+    getOwnGames,
+    getGame,
+    getIncomingInvitations,
+    getGameInvitedPlayerIds,
+    getGameInvitationResponse
   }
 }
