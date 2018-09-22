@@ -1,44 +1,35 @@
-// import * as React from 'react'
-// import { ComponentType, SFC } from 'react'
-// import { connect } from 'react-redux'
-// import { Address } from '../../db/types'
-// import { updateAddress } from './addressesActions'
-// import { HomeGameThunkDispatch } from '../state'
-// import { showStatus, ErrorStatus } from '../status/statusActions'
-// import { SetAddress, SetAddressProps } from './SetAddress'
-// import { getAddress } from './addressesReducer'
-// import { dataLoader, CompProps } from '../../data/dataLoader'
-// import { markStale, markFresh } from '../dataStatus/dataStatusActions';
-// import { getDataStatus } from '../dataStatus/dataStatusReducer';
+import { ComponentType } from 'react'
+import { connect } from 'react-redux'
+import { Address } from '../../db/types'
+import { updateAddress } from './addressesActions'
+import { HomeGameThunkDispatch, State } from '../state'
+import { showStatus, ErrorStatus } from '../status/statusActions'
+import { SetAddress, SetAddressProps } from './SetAddress'
+import { getAddress } from './addressesReducer'
 
-// type SetAddressDispatchProps = Pick<SetAddressProps, 'showError' | 'setAddress'>
+type SetAddressDispatchProps = Pick<SetAddressProps, 'showError' | 'setAddress'>
+type SetAddressStateProps = Pick<SetAddressProps, 'address' | 'buttonLabel'>
 
-// const EditAddressAdapter: SFC<SetAddressProps> = props => <SetAddress buttonLabel="Update" {...props} />
+export interface EditAddressProps {
+  readonly addressId: string
+}
 
-// const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): SetAddressDispatchProps => ({
-//   showError: (error: string) => dispatch(showStatus(ErrorStatus(error))),
-//   setAddress: (address: Address) => dispatch(updateAddress(address))
-// })
+const mapStateToProps = (state: State, ownProps: EditAddressProps) => ({
+  address: getAddress(state, ownProps.addressId),
+  buttonLabel: 'Update'
+})
 
-// const EditAddressConnector: ComponentType<{address?: Address, fresh: boolean}> = connect(
-//   undefined,
-//   mapDispatchToProps
-// )(EditAddressAdapter)
+const mapDispatchToProps = (dispatch: HomeGameThunkDispatch): SetAddressDispatchProps => ({
+  showError: (error: string) => dispatch(showStatus(ErrorStatus(error))),
+  setAddress: (address: Address) => dispatch(updateAddress(address))
+})
 
-// const EditAddressConnectorAdapter: SFC<CompProps<Address | undefined>> = ({ data, dataStatus }) => 
-//   <EditAddressConnector address={data} fresh={dataStatus === 'fresh'} />
-
-// export interface EditAddressProps {
-//   addressId: string
-// }
-
-// const propsToParams = (props: EditAddressProps): string => props.addressId
-
-// export const EditAddress: ComponentType<EditAddressProps> = dataLoader(
-//   propsToParams,
-//   loadAddress,
-//   markStale('addresses'),
-//   markFresh('addresses'),
-//   getAddress,
-//   getDataStatus('addresses')
-// )(EditAddressConnectorAdapter)
+export const EditAddress: ComponentType<EditAddressProps> = connect<
+  SetAddressStateProps,
+  SetAddressDispatchProps,
+  EditAddressProps,
+  State
+>(
+  mapStateToProps,
+  mapDispatchToProps
+)(SetAddress)

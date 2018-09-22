@@ -1,11 +1,11 @@
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import { HomeGameAsyncThunkAction } from '../state'
-import { createUserEffect } from '../users/usersActions'
+import { createUser } from '../users/usersActions'
 import { ErrorStatus, InfoStatus, SuccessStatus, showStatus } from '../status/statusActions'
 import { isEmpty } from 'lodash/fp'
 import { push } from 'connected-react-router'
-import { getUserEmail } from './authReducer'
+import { getSignedInUserEmail } from './authReducer'
 
 export const EMAIL_VERIFIED = 'auth/email-verified'
 export const EMAIL_NOT_VERIFIED = 'auth/email-not-verified'
@@ -25,7 +25,7 @@ export type AuthAction = EmailVerified | UserSignedIn | UserSignedOut
 
 export const sendEmailVerification = (): HomeGameAsyncThunkAction => async (dispatch, getState, { auth }) => {
   await auth.currentUser!.sendEmailVerification()
-  const email = getUserEmail(getState())
+  const email = getSignedInUserEmail(getState())
   dispatch(showStatus(SuccessStatus(`Verification email sent to ${email}`)))
 }
 
@@ -34,7 +34,7 @@ export const verifyEmail = (oobCode: string): HomeGameAsyncThunkAction => async 
     await auth.applyActionCode(oobCode)
     await auth.currentUser!.getIdToken(true)
     await auth.currentUser!.reload()
-    dispatch(createUserEffect({ userId: auth.currentUser!.uid, name: auth.currentUser!.displayName! }))
+    dispatch(createUser({ userId: auth.currentUser!.uid, name: auth.currentUser!.displayName! }))
     dispatch(push('/'))
     dispatch(emailVerified())
   } catch (e) {

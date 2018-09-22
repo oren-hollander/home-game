@@ -22,6 +22,7 @@ import * as thunk from 'redux-thunk'
 import { now, max, delay } from 'lodash/fp'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import Logo from './home-game.png'
+import { loadData } from './app/data/dataActions'
 
 const history = createBrowserHistory()
 
@@ -42,6 +43,7 @@ const ts = now()
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     store.dispatch(userSignedIn(user))
+    store.dispatch(loadData())
   } else {
     store.dispatch(userSignedOut())
   }

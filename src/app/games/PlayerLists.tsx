@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Dictionary } from 'lodash'
 import { SFC, Component, ComponentType } from 'react'
-import { User, InvitationResponse, InvitationStatus, Invitation, Game } from '../../db/types'
+import { User, InvitationResponse, InvitationStatus, Invitation } from '../../db/types'
 import {
   map,
   flow,
@@ -24,6 +24,7 @@ import { Button } from 'reactstrap'
 import { connect } from 'react-redux'
 import { HomeGameThunkDispatch } from '../state'
 import { invitePlayers } from './gamesActions'
+import { GameAndInvitation } from './gamesReducer';
 
 type Users = ReadonlyArray<User>
 type UserIds = ReadonlyArray<string>
@@ -107,15 +108,12 @@ export const groupHostedGamePlayersByInvitationStatus = (
 }
 
 interface HostedGamePlayerListsProps {
-  game: Game
+  game: GameAndInvitation
   friends: ReadonlyArray<User>
-  invitedUserIds: ReadonlyArray<string>
-  responses: ReadonlyArray<InvitationResponse>
 }
 
 interface OwnGamePlayerListsProps {
-  invitedUsers: ReadonlyArray<User>
-  responses: ReadonlyArray<InvitationResponse>
+  game: GameAndInvitation
 }
 
 type PlayerListProps = {
@@ -144,7 +142,7 @@ const PlayerList: SFC<PlayerListProps> = ({ users, label }) => {
 }
 
 type NotInvitedPlayerListStateProps = {
-  game: Game
+  game: GameAndInvitation
   users: ReadonlyArray<User>
 }
 
@@ -213,8 +211,8 @@ const mapDispatchToProps = (
 ): NotInvitedPlayerListDispatchProps => ({
   invitePlayers(userIds: ReadonlyArray<string>) {
     const invitation: Invitation = {
-      gameId: ownProps.game.gameId,
-      hostId: ownProps.game.hostId
+      gameId: ownProps.game.game.gameId,
+      hostId: ownProps.game.game.hostId
     }
     dispatch(invitePlayers(invitation, userIds))
   }
@@ -227,11 +225,10 @@ const NotInvitedPlayerList: ComponentType<NotInvitedPlayerListStateProps> = conn
 
 export const HostedGamePlayerLists: SFC<HostedGamePlayerListsProps> = ({
   game,
-  friends,
-  invitedUserIds,
-  responses
+  friends
 }) => {
-  const playerLists = groupHostedGamePlayersByInvitationStatus(friends, invitedUserIds, responses)
+  const invitedPlayerIds = map(player => player.userId, game.invitedPlayers)
+  const playerLists = groupHostedGamePlayersByInvitationStatus(friends, invitedPlayerIds, game.invitationResponses)
   return (
     <>
       <PlayerList label="Approved" users={playerLists.approved} />
@@ -243,8 +240,8 @@ export const HostedGamePlayerLists: SFC<HostedGamePlayerListsProps> = ({
   )
 }
 
-export const InvitedGamePlayerLists: SFC<OwnGamePlayerListsProps> = ({ invitedUsers, responses }) => {
-  const playerLists = groupInvitedGamePlayersByInvitationStatus(invitedUsers, responses)
+export const InvitedGamePlayerLists: SFC<OwnGamePlayerListsProps> = ({ game }) => {
+  const playerLists = groupInvitedGamePlayersByInvitationStatus(game.invitedPlayers, game.invitationResponses)
   return (
     <>
       <PlayerList label="Approved" users={playerLists.approved} />

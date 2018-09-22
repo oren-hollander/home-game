@@ -3,7 +3,7 @@ import { SFC } from 'react'
 import { connect, MapDispatchToProps, MapStateToProps } from 'react-redux'
 import { sendEmailVerification } from './authActions'
 import { State, HomeGameThunkDispatch } from '../state'
-import { getUser, getUserEmail } from './authReducer'
+import { getSignedInUser, getSignedInUserEmail } from './authReducer'
 import { showStatus, ErrorStatus } from '../status/statusActions'
 import { Page } from '../../ui/Page'
 import { Button, Jumbotron } from 'reactstrap'
@@ -49,8 +49,8 @@ const mapDispatchToProps: MapDispatchToProps<EmailVerificationDispatchProps, {}>
 })
 
 const mapStateToProps: MapStateToProps<EmailVerificationStateProps, {}, State> = state => ({
-  name: getUser(state).name,
-  email: getUserEmail(state)
+  name: getSignedInUser(state).name,
+  email: getSignedInUserEmail(state)
 })
 
 export const EmailVerification = connect(

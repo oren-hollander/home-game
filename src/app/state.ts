@@ -17,6 +17,7 @@ import { UsersAction } from './users/usersActions'
 import { RouterAction } from 'connected-react-router'
 import { USER_SIGNED_OUT } from './auth/authActions'
 import { DataStatusAction } from './dataStatus/dataStatusActions'
+import { usersReducer, UsersState } from './users/usersReducer'
 
 export type HomeGameAsyncThunkAction<T = void> = ThunkAction<Promise<T>, State, Services, HomeGameAction>
 export type HomeGameThunkAction<T = void> = ThunkAction<T, State, Services, HomeGameAction>
@@ -28,6 +29,7 @@ export interface State {
   games: GamesState
   addresses: AddressesState
   status: StatusState
+  users: UsersState
 }
 
 export type HomeGameAction =
@@ -55,6 +57,7 @@ export const reducer: Reducer<State, HomeGameAction> = signOutReducer(
     friends: friendsReducer,
     games: gamesReducer,
     addresses: addressesReducer,
-    status: statusReducer
+    status: statusReducer,
+    users: usersReducer
   })
 )

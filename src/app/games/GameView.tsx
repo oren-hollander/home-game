@@ -1,62 +1,65 @@
 import * as React from 'react'
-import { SFC } from 'react'
-import { Game, InvitationResponse, User } from '../../db/types'
+import { SFC, ComponentType } from 'react'
 import { Page } from '../../ui/Page'
-import { map, isUndefined } from 'lodash/fp'
 import { Jumbotron } from 'reactstrap'
 import { DateView } from '../../ui/DateView'
 import { HostedGamePlayerLists, InvitedGamePlayerLists } from './PlayerLists'
+import { GameAndInvitation, getGame } from './gamesReducer'
+import { User } from '../../db/types'
+import { connect } from 'react-redux'
+import { State } from '../state'
+import { getFriends } from '../friends/friendsReducer'
 
-interface GameViewProps {
-  readonly userId: string
-  readonly game?: Game
-  readonly invitedPlayers: ReadonlyArray<User>
-  readonly responses: ReadonlyArray<InvitationResponse>
-  readonly friends: ReadonlyArray<User>
-}
+namespace UI {
+  const Players: SFC<GameViewProps> = ({ userId, game, friends }) => {
+    if (userId === game.game.hostId) {
+      return <HostedGamePlayerLists game={game} friends={friends} />
+    }
 
-const Players: SFC<GameViewProps> = ({ userId, friends, game, invitedPlayers, responses }) => {
-  const invitedPlayerIds = map(user => user.userId, invitedPlayers)
-
-  if (isUndefined(game)) {
-    return null
+    return <InvitedGamePlayerLists game={game} />
   }
 
-  if (userId === game.hostId) {
-    return (
-      <HostedGamePlayerLists game={game} friends={friends} invitedUserIds={invitedPlayerIds} responses={responses} />
-    )
+  export interface GameViewProps {
+    readonly userId: string
+    readonly game: GameAndInvitation
+    readonly friends: ReadonlyArray<User>
   }
 
-  return <InvitedGamePlayerLists invitedUsers={invitedPlayers} responses={responses} />
+  export const GameView: SFC<GameViewProps> = ({ userId, friends, game }) => (
+    <Page>
+      <Jumbotron>
+        {game && (
+          <>
+            <h5>Host</h5>
+            <p>{game.game.hostName}</p>
+            <h5>Time</h5>
+            <p>
+              <DateView timestamp={game.game.timestamp} />
+            </p>
+            <h5>Address</h5>
+            <p>
+              {game.game.address.houseNumber} {game.game.address.street}, {game.game.address.city} (
+              {game.game.address.notes})
+            </p>
+            {game && <Players game={game} userId={userId} friends={friends} />}
+          </>
+        )}
+      </Jumbotron>
+    </Page>
+  )
 }
 
-export const GameView: SFC<GameViewProps> = ({ userId, friends, game, invitedPlayers, responses }) => (
-  <Page>
-    <Jumbotron>
-      {game && (
-        <>
-          <h5>Host</h5>
-          <p>{game.hostName}</p>
-          <h5>Time</h5>
-          <p>
-            <DateView timestamp={game.timestamp} />
-          </p>
-          <h5>Address</h5>
-          <p>
-            {game.address.houseNumber} {game.address.street}, {game.address.city} ({game.address.notes})
-          </p>
-          {game && (
-            <Players
-              game={game}
-              userId={userId}
-              friends={friends}
-              invitedPlayers={invitedPlayers}
-              responses={responses}
-            />
-          )}
-        </>
-      )}
-    </Jumbotron>
-  </Page>
-)
+export interface GameViewProps {
+  hostId: string
+  gameId: string
+}
+
+const mapStateToProps = (state: State, ownProps: GameViewProps): UI.GameViewProps => ({
+  userId: ownProps.hostId,
+  game: getGame(state, ownProps.gameId),
+  friends: getFriends(state)
+})
+
+export const GameView: ComponentType<GameViewProps> = connect<UI.GameViewProps, {}, GameViewProps, State>(
+  mapStateToProps
+)(UI.GameView)

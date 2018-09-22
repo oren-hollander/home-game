@@ -1,6 +1,6 @@
 import { Address } from '../../db/types'
 import { HomeGameAsyncThunkAction } from '../state'
-import { getUser } from '../auth/authReducer'
+import { getSignedInUser } from '../auth/authReducer'
 import { push } from 'connected-react-router'
 import { SuccessStatus, showStatus } from '../status/statusActions'
 
@@ -22,18 +22,18 @@ export type SetAddress = ReturnType<typeof setAddress>
 export type AddressesAction = SetAddresses | SetAddress 
 
 export const addAddress = (address: Address): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
-  const userId = getUser(getState()).userId
+  const userId = getSignedInUser(getState()).userId
   await db.createAddress(userId, address)
   await dispatch(push('/addresses'))
 }
 
 export const updateAddress = (address: Address): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
-  const userId = getUser(getState()).userId
+  const userId = getSignedInUser(getState()).userId
   await db.updateAddress(userId, address)
   dispatch(showStatus(SuccessStatus('Address updated')))
 }
 
 export const removeAddress = (addressId: string): HomeGameAsyncThunkAction => async (dispatch, getState, { db }) => {
-  const userId = getUser(getState()).userId
+  const userId = getSignedInUser(getState()).userId
   await db.removeAddress(userId, addressId)
 }

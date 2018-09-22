@@ -1,27 +1,18 @@
 import { FriendsAction, SET_FRIENDS } from './friendsActions'
-import { User } from '../../db/types'
 import { State } from '../state'
-import { DataStatus } from '../../data/dataStatus'
-import { combineReducers } from 'redux'
-import { dataStatusReducer } from '../dataStatus/dataStatusReducer'
+import { User } from '../../db/types';
+import { map, compact } from 'lodash/fp'
+import { getUser } from '../users/usersReducer';
 
-const friendListsReducer = (friends: ReadonlyArray<User> = [], action: FriendsAction): ReadonlyArray<User> => {
+export type FriendsState = ReadonlyArray<string>
+
+export const friendsReducer = (friendIds: FriendsState = [], action: FriendsAction): FriendsState => {
   switch (action.type) {
     case SET_FRIENDS:
-      return action.friends
+      return action.friendIds
     default:
-      return friends
+      return friendIds
   }
 }
 
-export type FriendsState = {
-  friends: ReadonlyArray<User>
-  dataStatus: DataStatus
-}
-
-export const friendsReducer = combineReducers({
-  friends: friendListsReducer,
-  dataStatus: dataStatusReducer('friends')
-})
-
-export const getFriends = (state: State): ReadonlyArray<User> => state.friends.friends
+export const getFriends = (state: State): ReadonlyArray<User> => compact(map(friendId => getUser(state, friendId), state.friends))

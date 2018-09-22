@@ -5,7 +5,7 @@ import { Toolbar } from '../ui/Toolbar'
 import { Container, Row, Col } from 'reactstrap'
 import { connect } from 'react-redux'
 import { State } from '../app/state'
-import { getUser, isUserSignedIn } from '../app/auth/authReducer'
+import { getSignedInUser, isUserSignedIn } from '../app/auth/authReducer'
 
 interface PageProps {
   toolbar?: boolean
@@ -38,7 +38,7 @@ namespace UI {
 const mapStateToProps = (state: State): { name?: string } => {
   if (isUserSignedIn(state)) {
     return {
-      name: getUser(state).name
+      name: getSignedInUser(state).name
     }
   }
   return {}

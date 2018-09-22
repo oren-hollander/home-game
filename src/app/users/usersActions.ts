@@ -1,16 +1,17 @@
 import { User } from '../../db/types'
 import { HomeGameAsyncThunkAction } from '../state'
 
-export const CREATE_USER = 'users/create'
-export const UPDATE_ADDRESS = 'users/address/update'
-export const LOAD_USER = 'users/load'
-export const SET_USER = 'users/set'
+export const SET_USERS = 'users/append'
+export const SET_USER = 'users/set-user'
 
-const createUser = (user: User) => ({ type: CREATE_USER as typeof CREATE_USER, user })
-export type CreateUser = ReturnType<typeof createUser>
+export const setUsers = (users: ReadonlyArray<User>) => ({ type: SET_USERS as typeof SET_USERS, users })
+export type SetUsers = ReturnType<typeof setUsers>
 
-export const createUserEffect = (user: User): HomeGameAsyncThunkAction => async (dispatchg, getState, { db }) => {
+export const setUser = (user: User) => ({ type: SET_USER as typeof SET_USER, user })
+export type SetUser = ReturnType<typeof setUser>
+
+export const createUser = (user: User): HomeGameAsyncThunkAction => async (_dispatch, _getState, { db }) => {
   await db.createUser(user)
 }
 
-export type UsersAction = CreateUser
+export type UsersAction = SetUsers | SetUser

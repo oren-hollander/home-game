@@ -49,5 +49,5 @@ export const reducer: Reducer<AuthState> = (state: AuthState = defaultAuthState,
 
 export const isUserSignedIn: Selector<State, boolean> = state => state.auth.signedIn
 export const isEmailVerified: Selector<State, boolean> = state => state.auth.emailVerified
-export const getUser: Selector<State, User> = state => ({ name: state.auth.name, userId: state.auth.userId })
-export const getUserEmail: Selector<State, string> = state => state.auth.email
+export const getSignedInUser: Selector<State, User> = state => ({ name: state.auth.name, userId: state.auth.userId })
+export const getSignedInUserEmail: Selector<State, string> = state => state.auth.email
